@@ -1,0 +1,29 @@
+\documentclass[crop, tikz]{standalone}
+
+\usepackage{tikz}
+
+\begin{document}
+
+<<echo = FALSE>>=
+source("functions.R")
+x <- c(6, 0) * 2
+y <- c(4, 3) * 2
+@ 
+
+\begin{tikzpicture}
+
+<<results = tex, echo = FALSE>>=
+cat(drawvect(x, "x"))
+cat(drawvect(y, "y", pos = "left"))
+cat(drawvect(y, xo = c(y[1], 0)))
+cat("\\draw  [->, >=stealth] (", y[1], ",0)--(", y[1], ",", y[2], ");")
+cat("\\draw  [->, >=stealth] (", y[1] + 1, ",0)--(", y[1], ",", y[2], ");")
+cat("\\draw (", y[1], ",0)", " node[below]{$\\hat{\\beta} x$};")
+cat("\\draw (", y[1] + 1, ",0)", " node[below]{$\\beta x$};")
+cat("\\draw (", y[1], ",", y[2] / 2, ")", " node[left]{$\\hat{\\epsilon}$};")
+cat("\\draw (", y[1] + 0.9, ",", y[2] / 2, ")", " node[left]{$\\epsilon$};")
+@ 
+
+\end{tikzpicture}
+
+\end{document}

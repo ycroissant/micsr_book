@@ -1,0 +1,4 @@
+Rscript makeTikz.R OLS2D 10 0.6 1
+Rscript makeTikz.R vectors2D 10 0.6 1
+Rscript makeTikz.R OLS3D 10 0.6 1
+Rscript makeTikz.R frishWaugh 10 0.6 1
