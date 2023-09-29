@@ -1,0 +1,21 @@
+# Preface {.unnumbered}
+
+This book is about micro-econometrics.
+
+```{r }
+#| label: setup
+#| include: false
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE,
+                      out.width = "60%",
+                      fig.align = "center",
+                      cache = TRUE)
+options(
+    htmltools.dir.version = FALSE,
+    formatR.indent = 2,
+    width = 55,
+    digits = 4,
+    tibble.print_max = 5,
+    tibble.print_min = 5
+)
+```

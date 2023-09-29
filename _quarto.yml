@@ -1,0 +1,55 @@
+project:
+  type: book
+  
+title: "Micro-econometrics with R"
+titlepage: true
+titlepage-color: "FFF5EE"
+titlepage-rule-height: 2
+titlepage-logo: "./latex/cemoi.png"
+
+book:
+  author: "Yves Croissant"
+  date: "24/11/2022"
+  chapters:
+  - index.qmd
+  - part: The ordinary least square estimator
+    chapters:
+    - ./chapters/simple_regression.qmd
+    - ./chapters/simple_regression_properties.qmd
+    - ./chapters/multiple_regression.qmd
+    - ./chapters/coefficients.qmd
+  - part: Beyound the OLS estimator
+    chapters:
+      - ./chapters/non_spherical.qmd
+      - ./chapters/maximum_likelihood.qmd
+  #     - ./chapters/endogeneity.qmd
+  #     - ./chapters/treateff.qmd
+  #     - ./chapters/spatial.qmd
+  # - part: Special responses
+  #   chapters:
+  #     - ./chapters/binomial.qmd
+  #     - ./chapters/count.qmd
+  #     - ./chapters/tobit.qmd
+  #     - ./chapters/duration.qmd
+  #     - ./chapters/rum.qmd
+  - ./chapters/references.qmd
+
+bibliography: references.bib
+
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+    cache: false
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: krantz  
+#    documentclass: scrreprt
+#    template: ./latex/eisvogel.tex
+#    toc-own-page: true
+    include-in-header: ./latex/macros.tex
+
+editor: source
