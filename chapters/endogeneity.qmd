@@ -1,0 +1,1162 @@
+# Endogeneity
+
+```{r }
+#| include: false
+source("../_commonR.R")
+```
+
+```{r}
+#| include: false
+library("tidyverse")
+library("micsr")
+```
+
+
+The unbiasness and the consistency of the OLS estimator rests on the
+hypothesis that the conditional expectation of the error is
+zero. Namely, starting with the linear model:
+
+$$
+y = \beta^\top x + \epsilon
+$$
+
+$\E(\epsilon \mid x) = 0$, or equivalently $\E(y \mid x) = \beta^\top$
+or $\cov(x, \epsilon) = 0$. Stated differently, $x$ are supposed to be
+exogenous, or $x$ is assumed to be uncorelated with $\epsilon$. These
+is a reasonable assumption in an experimental setting, where the
+values of $x$ in a sample are set by the researcher. 
+
+## Sources of endogeneity
+
+In economics, most of the empirical researchs are not experimental and
+it is therefore often the case that at least some of the covariates
+are endogenous. This happens mainly in three circonstances:
+
+- error in variable,
+- omitted variables,
+- simultaneity.
+
+### Error in variable
+
+Data sets used in economics, especially micro-data are prone to
+errors of measurment. This problem can affect either the response or
+some of the covariates. Suppose that the model that we seek to
+estimate is:
+
+$$
+y^* = \alpha + \beta x^* + \epsilon^*
+$$
+
+where the covariate is exogenous, which means that $\cov(x^*,
+\epsilon^*)=0$
+
+Suppose that the response is observed with error, namely that the
+observed value of the response is $y = y ^* + \nu$, where $\nu$ is the
+measurment error of the response. In terms of the observed response,
+the model is now:
+
+$$
+y = \alpha + \beta x ^ * + (\epsilon^* + \nu)
+$$
+
+The error of the estimable model is then $\epsilon = \epsilon^* + \nu$
+which is stille uncorrelated with $x$ if $\nu$ is uncorrelated with
+$x$, which means that the error of measurment of the response is
+uncorrelated with the covariate. In this case, the measurment error
+only increase the size of the error, which implies that the
+coefficients are estimated less precisely and that the R^2^ is lower.
+
+Now consider that the covariate is measured with error and that the
+observable values of the covariate is $x = x ^ * + \nu$. If the
+measurment error is uncorelated with the value of the covariate, the
+variance of the observed covariate is therefore $\sigma_x ^ 2 =
+\sigma_x ^ {*2} + \sigma_\nu ^ 2$. $\theta = \sigma_\nu ^ 2 / \sigma_x
+^ 2$ is the share of the variance of $x$ that is due to measurment
+error.
+
+Rewriting the model in terms of $x$, we get:
+
+$$
+y ^ * = \alpha + \beta x + (\epsilon  ^ *- \beta \nu)
+$$
+
+The error of this model is now correlated with $x$, as $\cov(x,
+\epsilon - \beta \nu) = \cov(x^* + \nu,\epsilon ^ * - \beta \nu) = - \beta
+\sigma_\nu ^ 2$:
+
+$$
+\hat{\beta} = \beta + \frac{\sum_n (x_n - \bar{x})\epsilon ^ *}{\sum_n (x_n -
+\bar{x}) ^ 2} = 
+\beta + \frac{\sum_n (x_n - \bar{x})(\epsilon ^ *- \beta \nu)}{\sum_n (x_n -
+\bar{x}) ^ 2}=
+\beta + \frac{\hat{\sigma}_{x\epsilon ^ *} - \beta
+\hat{\sigma}_{x\nu}}{\hat{\sigma}_x ^ 2}
+$$
+
+Taking the expectations, we have $\E\left[(x_n - \bar{x})
+\epsilon\right] = -\beta \sigma_\nu ^ 2$ and therefore
+$\E(\hat{\beta}) = \beta\left(1 - \frac{\sigma_\nu ^ 2}{\sum (x_n
+-\bar{x}) ^ 2 / N}\right)$. Therefore, the OLS estimator is biased and
+the term in bracket is the sample equivalent to $1 - \theta$, which is
+between 0 and 1 and the greater the measurment error is. Therefore
+$\mid\hat{\beta}\mid < \beta$. This kind of bias is called an
+**attenuation bias** (the absolute value of the estimator is lower
+than the true value), which can be either a lower or an upper bias
+depending on the sign of $\beta$.
+
+This bias clearly don't attenuate in large samples. As $N$ grows, the
+empirical variances/covariances converge to the population ones, and
+the estimator therefore converges to:
+
+$$
+\plim \hat{\beta} = \beta \left(1 - \frac{\sigma_\nu ^ 2}{\sigma_x ^ 2}\right)
+$$
+
+For example, if the measurment error accounts for 20% of the total
+variance of $x$, $\hat{\beta}$ converges to 80% of the true parameter.
+
+### Simultaneity bias
+
+Often in economics, the phenomena of interest is not described by a
+single equation, but by a system of equations. Consider for example a
+market equilibrium. The two equations relate the quantity demanded /
+supplied ($q ^ d$ and $q ^ o$) to the unit price and to some specific
+covariates on the demand and on the supply side. @MADD:01, page
+363-366 studied the market for commercial loans using monthly US data
+for 1979-1984. The data set is available as
+`micsr::loan_market`. Total commercial loans (`loans`) are in
+billions of dollars, the price is the average prime rate charged by
+banks (`prime_rate`). `aaa_rate` is the AAA corporate bond rate, which
+is the price of an alternative financing to firms. Therefore, it
+enters the only demand equation. `deposits` is the total bank deposits
+(in billions of dollars), which enters only the supply equation. The
+system of equation is then:
+
+  $$
+\left\{
+  \begin{array}{rcl}
+    q_d &=& \alpha_d + \beta_d p + \gamma_d a + \epsilon_d \\
+    q_s &=& \alpha_s + \beta_s p + \gamma_s y + \epsilon_s \\
+    q_d &=& q_s
+  \end{array}
+\right.
+  $$
+
+The last equation is non-stochastic and states that the market should
+be at the equilibrium. The demand curve should be decreasing ($\beta_d
+< 0$) and the supply curve increasing ($\beta_s > 0$). The OLS
+estimation of the demand and the supply equations are given below:
+
+
+
+```{r }
+ols_d <- lm(log(loans) ~ prime_rate + aaa_rate, data = loan_market)
+ols_s <- lm(log(loans) ~ prime_rate + treas_rate, data = loan_market)
+texreg::screenreg(list(demand = ols_d, supply = ols_s))
+```
+
+The coefficients all have the expected sign and are significant at the
+1% level, except the coefficient of $p$ in the supply equation, which
+is negative and unsignificant.
+
+What is actually observed for each observation in the sample is a
+price-quantity combination of equilibrium. A positive shock on the
+demand equation will move on the right the demand curve and will leads
+to a new equilibrium with a higher equilibrium quantity and also a
+higher equilibrium price (except in the special case where the supply
+curve is horizontal, which means that the supply is totaly
+price-inelastic). This means that $p$ is correlated with $\epsilon_ d$
+which leads to a bias in the estimation of $\beta^d$ by OLS. The same
+reasoning apply of course to the supply curve.
+
+One solution would be to use the equilibrium condition to write two
+equations were the responses are $q$ and $p$ and the covariates $a$
+and $y$.
+
+$$
+\left\{
+\begin{array}{rclclclclcl}
+p &=& \displaystyle \frac{\alpha_s - \alpha_d}{\beta_d - \beta_s} &+&
+\frac{\gamma_s}{\beta_d - \beta_s} y &-& \frac{\gamma_d}{\beta_d -
+\beta_s} a &+& \frac{\epsilon_s - \epsilon_d}{\beta_d - \beta_s} &=&
+\pi_s + \pi_w w + \pi_r r + \nu_p \\
+q &=& \displaystyle \frac{\beta_d \alpha_s - \beta_s \alpha_d}{\beta_d - \beta_s} &+&
+\frac{\beta_d \gamma_s}{\beta_d - \beta_s}y &-& \frac{\beta_s
+\gamma_d}{\beta_d - \beta_s} a &+& \frac{\beta_d \epsilon_s - \beta_s
+\epsilon_d}{\beta_d - \beta_s} &=& 
+\delta_s + \delta_w y + \delta_r a + \nu_q \\
+\end{array}
+\right.
+$$
+
+
+which makes clear that both $p$ and $q$ depends on $\epsilon_s$ and
+$\epsilon_d$. More precisely, as $\beta_d - \beta_s < 0$, $\epsilon_d$
+and $\epsilon_s$ are respectively positively and negatively correlated
+with the price. $\Delta \epsilon_d > 0$ will shift the demand curve
+upward and therefore will increase the equilibrium price. Therefore,
+$E(q_d\mid p) = \beta_d + E(\epsilon_d \mid p) > \beta_d$. Therefore,
+the OLS estimator of the slope is biased upward, which means as it is
+negative that it biased downward in absolute value.On the contrary,
+$\Delta \epsilon_s > 0$ whill move the supply curve on the right and
+therefore will decrease the equilibrium price. Therefore, $E(q_s\mid
+p) = \beta_s + E(\epsilon_s \mid p) < \beta_s$, the OLS estimator
+of the slope of the supply curve is biased downward.
+
+
+Both equations of this so called **reduced form** can be
+consistently estimated by least squares, as $y$ and $a$ are
+uncorrelated with the two error terms. 
+
+
+```{r }
+ols_q <- lm(log(loans) ~ aaa_rate + treas_rate, data = loan_market)
+ols_r <- lm(prime_rate ~ aaa_rate + treas_rate, data = loan_market)
+texreg::screenreg(list(quantity = ols_q, price = ols_r))
+```
+
+```{r }
+#| include: false
+ols_d <- ivreg::ivreg(log(loans) ~ prime_rate +  aaa_rate | aaa_rate + treas_rate, data = loan_market)
+ols_s <- ivreg::ivreg(log(loans) ~ prime_rate + treas_rate | aaa_rate + treas_rate, data = loan_market)
+texreg::screenreg(list(demand = ols_d, supply = ols_s))
+```
+
+
+The reduced form coefficients are not meaningfull by themselves, but
+only if they enable to retrieve the structural parameters. This is
+actually the case here as, for example,
+$\frac{\delta_y}{\pi_y}=\beta_d$ and
+$\frac{\delta_a}{\pi_a}=\beta_s$. 
+
+```{r }
+coef(ols_q) / coef(ols_r)
+```
+and we can see that the estimated structural parameters are now of
+the expected sign and larger than when estimated by OLS. 
+
+
+Actually, the case we have considered is special because there is one
+and only one extra covariate in both equations. Consider as an example
+the following situation:
+
+  $$
+\left\{
+  \begin{array}{rcl}
+    y_d &=& \alpha_d + \beta_d p + \gamma_d a + \lambda_ d v + \epsilon_d \\
+    y_s &=& \alpha_s + \beta_s p + \epsilon_s \\
+    y_d &=& y_s
+  \end{array}
+\right.
+  $$
+
+where there are two extra covariates in the demand equation and no
+covariates (except the price) in the supply equation. Solving for the
+two endogenous variables $p$ and $q$, we get in this case:
+
+$$
+\left\{
+\begin{array}{rclclclclcl}
+p &=& \displaystyle \frac{\alpha_s - \alpha_d}{\beta_d - \beta_s} &-&
+\frac{\lambda_d}{\beta_d - \beta_s} v &-& \frac{\gamma_d}{\beta_d -
+\beta_s} a &+& \frac{\epsilon_s - \epsilon_d}{\beta_d - \beta_s} &=&
+\pi_s + \pi_v v + \pi_a a + \nu_p \\
+q &=& \displaystyle \frac{\beta_d \alpha_s - \beta_s \alpha_d}{\beta_d - \beta_s} &-&
+\frac{\beta_s \lambda_d}{\beta_d - \beta_s}v &-& \frac{\beta_s
+\gamma_d}{\beta_d - \beta_s} a &+& \frac{\beta_d \epsilon_s - \beta_s
+\epsilon_d}{\beta_d - \beta_s} &=& 
+\delta_s + \delta_v v + \delta_a a + \nu_q \\
+\end{array}
+\right.
+$$
+
+we no have $\frac{\delta_v}{\pi_v} = \frac{\delta_a}{\pi_a} =
+\beta_s$, there are two ratio of the reduced parameters that gives the
+value of the slope of the supply curve, but there is no chance that
+equal values are obtained. On the contrary, there is no way to
+retrieve the slope of the demand curve from the reduced form
+parameters. Therefore, the indirect least square approach is of
+limited interest. In the general case, as we have seen, some
+coefficients like $\beta_s$ in our example may be **over-identified**
+as some other like $\beta_d$ are **under-identified**.
+
+
+### Omited variable bias
+
+Suppose that the true model is: $y = \alpha + \beta_x x + \beta_z z +
+\epsilon$, where the conditional expectation of $\epsilon$ with
+respect to $x$ and $z$ is 0. Therefore, this model could be
+consistently estimated by least squares. Consider now that $z$ is
+unobserved. Therefore, the model to be estimated is $y = \alpha +
+\beta_x x + \eta$, with $\eta = \beta_z z + \epsilon$. The omission of
+a relevant ($\beta \neq 0$) covariate has two consequences:
+
+- the variance of the error is now $\sigma_\eta ^ 2 = \beta_z ^ 2
+\sigma_z^2 + \sigma_\epsilon$, and is therefore greater than the one
+of the initial model for which $z$ is observed and used as a
+covariate,
+- the covariance between the error and $x$ is $\cov(x, \eta) = \beta_z
+  \cov(z, x)$ ; therefore, if the covariate is correlated with the
+  omitted variable, the covariate and the error of the model are
+  correlated.
+  
+The second problem is particulary important as it implies that the OLS
+estimator is biased and inconsistent. This omited variable bias can be
+computed as follow:
+
+$$
+\hat{\beta}_x = \beta_x + \frac{\sum (x - \bar{x})(\beta_z z +
+\epsilon)}{\sum (x - \bar{x}) ^ 2}=
+\beta_x + \frac{\beta_z \hat{\sigma}_{xz} + \hat{\sigma}_{x\epsilon}}{\hat{\sigma}_x ^ 2}
+$$
+
+Taking the expectation, we get:
+
+$$
+\E(\hat{\beta}_x) = \beta_x + \beta_z
+\frac{\hat{\sigma}_{xz}}{\hat{\sigma}_x ^ 2}
+$$
+
+This is an upper bias if the signs of the covariance between $x$ and
+$z$ and $\beta_z$ are the same, and a lower bias if they have opposite
+signs.
+
+As $N$ tends to infinity, the OLS estimator converges to:
+
+$$
+\plim \hat{\beta}_x = \beta_x + \beta_z \frac{\sigma_{xz}}{\sigma_x ^ 2}=
+\beta_x + \beta_z \beta_{z / x}
+$$
+
+where $\beta_{z/x}$ is the true value of the parameter of a regression
+of $z$ on $x$. This formula makes clear what $\hat{\beta}_x$ really
+estimates in a linear regression:
+
+- the direct effect of $x$ on $y$ which is $\beta_x$,
+- the indirect effect of $x$ on $y$ which is the product of the effect
+  of $x$ on $y$ ($\beta_{z/x}$) times the effect of $z$ on $\epsilon$
+  and therefore on $y$ ($\beta_z$).
+
+
+A famous example of omited variable bias is the so-called Mincer
+equation which relates wage ($w$), education ($e$) and experience
+($s$):
+
+$$
+\ln w = \beta_o + \beta_e e + \beta_{ee} e ^ 2 + \beta_s s + \epsilon
+$$
+
+For the sake of simplicity, we'll ignore the quadratic term in
+education, so that $\beta_e = \frac{d\ln w}{de} = \frac{d w / w}{de}$
+is the percentage increase of the wage for one more year of
+education. 
+
+To illustrate the estimation of a Mincer equation, we use the data of
+@KOOP:POIR:TOBI:05, which is a sample of 303 young males of females
+taken from the National Longitudinal Survey of Youth and is available
+as `micecr::sibling_educ`.
+
+```{r }
+sibling_educ <- sibling_educ %>% mutate(experience = experience / 52)
+lm(log(wage) ~ educ + experience, sibling_educ) %>% summary
+```
+Results indicate that one more year of education increases in average
+the wage by 9.8% (which is about 50% more than one year of
+experience). One concern about this kind of estimation is that
+individuals have different abilities ($a$), and that more ability have a
+positive effect on wage, but may also have positive effect on
+education. If this is the case, $\beta_{a} > 0$, $\beta_{e/a} > 0$ and
+therefore $\plim \hat{\beta}_e = \beta_e + \beta_{a} \beta_{a/e} >
+\beta_e$ and the OLS estimator is upward biased. This is the case
+because more education:
+
+- increases, for a given level of ability, the expected wage by
+  $\beta_e$,
+- means than, in average, the level of ability is higher, this effect
+  being $\beta_{a/e}$ (which in this case doesn't implies a causality
+  of $e$ on $a$, but simply a correlation), so that the wage will be
+  also higer ($\beta_a > 0$).
+  
+Numerous studies of the Mincer equation deals with this problem of
+endogeneity of the education level. But in the data set we used, there
+is a measure of the ability, which is the standardized AFQT test
+score. If we introduce ability in the regression, education is no more
+endogenous an least squares will give a consistant estimation of the
+effect of education on wage. Let's first check that education and
+ability are actually positively correlated:
+
+```{r }
+sibling_educ %>% summarise(cor(educ, ability)) %>% pull
+```
+which is actually the case. Therefore, adding ability as a covariate
+in the previous regression should decrease the coefficient on
+education:
+
+```{r }
+lm(log(wage) ~ educ + experience + ability, sibling_educ) %>% summary
+```
+this is actually the case, the effect of one more year of education
+being now an increase of 8.7% of the wage (compared to 9.8% previously).
+
+
+```{r }
+#| include: false
+genr_data <- function(N = 5E01, R = 1E03, r_xe = 0.5, r_xz = 0.2, r_ze = 0,
+                      alpha = 1, beta = 1,
+                      sds = c(x = 1, e = 1, z = 1), mns = c(x = 0, z = 0), J = 3){
+    sds <- c(sds[-3], rep(sds[3], J))
+    mns <- c(mns[1], rep(mns[2], J))
+    names(sds) <- c("x", "e", "z")
+    names(mns) <- c("x", "z")
+    nms <- c("x", "e", paste("z", 1:J, sep = ""))
+    XEZ <- matrix(rnorm(N * R * (J + 2)), nrow = N * R)
+    cors <- matrix(c(1, r_xe, r_xz, r_xe, 1, r_ze, r_xz, 0, 1), nrow = 3)
+    cors <- rbind(cbind(matrix(c(1, r_xe, r_xe, 1), nrow = 2), rbind(rep(r_xz, J), rep(r_ze, J))),
+                  cbind(rep(r_xz, J), rep(r_ze, J), diag(J)))
+    XEZ %*% chol(cors) %>% 
+        as_tibble() %>% set_names(nms) %>% 
+        mutate(x = x * sds["x"] + mns["x"],
+               e = e * sds["e"],
+               y = alpha + beta * x + e) %>%
+        mutate(across(starts_with("z"), ~ .x * sds["z"] + mns["z"])) %>% 
+        add_column(id = factor(rep(1:R, each = N)), .before = 1)
+}
+coefs <- function(i){
+    Z <- select(i, starts_with("z")) %>% as.matrix
+    r <- lm.fit(cbind(1, Z), i$x)
+    xm <- mean(i$x)
+    TSS <- sum( (i$x - xm) ^ 2)
+    RSS <- sum(r$residuals ^ 2)
+    ESS <- sum( (r$fitted.values - xm) ^ 2)
+    F <- ESS / RSS * r$df.residual / (r$rank - 1)
+    R2 <- ESS / TSS
+    zh <- r$fitted.values
+    zt <- apply(Z, 1, sum) * r_xz
+    ols <- coef(lm.fit(cbind(1, i$x), i$y))[2] %>% unname
+    ivo <- coef(lm.fit(cbind(1, zt), i$y))[2] %>% unname
+    iv <- coef(lm.fit(cbind(1, zh), i$y))[2] %>% unname
+    c(ols = ols, ivo = ivo, iv = iv, F = F, R2 = R2)
+}
+```
+
+
+```{r }
+#| include: false
+r_xz <- 0.2
+v <- genr_data(N = 20, R = 1E03, J = 4) %>% group_split(id) %>%
+    sapply(coefs) %>% t %>% as_tibble
+v %>% summarise(across(everything(), list(mean = mean, median = median))) %>%
+    pivot_longer(1:10) %>% separate(name, into = c("est", "stat")) %>%
+    pivot_wider(names_from = stat, values_from = value) %>% print
+```
+
+## The instrumental variable estimator
+
+The general idea of instrumental variable estimator is to find
+variables which are correlated with the endogenous covariates and
+uncorrelated with the error term of the structural equation. This
+means that the instruments don't have a direct effect on the response,
+but only an indirect effect because of their correlation with the
+endogenous covariates. These instruments allows to get an exogenous
+source of variation of the covariate, ie a source of variation that
+has nothing to do with the process of interest. 
+
+We'll start with the simple case when there is the number of
+instruments is equal to the number of endogenous covariate, which is
+denoted as the **just-identified** case.
+
+### Just identified case
+
+#### Computation of the **IV** estimator
+
+Consider a linear regression :
+
+$$
+y = \beta ^ \top  x + \epsilon
+$$
+
+with $\E(\epsilon \mid x) \neq 0$. The normal equations is
+$\frac{1}{N}\sum_n x_n \epsilon_n = \frac{1}{N}X ^ \top \epsilon =
+0$. Solving these set of equations leads to the OLS estimator which is
+obviously biased and unconsistent as this vector is the sample
+covariance between the errors and the covariates and are the sample
+conterpart to the theoritical moments $\E(x\epsilon) \neq 0$ because
+$x$ is endogenous. No assume that we can found a $K+1$ vector of
+instruments $z$ for which $\E(\epsilon \mid z) \neq 0$, ie a vector of
+variables that are uncorrelated with the errors. The two vectors $x$
+and $z$ have the same length and can overlap. Actually, all the
+elements of $x$ which are uncorrelated with the error should also be
+part of $z$ (this is particully the case of the vector of one). The
+sample conterpart to the null vector of theoritical moments is $Z ^
+\epsilon = 0$, which can be writen:
+
+$$
+Z^\top (y  - X \beta) = Z^\top y - Z^\top X \beta = 0
+$$
+
+Solving for $\beta$, we get the instrumental variable estimator:
+
+$$
+\hat{\beta}_{iv} = (Z^\top X) ^ {-1} Z^\top y
+$$
+
+with the special case if $K=1$:
+
+$$
+\hat{\beta}_{iv} = \frac{\sum_n (z_n - \bar{z})(y_n - \bar{y})}{\sum_n
+(z_n - \bar{z})(x_n - \bar{x})} = \frac{\hat{\sigma}_{zy}}{\hat{\sigma}_{zx}}
+$$
+
+which is the ratio of the covariance between $z$ and $y$ and
+$x$. Replacing $y_n$ by $\alpha + \beta x_n + \epsilon$, we get:
+
+$$
+\hat{\beta}_{iv} = \beta + \frac{\sum_n (z_n - \bar{z})\epsilon}{\sum_n
+(z_n - \bar{z})(x_n - \bar{x})} = \beta + \frac{\hat{\sigma}_{z\epsilon}}{\hat{\sigma}_{zx}}
+$$
+
+
+As $N$ grows, the two empirical covariances converge to the population
+covariances and, as by hypothesis, the instrument is uncorrelated
+with the error ($\sigma_{z\epsilon} = 0$) and is correlated with the
+covariate ($\sigma_{x\epsilon} \neq0$), the instrumental variable
+estimator is consistent:
+
+$$
+\plim \hat{\beta} = \beta + \frac{\sigma_{z\epsilon}}{\sigma_{zx}} =
+\beta
+$$
+
+#### **2SLS** estimator
+
+Consider now the OLS estimator of $x$ on $z$, which is
+$\hat{\gamma}$. From this regression, we can extract the values of $x$
+from the fitted model and the fitted values:
+
+$$
+\left\{
+\begin{array}{rclrclrcl}
+x_n &=& \hat{\delta} + \hat{\gamma} z_n + \hat{\epsilon}_n &\Rightarrow&
+(x_n - \bar{x}) &=& \hat{\gamma}(z_n - \bar{z}) + \hat{\epsilon}_n\\
+\hat{x}_n &=& \hat{\delta} + \hat{\gamma} z_n &\Rightarrow&
+(\hat{x}_n - \bar{x}) &=& \hat{\gamma}(z_n - \bar{z})
+\end{array}
+\right.
+$$
+
+We can therefore respectively rewrite the numerator and the
+denominator of the **IV** estimator as:
+
+- $\sum_n (y_n - \bar{y}) (z_n - \bar{z})= \sum_n (y_n - \bar{y})
+(\hat{x}_n - \bar{x}) / \hat{\gamma}$,
+- $\sum_n (x_n - \bar{x}) (z_n - \bar{z}) = \sum_n (\hat{x}_n -
+\bar{x} + \hat{\epsilon}_n)(z_n - \bar{z}) = \sum_n (\hat{x}_n -
+\bar{x}) ^ 2/ \hat{\gamma}$ (as $\sum_n (z_n - \bar{z})
+\hat{\epsilon}_n=0$), 
+
+so that:
+
+$$
+\hat{\beta}_{iv} = \frac{\sum_n(\hat{x}_n - \bar{x})(y_n -
+\bar{y})}{\sum_n(\hat{x}_n - \bar{x}) ^ 2}
+$$
+
+which is the OLS estimator of $y$ on $\hat{x}$, $\hat{x}$ being the
+fitted values of the regression of $x$ on $z$. Therefore, the IV
+estimator can be obtained by running two OLS regressions:
+
+- the first one is the regression of the covariate on the instrument,
+- the second one is the regression of the response on the fitted
+  values of the covariate obtained from the first regression. 
+  
+and this estimator is also called, for this reason, the **two-stage
+least square** estimator. 
+
+$x$ is correlated with $\epsilon$, but $z$ is not. Therefore, the idea
+of the **2SLS** estimator is to replace $x$ by a linear transformation
+of $z$ which is as close as possible to $x$, which is simply the
+fitted values of the regression of $x$ on $z$.
+
+#### Small sample properties of the **IV** estimator 
+
+Although it is consistent, the instrumental variable isn't
+unbiased. Actually, it doesn't even have an expected value in the just
+identified case. This result can be easily shown starting with the
+following system of equation^[See @DAVI:MACK:04, pages 326-327.]:
+
+$$
+\left\{
+\begin{array}{rcl}
+y &=& \alpha + \beta x + \sigma_\epsilon \epsilon\\
+x &=& \delta + \gamma z + \sigma_\nu \nu\\
+\end{array}
+\right.
+$$
+
+where for convenience, the two errors terms are writen as standard
+normal deviates. Moreover, we can write $\epsilon = \rho \nu + \iota$,
+so that $\rho$ is the coefficient of correlation between the two error
+terms and $\iota$ is by construction uncorrelated with $\nu$. The IV
+estimator is:
+
+$$
+\hat{\beta} = \frac{\sum_n (z_n - \bar{z})(y_n - \bar{y})}
+{\sum_n (z_n - \bar{z})(x_n - \bar{x})} = \beta + \frac{\sigma_{\epsilon}\sum_n (z_n -
+\bar{z})(\rho \nu_n + \iota_n)}{\sum_n (z_n - \bar{z})(x_n - \bar{x})}
+$$
+
+The denominator is closely linked to the OLS estimator of $\gamma$,
+which is:
+
+$$
+\hat{\gamma} = \frac{\sum_n (z_n - \bar{z})(x_n - \bar{x})}{\sum_n
+(z_n - \bar{z}) ^ 2} = \gamma + 
+\frac{\sigma_\nu\sum_n (z_n - \bar{z})\nu_n}{\sum_n (z_n - \bar{z}) ^ 2}
+$$
+
+Substituting, we get:
+
+$$
+\hat{\beta} = \beta + \frac{\sigma_\epsilon \rho \sum_n (z_n - \bar{z})\nu_n +
+\sigma_\epsilon \sum_n (z_n - \bar{z}) \iota_n}
+{\gamma \sum_n(z_n - \bar{z}) ^ 2 + \sigma_\nu\sum_n(z_n - \bar{z}) \nu_n}
+$$
+
+Denoting $c_n = \frac{z_n - \bar{z}}{\sqrt{\sum_n (z_n - \bar{z}) ^
+2}}$, with $\sum_n c_n ^ 2 = 1$, we get:
+
+$$
+\hat{\beta} = \beta + \frac{\sigma_\epsilon \rho \sum_n c_n\nu_n +
+\sigma_\epsilon \sum_n c_n\iota_n}
+{\gamma \sqrt{\sum_n(z_n - \bar{z}) ^ 2} + \sigma_\nu\sum_n c_n \nu_n}
+$$
+
+As, by construction, $\E(\iota \mid \nu) = 0$, denoting $\omega =
+\sum_n c_n \nu_n$ which is a standard normal deviate, we finally get:
+
+$$
+\E(\hat{\beta}\mid \nu) = \beta + \E\left(\frac{\sigma_\epsilon
+\rho}{\sigma_\nu}\frac{\omega}{\omega + a}\mid\nu\right)
+$$
+
+with $a = \gamma \sqrt{\sum_n (z_n - \bar{z}) ^ 2} / \sigma_\nu$
+
+Then the expected value of $\hat{\beta}$ is obtained by integrating
+out this expression with respect to $\omega$:
+
+$$
+\E(\hat{\beta}) = \beta  + \frac{\sigma_\epsilon
+\rho}{\sigma_\nu}\int_{-\infty}^{\infty} \frac{\omega}{\omega + a}\phi(\omega)d\omega
+$$
+
+
+but this integral is divergent as $\omega / (a + \omega)$ tends to
+infinity as $\omega$ is close to $-a$.
+
+The **2SLS** derivation of the IV estimator also gives an intuition
+for what it is biased. It wouldn't be if, for the second OLS
+estimation, $\E(x_n\mid z_n) = \delta + \gamma z_n$ were used as the
+regressor. But actually, $\hat{x}_n = \hat{\delta} + \hat{\gamma} z_n$
+is used and, as the OLS estimator over-fits, the fitted values will be
+partly correlated with $\epsilon_n$. Of course, when the sample size
+grows, as the OLS estimator is consistent, $\hat{x}_n$ converges to
+$\delta + \gamma z_n$ and the asymptotic bias vanishes.
+
+
+This can be usefully illustrated by simulation. The following function
+`iv_data` draws a sample of $y$, $x$ and one or more instrument:
+
+```{r }
+iv_data <- function(N = 5E01, R = 1E03, J = 3,
+                      r_xe = 0.5, r_xz = 0.2, r_ze = 0,
+                      alpha = 1, beta = 1,
+                      sds = c(x = 1, e = 1, z = 1),
+                      mns = c(x = 0, z = 0)){
+    sds <- c(sds[-3], rep(sds[3], J))
+    mns <- c(mns[1], rep(mns[2], J))
+    names(sds) <- c("x", "e", "z")
+    names(mns) <- c("x", "z")
+    nms <- c("x", "e", paste("z", 1:J, sep = ""))
+    XEZ <- matrix(rnorm(N * R * (J + 2)), nrow = N * R)
+    cors <- matrix(c(1, r_xe, r_xz, r_xe, 1, r_ze, r_xz, 0, 1), nrow = 3)
+    cors <- rbind(cbind(matrix(c(1, r_xe, r_xe, 1), nrow = 2),
+                        rbind(rep(r_xz, J), rep(r_ze, J))),
+                  cbind(rep(r_xz, J), rep(r_ze, J), diag(J)))
+    XEZ %*% chol(cors) %>% 
+        as_tibble() %>% set_names(nms) %>% 
+        mutate(x = x * sds["x"] + mns["x"],
+               e = e * sds["e"],
+               y = alpha + beta * x + e) %>%
+        mutate(across(starts_with("z"), ~ .x * sds["z"] + mns["z"])) %>% 
+        add_column(id = factor(rep(1:R, each = N)), .before = 1)
+}
+```
+
+The argument of the function are the number of samples (`R`), the
+number of observations in each sample (`N`), the number of instruments
+(`J`), the correlations between $x$ and $\epsilon$ (the default is
+0.5), between $x$ and $z$ (0.2 by default) and the betweeen $z$ and
+$\epsilon$. The default value for this last correlation is 0, which is
+a necessary condition for the IV estimator to be consistent. $x$,
+$\epsilon$ and $z$ are assumed by default to be standard normal
+deviates, but the means of $x$ and $z$ and the standard deviations of
+$x$, $z$ and $\epsilon$ can be customized using the `mns` and `sds`
+argument. Finally, the coefficients of the linear relation between $y$
+and $x$ are `alpha` and `beta` and these two values are set by default
+to 1. First, a matrix of normal standard deviates `XEZ` is
+constructed, the first two columns containing values for $x$ and
+$\epsilon$ and the remaining columns containing the isntruments. This
+matrix is post-multiplied by the Cholesky decomposition of the matrix
+of correlation, which introduce the desired correlation between $x$,
+$\epsilon$ and $z$. Finally, $x$, $\epsilon$ and $z$ are adjusted for
+non-zero means and non-unity standard deviations if required.
+
+
+The `iv_coefs` computes the **IV** estimator using the **2SLS**
+approach. 
+
+```{r }
+iv_coefs <- function(i){
+    Z <- select(i, starts_with("z")) %>% as.matrix
+    xh <- lm.fit(cbind(1, Z), i$x)$fitted.values
+    xt <- apply(Z, 1, sum) * r_xz
+    ols <- coef(lm.fit(cbind(1, i$x), i$y))[2] %>% unname
+    ivo <- coef(lm.fit(cbind(1, xt), i$y))[2] %>% unname
+    iv <- coef(lm.fit(cbind(1, xh), i$y))[2] %>% unname
+    c(ols = ols, ivo = ivo, iv = iv)
+}
+```
+
+It first extract the matrix of instruments $Z$ and use `lm.fit` to
+regress $x$ on $Z$^[Note the use of `lm.fit` and not `lm` to perform
+efficiently this task.]. We then compute `xh` which is $\hat{x} =
+\hat{\delta} + \hat{\gamma} ^ \top z_n$, the
+fitted values of the regression of $x$ on $Z$ and `xt` which is
+$\E(x_n\mid z_n) = \delta + \gamma ^ \top z_n$. `iv_coefs` computes
+three estimators:
+
+- `ols`, which is the **OLS** estimator of $y$ on $x$,
+- `iv`, which is the **2SLS** estimator of $y$ on $x$ using $z$ as
+  instruments,
+- `ivo`, which is an estimator only available using simulations, that
+  use $\E(x_n\mid z_n)$ instead of $\hat{x}_n$ as the regressor in
+  the second OLS estimation.
+  
+Let's start with a unique sample of 100 observations (and of course
+only one instrument):
+
+```{r }
+set.seed(1)
+d <- iv_data(J = 1, R = 1, N = 1E02)
+iv_coefs(d)
+```
+In this particular sample, the `ols` estimator is about 50% above the
+true slope which is 1 and `iv` and `ivo` are lower than 1. To
+empirically analyse the distribution of these three estimators, we now
+generate a several samples (`R = 5`). We now spit `d` according to
+`id`, so that `d` is now a list of 5 data frames with 100
+observations. We then apply the `iv_coefs` function to every element
+of the list and the result, which is a list of 5 vectors of 3
+estimators is coerced to a matrix using the `Reduce` function with the
+`rbind` function:
+
+```{r }
+set.seed(1)
+d <- iv_data(J = 1, R = 5, N = 1E02) %>% group_split(id)
+map(d, ~ iv_coefs(.x)) %>% Reduce(f = "rbind")
+```
+
+We are now abble to obtain as many observations of the three
+estimators as we wish simply by increasing `R`:
+
+```{r simul, cache = TRUE}
+set.seed(1)
+d <- iv_data(J = 1, R = 1E04, N = 50) %>% group_split(id)
+d <- map(d, ~ iv_coefs(.x)) %>% Reduce(f = "rbind")
+```
+
+We then compute the mean, the standard deviation for the three
+estimators. As the expected value (and also the variance of `iv` don't
+exist in our context), we also compute more robust indicators of the
+position and the dispersion of the estimators, namely the median and
+the difference between the 99^th^ and the 1^st^ centiles.
+
+```{r }
+d %>% as_tibble %>%
+    summarise(across(everything(),
+                     list(mean = ~ mean(.x),
+                          sd = ~ sd(.x),
+                          median = ~ median(.x),
+                          ic = ~ quantile(.x, .99) - quantile(.x, 0.01)))) %>% 
+    pivot_longer(1:12) %>%
+    separate(name, into = c("est", "stat")) %>%
+    pivot_wider(names_from = est, values_from = value)
+```
+
+
+```{r }
+dsties <- d %>% as_tibble %>% pivot_longer(1:3) %>% ggplot(aes(value)) +
+    geom_density(aes(linetype = name)) +
+    scale_x_continuous(limits = c(-4, 3))
+dsties
+```
+
+The **OLS** estimator is severly biased as the central value of its
+distribution is about 1.5 and it has a small variance. The "pseudo"
+**IV** estimator seems unbiased as its mean (and median) is very close
+to one. The standard deviation is about 10 times larger than the one
+of the **OLS** estimator, so that the density is extremely flat.  The
+mode of the density curve of the **IV** estimator is slightly larger
+than one. Moreover, it has extremely fat tails (much more than the
+ones of the pseudo **IV** estimator), which explains why the expected
+value and the variance don't exist. This feature becomes obvious if we
+zoom on extreme values of the estimator, for example on the $(-4,-3)$
+range:
+
+
+```{r }
+dsties + coord_cartesian(xlim = c(-4, -3), ylim = c(0, 0.015))
+```
+
+#### Interpretation of the simple **IV** estimator
+
+Consider the OLS estimators of the regressions of $y$ on $z$
+($\hat{\beta}_{yz}$) and on $x$ on $z$ ($\hat{\beta}_{xz}$). The
+former estimate the causal effect of $z$ on $y$ and the latter the
+causal effect of $z$ on $x$. The **IV** estimator is obviously the
+ratio of these two **OLS** estimators^[See @HECK:00, page 58 and @CAME:TRIV:05, page 98.]:
+
+$$
+\hat{\beta} = \frac{\hat{\beta}_{yz}}{\hat{\beta}_{xz}} = \frac{dy /
+dz}{dx / dz}
+$$
+
+@ANAN:11 investigate the causal effect of segregation on urban poverty
+and inequality. Several responses are used, especially the Gini index,
+the poverty rate for the black populations of 121 american cities. The
+data set is called `micecr::tracks_side`. The level of segregation is
+measured by the following dissimilarity index:
+
+$$
+\frac{1}{2}\sum_{n=1} ^ N \left| b_n - w_n \right|
+$$
+
+where $b_n$ and $w_n$ are respectively the share of the black (white)
+population of the whole city that lives in census track $n$ of the
+city. This index range from 0 (no segragation) to 1 (perfect
+segregation). In the sample of 121 used, the segregation index ranges
+from `r round(min(tracks_side$segregation), 2)` to 
+`r round(max(tracks_side$segregation), 2)`, 
+with a median value of `r round(median(tracks_side$segregation), 2)`.
+
+We'll focus on the effect of segregation on the poverty rate of black
+people:
+
+```{r }
+lm_yx <- lm(povb ~ segregation, tracks_side)
+lm_yx %>% summary %>% coef
+```
+The coefficient of segregation is positive and highly significant. It
+indicates that a one point increase of the segragation index rise the
+poverty rate of black people by about `r round(coef(lm_yx)[2], 2)` point. 
+
+The correlation between segregation and bad economic outcome is well
+established but, according to the author, the **OLS** cannot easily
+considered as a measure of the causal relationship of segregation on
+income as there are some other variables that both influence
+segregation and outcome for the black people. As an example, she
+describes the situation of Detroit, which is a highly segregated city
+with poor economic outcomes, but other characteristics of the city
+(political corruption, legacy of a manufacturing economy) can be the
+cause of these two phenomena (@ANAN:11 p. 35).
+
+
+Therefore, the **OLS** estimator can be suspected to be biased and
+inconsistent because of the omitted variable bias. The instrumental
+variable estimator can be used in this context, but it requires the
+use of a good instrumental variable, ie a variable which is correlated
+with the endogenous covariate (segregation), but not directly to the
+response (rate of poverty). The author suggests that the way cities
+were subdivided by railroads into a large number of neighborhoods can
+be used as an instrument. Moreover, the tracks were mostly built
+during the ninetinth centery, prior the great migration (between 1915
+to 1950) were a lot of afro-americans migrated from the south. More
+precisely, the index is defined as follow:
+
+$$
+1 - \sum_n \left(\frac{a_n}{A}\right) ^ 2
+$$
+
+where $a_n$ is the area of the neighorhood $n$ defined by the rail
+tracks and $A$ is the total area of the city. The index is 0 if the
+city is completely undived and tends to 1 if the number of
+neighborhood tends to infinity with areas that tends to 0. This index 
+ranges
+from `r round(min(tracks_side$raildiv), 2)` to 
+`r round(max(tracks_side$raildiv), 2)`, 
+with a median value of `r round(median(tracks_side$raildiv), 2)`.
+
+The regression of $x$ (`segregation`) on $z$ (`raildiv`) gives:
+
+```{r }
+lm_xz <- lm(segregation ~ raildiv, tracks_side)
+lm_xz %>% summary %>% coef
+```
+In the **2SLS** interpretation of the **IV** estimator, this is the
+first-stage regression. The coefficient of `raildiv` is as expected
+positive and is highly significant. It is important to check that the
+correlation between the covariate and the instrument is strong enough
+to get a precies **IV** estimator. This can be performed by computing
+their coefficient of correlation, or using the R^2^ or the $F$
+statistic of the first stage regression:
+
+```{r }
+tracks_side %>% summarise(cor(segregation, raildiv)) %>% pull
+lm_xz %>% summary %>% .$r.squared
+lm_xz %>% summary %>% .$fstatistic %>% .["value"] %>% unname
+```
+The **IV** estimator can be obtained by regressing the response on the
+fitted values of the first stage regression:
+
+
+```{r }
+lm_yhx <- lm(povb ~ fitted(lm_xz), tracks_side)
+coef(lm_yhx)
+```
+The **IV** coefficient is equal to `r round(coef(lm_yhx), 2)`, much
+larger than the **OLS** coefficient `r round(coef(lm_yx), 2)`.
+
+The **IV** coefficient can also be obtained by dividing the
+**OLS** coefficients of the regressions of $y$ on $z$ and of $x$ on
+$z$. The latter has already been computed, the former is:
+
+
+```{r }
+lm_yz <- lm(povb ~ raildiv, tracks_side)
+coef(lm_yz)
+coef(lm_yz)[2] / coef(lm_xz)[2]
+```
+A one point increase of `raildiv` is associated with a
+`r round(coef(lm_xz)[2], 2)` point of the discrimination index and
+with a `r round(coef(lm_yz)[2], 2)` point of the poverty
+rate. Therefore, the 
+`r round(coef(lm_xz)[2], 2)` increase of `segregation` 
+increases `povb` by `r round(coef(lm_yz)[2], 2)`, which means that an
+increase of 1 point  of `segregation` would increase `povb` by 
+$`r round(coef(lm_yz)[2], 2)` / `r round(coef(lm_xz)[2], 2)` = 
+`r round(coef(lm_yz)[2] / coef(lm_xz)[2], 2)`$, which is the value of
+the **IV** estimator.
+
+### Wald estimator
+
+The Wald estimator is a special case of the instrumental variable
+estimator, where the instrument is a binary variable and therefore
+defines two groups, 0 and 1. In this case, the slope of the regression
+of $y$ on $z$ is $\hat{\beta}_{yz} = \bar{y}_1 - \bar{y}_0$, where
+$\bar{y}_i$ is the sample mean of $y$ in group $i=0,1$, and similary,
+the regression of $x$ on $z$ is $\hat{\beta}_{xz} = \bar{x}_1 -
+\bar{x}_0$. The Wald estimator is then:
+
+$$
+\hat{\beta} = \frac{\bar{y}_1 - \bar{y}_0}{\bar{x}_1 - \bar{x}_0}
+$$
+
+@ANGR:90 studied whether veterans (in his article of the Viet-Nam war)
+experience a long-term loss of income, and therefore should legitimely
+receive a benefit to compensate this loss. An obvious way to detect a
+loss would be to consider a sample with two groups (veterans and
+non-veterans) and to compare the mean income in these two
+groups. However, enrolment in the army is not random and therefore, it
+is probable that "certain types of men are more likely to serve in the
+armed force than others". In this situation, income difference are
+likely to be a biased estimator of the military enrolment. To overcome
+this difficulty, @ANGR:90 used the fact that a draft lottery was used
+during the Viet-Nam war to select the young men who were enrolled in
+the army. More precisely, the 365 possible days of birth were randomly
+drawn and ordered and, latter on, the army announced the number of
+days of birth that would leads to an enrolement (depending on the
+year, this number was between 95 and 195). All the lotery eligible men
+didn't go to the war and some that were not eligible fighted, but the
+lottery produce an exogenous variation of the probability to be
+unroled. Two data sources are used. The first one is a 1% sample of
+all the social security numbers (`micecr::vn_income`). It indicates
+the yearly income, and for the Angrist study, aggregate data were
+compiled for every combination of date of birth `interval` (5
+consecutive days), year of birth `birth`, `race` (white and
+non-white), year of observation `year` and source of income measurment
+`type` (`w2` or `fica`).  For each cell, we observe the number of men
+`freq`, the share of null income `null_inc` and the mean and
+standard-deviation of the income (`mean_inc` and `sd_inc`).
+
+Following @ANGR:90, we create a `eligible` which is equal to `'yes'`
+  if the man is draft-eligible to go to Viet-Nam and `"no"`
+  otherwise. Three loteries are considered:
+  
+- the 1970 lottery concerns men borned from 1944 to 1950 and the
+  maximum eligible rank is 195,
+- the 1971 lottery concerns men borned in 1951 and the maximum
+  eligible rank is 125,
+- the 1972 lottery concerns men borned in 1952-53 and the maximum
+  eligible rank is 95.
+  
+The `interval` contains the 5 days interval that contains the rank of
+the day of birth for an observation. For example, if `interval = 20`
+for a man borned in 1951, it means that the rank of its birth date is
+in the 20^th^ interval of 5 days, which means $(20 - 1) \times 5 + 1 =
+96$ to $(20 - 1) \times 5 + 5 = 100$ and the man is draft eligible. On
+the contrary, if `interval = 30`, the interval of five days is 146-150
+and the man is not eligible. Therefore, eligibility concerns man for
+which interval is $195 / 5 = 39$, $125 / 5 = 25$ and $95 / 5 = 19$ for
+the three lotteries.
+
+```{r }
+vn_income <- vn_income %>%
+    mutate(eligible = case_when(birth %in% 1944L:1950L & interval <= 39 ~ "yes",
+                                birth == 1951L & interval <= 25 ~ "yes",
+                                birth %in% 1952L:1953L & interval <= 19 ~ "yes",
+                                TRUE ~ "no"),
+           eligible = factor(eligible))
+vn_income %>% print(n = 3)
+```
+
+Then, for every year were the income is observed, we compute the mean
+income and the standard deviation of the mean income for every year of
+birth and separately for those who are eligible and those who are
+not. For sake of simplicity, we only make these computations for
+whites and for the *fica* measurment of the income. The results match
+table 1 of @ANGR:90 page 318.
+
+
+```{r echo = FALSE}
+cpi <- readxl::read_excel("./angrist/CPALTT01USA661S.xls", skip = 10) %>% set_names(c("year", "cpi")) %>%
+    mutate(year = lubridate::year(year))
+cpi78 <- filter(cpi, year == 1978) %>% pull(cpi)
+cpi <- cpi %>% mutate(cpi = cpi / cpi78)
+```
+
+
+```{r tabl}
+dinc_elig <- vn_income %>% filter(type == "fica", race == "white") %>% 
+    group_by(eligible, year, birth) %>%
+    summarise(mean_inc = sum(mean_inc * freq) / sum(freq),
+              sd_mean_inc  = sqrt(sum((sd_inc) ^ 2 * freq) / sum(freq) ^ 2),
+              freq = sum(freq)) %>%
+    ungroup %>% 
+    pivot_longer(-(1:3)) %>%
+    pivot_wider(names_from = c(eligible, name), values_from = value) %>%
+    left_join(cpi) %>% 
+    mutate(d_meani = (yes_mean_inc - no_mean_inc) / cpi,
+           sd_di = sqrt(no_sd_mean_inc ^ 2 + yes_sd_mean_inc ^ 2) / cpi) %>%
+    select(- contains(c("_inc", "_freq"))) %>%
+    filter(birth >=1950) %>% 
+    na.omit
+dinc_elig %>% print(n = 3)
+```
+
+This income difference between eligible and ineligible young men to
+the draft lotery can be ploted for every year of birth and for income
+from 1966 to 1984. We can see that eligible men experience a loss of
+income by the time they can be enrolled and that this loss is still
+present more than ten years after the potential enrollement. Note the
+use of `ggplot2::geom_ribbon` to draw a confidence interval for the
+mean income difference. 
+
+```{r }
+dinc_elig  %>% ggplot(aes(year, d_meani)) + 
+    geom_ribbon(aes(ymin = d_meani - 2 * sd_di, ymax = d_meani + 2 * sd_di),
+                fill = "lightgrey") +
+    geom_smooth(se = FALSE, span = .2) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    facet_wrap(~ birth, ncol = 2)        
+```
+
+This mean income difference is the numerator of the Wald
+estimator. The denominator is the difference of enrolment probability
+between draft eligible and ineligible young men. The author estimate
+this difference using the data of the 1984 Survey of Income and
+Program Participation (SIPP), which are available in the `micecr::vn_veteran`
+data set:
+
+
+```{r }
+vn_veteran %>% print(n = 4)
+```
+This data set contains the information of `r nrow(vn_veteran)` about the
+race, the year of birth, the fact that they were enroled in the
+Viet-Nam war or note (`veteran`) and that they were eligible to the
+draft lotery or not. Note also that the variable `wgts` indicates the
+weight to be used for each observation. 
+
+
+```{r }
+d <- vn_veteran %>%
+    filter(birth %in% 1950:1952, race == "white") %>%
+    group_by(birth, eligible) %>%
+    summarise(p = weighted.mean(veteran == "yes", wgts),
+              w = sum(wgts ^ 2) / sum(wgts) ^ 2) %>%
+    mutate(sd = sqrt(p * (1 - p) * w)) %>%
+    select(-w) %>%
+    pivot_wider(names_from = eligible, values_from = c(p, sd)) %>%
+    mutate(d_p = p_yes - p_no, sd_dp = sqrt(sd_no ^ 2 + sd_yes ^ 2)) %>%
+    select(birth, d_p, sd_dp)
+d
+```
+
+For each of these tibble, we then perform the following operations:
+
+- we create a third level to the `eligible` factor called `'total'`
+  and we bind the rows of each tibble with a copy of itself with
+  `eligible` set to `'total'`,
+- we then group the tibble by `eligible` and compute the probability
+  of being unrolled as a weigthed mean of `veteran == "yes"`,
+- we then compute the standard deviation of the probability, using the
+  formula relevant for weighted data,
+- we finally bind the rows of the result for the three tibbles in
+  order to get all the results in one tibble.
+
+
+We can then pivot the tibble on the right so that the eligible status
+is on two columns, compute the probability difference for the two
+groups and its standard deviation:
+
+
+We then join this table with the one that contains the mean income
+difference between the two groups:
+
+
+```{r incomeloss}
+inc_veteran <- dinc_elig %>% filter(birth %in% 1950L:1952L) %>%
+    left_join(d) %>%
+    left_join(cpi) %>% 
+    mutate(dinc = d_meani / d_p / cpi, sdinc = sd_di / d_p / cpi, t = dinc / sdinc)
+inc_veteran %>% print(n = 3)
+```
+
+
+```{r }
+inc_veteran %>%
+    select(year, birth, dinc) %>%
+    pivot_wider(names_from = birth, values_from = dinc) %>%
+    filter(year %in% 1980:1984)
+```
+
+
+## The general case
+
+Consider now the general case. Among the covariates, some of them are
+endogenous and other not and should be included in the instrument
+list. 
+
+
+There are:
+
+- $K$ covariates,
+- $J$ endogenous covariates,
+- $K-J$ exogenous covariates,
+- $G$ external instruments.
+
+We denote $X$ and $Z$ the matrix of covariates and instruments. The
+number of rows of these two matrices are respectively $K + 1$ and $G +
+K - J + 1$. For the model to be identified, we must have $G + K - J +
+1 \geq K + 1$ or $G \geq J$. Therefore, there must be at least as many
+instruments than there are endogenous covariates. 

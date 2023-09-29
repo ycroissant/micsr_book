@@ -1,0 +1,53 @@
+\documentclass[crop, tikz]{standalone}
+
+\begin{document}
+
+\tikzset{math3dfr/.style=
+{x= {(0.353cm,0.353cm)}, z={(0cm,1cm)},y={(1cm,0cm)}}}
+
+%\tikzset{math3dfr/.style=
+%{x= {(-0.353cm,-0.353cm)}, z={(0cm,1cm)},y={(1cm,0cm)}}}
+
+\begin{tikzpicture}[math3dfr]
+%\draw (0,0,0)--(0,10,0);
+%\draw (0,0,0)--(0,0,10);
+%\draw (0,0,0)--(10,0,0);
+
+<<echo = FALSE, results = tex>>=
+source("functions.R")
+library("tidyverse")
+x1 <- c(2, 10, 0) * 0.7
+x2 <- c(9, 3, 0) * 0.7
+y <- c(4, 4, 6)
+y <- c(4, 4, 4)
+X <- cbind(x1, x2)
+P <- X %*% solve(crossprod(X)) %*% t(X)
+hbeta <- solve(crossprod(X)) %*% crossprod(X, y) %>% as.numeric
+bx1 <- hbeta[1] * x1
+bx2 <- hbeta[2] * x2
+M <- diag(3) - P
+hy <- P %*% y
+e <- M %*% y
+#cat(draw3D(c(10, 0, 0), linetype = "solid"))
+#cat(draw3D(c(0, 10, 0), linetype = "solid"))
+#cat(draw3D(xo = c(0, 10, 0), x = c(10, 10, 0), linetype = "dotted", vect = FALSE))
+#cat(draw3D(xo = c(10, 0, 0), x = c(10, 10, 0), linetype = "dotted", vect = FALSE))
+
+cat(draw3D(bx1, linetype = "solid", name = "\\beta_1 x_1", pos = "above"))
+cat(draw3D(bx2, linetype = "solid", name = "\\beta_2 x_2", pos = "left"))
+cat(draw3D(xo = bx1, x = c(bx1[1] + bx2[1], bx1[2] + bx2[2], 0), linetype = "dotted", vect = FALSE))
+cat(draw3D(xo = bx2, x = c(bx1[1] + bx2[1], bx1[2] + bx2[2], 0), linetype = "dotted", vect = FALSE))
+
+cat(draw3D(x1, linetype = "dashed", name = "x_1"))
+cat(draw3D(x2, linetype = "dashed", name = "x_2", pos = "below"))
+cat(draw3D(xo = x1, x = c(x1[1] + x2[1], x1[2] + x2[2], 0), linetype = "dotted", vect = FALSE))
+cat(draw3D(xo = x2, x = c(x1[1] + x2[1], x1[2] + x2[2], 0), linetype = "dotted", vect = FALSE))
+
+cat(draw3D(y))
+cat(draw3D(hy, linetype = "dashed", name = "\\hat{y}", pos = "below"))
+cat(draw3D(e))
+cat(draw3D(xo = hy, y))
+@   
+
+\end{tikzpicture}
+\end{document}

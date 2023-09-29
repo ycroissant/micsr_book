@@ -1,0 +1,17 @@
+Rscript makeTikz.R OLS2D 10 0.6 1
+Rscript makeTikz.R vectors2D 10 0.6 1
+Rscript makeTikz.R OLS3D 10 0.6 1
+Rscript makeTikz.R frishWaugh 20 0.6 1
+Rscript makeTikz.R normalTrunc 10 0.6 1
+Rscript makeTikz.R normalTrunceps 10 0.6 1
+Rscript makeTikz.R normalTruncz 10 0.6 1
+Rscript makeTikz.R normal2Trunc 10 0.6 1
+Rscript makeTikz.R mfx 10 0.6 1
+Rscript makeTikz.R normTrunc4 10 0.6 1
+Rscript makeTikz.R mills_ratio 10 0.6 1
+Rscript makeTikz.R ordered1 10 0.6 1
+Rscript makeTikz.R ordered2 10 0.6 1
+Rscript makeTikz.R intervalreg 10 0.6 1
+Rscript makeTikz.R intervalreg2 10 0.6 1
+Rscript makeTikz.R intervalreg3 10 0.6 1
+

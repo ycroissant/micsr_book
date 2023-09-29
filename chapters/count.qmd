@@ -1,0 +1,1415 @@
+# Count data
+
+```{r }
+#| include: false
+source("../_commonR.R")
+```
+
+```{r }
+#| include: false
+library("micsr")
+library("tidyverse")
+```
+
+## Introduction
+
+It is often the case in economics that the response is a count, ie a
+non-negative integer. In this case, fitting a linear has a number of
+disadvantage:
+
+- the integer nature of the response is not taken into account,
+- the fitted model can predict negative values for some values of the
+  covariates,
+- if the distribution of the response is asymetric, the logarithm
+  transformation can't be used due there are some zero values. 
+  
+There is therefore the need for specific models that will be presented
+in this chapter. 
+
+We start with the presentation of some data sets for which the
+response is a count. All these data are available in the micr.count
+package and are summarized in table @tbl-empsurvey.
+
+```{r }
+#| label: tbl-empsurvey
+#| eval: true
+#| echo: false
+#| cache: true
+#| tbl-cap: "Empirical survey of count data sets"
+library("micr.count")
+library("micsr")
+library("tidyverse")
+# CAME:TRIV:86 table 3 p. 47
+p_doctor_aus <- glm(doctorco ~ sex + age + I(age ^ 2) + income + insurance + illness + actdays + hscore + chcond,
+                    data = doctor_aus, family = poisson)
+
+# WINK:04 table 4 p. 468
+p_health_reform <- glm(visits ~ I(age / 10) + I(age ^ 2 / 1E03) + male + I(educ / 10) +
+                        married + hsize + sport + health + sozh + log(income) + factor(year) +
+                        quarter + empl,  data = health_reform, family = poisson)
+
+# KENN:85
+#strikes <- strikes %>% select(- duration) %>% distinct
+p_strikes <- glm(strikes ~ output, data = strikes, family = poisson)
+
+# TERZ:98 table 2 (pas identique car NLS)
+p_trips <- glm(trips ~ workschl + size + dist + smsa + fulltime + distnod +
+                   realinc + weekend + car, data = trips, family = poisson)
+
+# MULL:97 (RES) table 1 p. 592
+p_cigmales <- glm(cigarettes ~ habit + price + restaurant + income + age + I(age ^ 2) +
+                      educ + I(educ ^ 2) + famsize + race, data = cigmales, family = poisson)
+
+# DEB:TRIV:02 table 4 p. 613 (pas de poisson mais negbin two-part et finite mixture)
+p_health_ins <- glm(mdu ~ log(1 + coins) + idp + lpi + fmde + log(income) + log(size) +
+                        age + sex * child + race + educ + physlim + disease + health,
+                    data = health_ins, family = poisson)
+
+# DEB:TRIV:97 table 7 p 330 (pas de poisson mais negbin finite mixture)
+p_elderly <- glm(ofp ~ health + numchron + adldiff + region + age + race + sex + marital +
+                       school + income + emp + insurance, data = elderly, family = poisson)
+
+# SANT:WIND:01 table 2 p. 82 (negbin_X)
+p_doctor_ger <- glm(sdoctor ~ female + single + age + I(age ^ 2) + income + chronic +
+                        privins + school+ heavylab + stress + variety + selfdet + control +
+                        pop + physdens + unemp + hospm7 + sickm14 + disability,
+                    data = doctor_ger, family = poisson)
+
+# GEIL:97
+p_hospitalization <- glm(hospital ~ age + I(age ^ 2 / 10E3) + I(age ^ 3 / 1E04) + copayment +
+                             (public + voluntary + family) * (additional + aok) +
+                             chronic + handicap + I(income / 1E05) + distance + married + children +
+                             secondary + apprenticeship + university + healthjob + inlabour + bluecol + whitecol + civil +
+                             selfemp + ptjob + western + nationelse,
+                         data = hospitalization, family = poisson)
+
+# GURM:97 tableau 6 p.236 ne correspond pas exactement
+doctor_cal <- doctor_cal %>% filter(sample == "SSI")
+p_doctor_cal <- glm(visits ~ children + age + I(age ^ 2 / 1E02) + I(income / 1E04)  + pc1 + pc2 + I(access / 1E2) +
+                        marital + sex + race + I(school / 10) + enroll, data = doctor_cal, family = poisson)
+
+# CAME:JOHA:97 tableau 4 page 215
+p_bids <- glm(numbids ~ legrest + realrest + finrest + whtknght + bidprem +
+        insthold + size + I(size ^ 2) + regulation,
+    data = bids, family = poisson)
+
+# ELLI:SWAN:16 tableau 3 page 1255 (negbin)
+p_amc12 <- glm(over100 ~ log(students) + bachelors + graduates + asian + black + hispanic +
+                   log(medinc) + freelunch + t1 + urban + female,
+               data = amc12, family = poisson)
+
+# KOEN:ZEIL:09 table 2 p. 843
+p_asymptotic <- glm(nreg ~ log(nobs), data = asymptotic, family = poisson, weights = 1 / neq)
+
+# MILL:09 table 2 p. 762
+p_cartels <- glm(ncaught ~ len +  poly(lent, 5) + dgdp + funds + fines, data = cartels, family = poisson)
+
+# MULL:98 table 3 p. 273 (différents modèles compliqués
+p_doctor_us <- glm(doctvisits ~ age + male + white + school + married + health, data = doctor_us, family = poisson)
+
+# SELL:STOL:CHAV:85
+p_somerville <- glm(visits ~ quality + ski + income + feesom + costcon + costsom + costhoust,
+                    data = somerville, family = poisson)
+
+# FISH:MIGU:07
+parking <- parking %>% as_tibble
+p_parking <- glm(violations ~ corruption * post + staff + log(gdp) + region, data = parking, family = poisson)
+#MASS::glm.nb(violations ~ corruption + post + staff + log(gdp) + region, data = parking)
+
+# AGHI:VANR:ZING:13
+p_innovation <- glm(citations ~ shareinstit + log(kl) + log(rdstock) + log(sales) +
+                        factor(sector) + factor(year), data = innovation, family = poisson)
+
+# GREE:97
+majordrg <- majordrg %>% filter(cardhldr == 1)
+p_majordrg <- glm(majordrg ~ age + income + expinc + avgexp + major, data = majordrg, family = poisson)
+
+p_publications <- glm(articles ~ sex + marital + kids + phd + mentor, data = publications, family = poisson)
+
+
+lrNB1 <- function(x){
+    y <- model.response(model.frame(x))
+    mu <- fitted(x)
+    areg <- lm( I( ((y - mu) ^ 2 - y) / mu) ~ 1)
+    coef(summary(areg))[3]
+}
+
+za <- tribble(
+    ~ data,     ~ response,
+    "doctor_aus", "doctorco",
+    "health_ins", "mdu",
+    "elderly", "ofp",
+    "doctor_ger", "sdoctor",
+    "hospitalization", "hospital",
+    "doctor_cal", "visits",
+    "health_reform", "visits",
+    "doctor_us", "doctvisits",
+    "strikes", "strikes",
+    "trips", "trips",
+    "cigmales", "cigarettes",
+    "bids", "numbids",
+    "amc12", "over100",
+    "asymptotic", "nreg",
+    "cartels", "ncaught",
+    "somerville", "visits",
+    "parking", "violations",
+    "innovation", "citations",
+    "majordrg", "majordrg",
+    "publications", "articles") %>%
+    mutate(reg = paste("p", data, sep = "_"))
+
+results <- t(sapply(1:nrow(za),
+                    function(i){
+                        y <- eval(as.name(za$data[i]))[[za$response[i]]] ;
+                        D9 = as.numeric(quantile(y, .9))
+                        mu = mean(y)
+                        sig2 = var(y)
+                        over = sig2 / mu
+                        mdel <- eval(as.name(za$reg[i]))
+                        test <- lrNB1(mdel)
+                        zero <- mean(y == 0)
+                        fzero <- mean(dpois(fitted(mdel), x = 0))
+                        c(D9 = D9, mu = mu, omega = sig2, over = over, zero = zero,
+                          fzero = fzero, exczero = zero / fzero, test = test)
+                    }
+                    ))
+rownames(results) <- za$reg
+library("kableExtra")
+results %>% as_tibble(rownames = "data") %>%
+    rename("$\\mu$" = mu, "$\\omega$" = omega,
+           "$\\frac{\\omega}{\\mu}$" = over,
+           "$P(Y = 0)$" = zero,
+           "$\\hat{P}(Y = 0)$" = fzero,
+           "$\\frac{P(Y = 0)}{\\hat{P}(Y = 0)}$" = exczero) %>%
+    mutate(data = str_sub(data, 3),
+           data = str_replace(data, "_", ".")) %>%
+    arrange(data) %>% 
+    knitr::kable(digits = c(0, 0, 1, 1, 1, 2, 2, 1, 1),
+                 escape = FALSE, booktabs = TRUE) %>%
+    kable_styling()
+```
+
+About half of these data sets concern demand for health
+care. `doctor_aus`, `doctor_cal`, `doctor_ger` and `doctor_us` concern
+annual doctor visits, respectively in Australia, California, Germany
+and the US. `health_ins` focus on the link between health insurance
+and doctor visits using a randomized experience in the United States,
+as `health_reform` analyze the effect of an health insurance reform in
+germany. `elderly` focus on the demand for health care by elderlies in
+the US and `hospitalization`use as the response the number of stays at
+the hospital.
+
+`amc12` use the number of students per school who got a very high
+score at the AMC12 test (a test on mathematics). `asymptotic` is a
+meta analysis of wage equations reported in 156 papers and the
+analysis stress on the hypothesis used to get the consistency of an
+estimator, ie that the number of regressor is fixed as the number of
+observations increases.`bids` analyse the number of bids received by
+126 firms that wer targets of tender offers. `cartels` is a time
+series of bi-annual observations, the response being the number of
+cartels discoveries and the main covariate the pre and post period
+when new leniency program was introduced. `cigmales` measures the
+number of cigarettes daily smoked by males in the United
+States. `majordrg` contains data about the number of major derogatory
+repors by cardholders. `parking` is a cross-section of countries and
+the response is the count of parking violations by United Nations'
+diplomates of these countries in New-York. `publications` analyze the
+scientific production (measured by the number of publications) of
+individuals who got a Ph. D. in bio-chemical. `somerville` reports the
+number of recreational visits to a lake in Texas.  `strikes` is a time
+series that reports the number of strikes (and also their length) in
+the United States.  `trips` contains the number of trips taken by
+members of households the day prior the survey interview.
+
+As we have seen in the chapter devoted to the maximum likelihood
+method of estimation, count data can be considered as the realization
+of a Poisson distribution, which has a unique parameter, this
+parameter being the mean and the variance of the series. The ML
+estimator of this parameter is the sample mean, which is indicated in
+the first column ($\mu$) of table  @tbl-empsurvey. The empirical
+variance ($\omega$) is reported in the second column. 
+
+Count data often take small values, and this is the case of almost all
+our data sets. We report in the table the 9th decile, which is less
+than 10 for most of our data sets. Noticeable exceptions are
+`asymptotic` (the number of covariates in en econometric equation),
+`cigmales` (the number of cigarettes smoked daily) and `innovation`
+and `parking` which contain some observations for which the value is
+more than a hundred.
+
+While comparing real count data to Poisson distribution, one often
+face two problems:
+
+- the first one is **overdispersion**, which means that the variance is
+  much greater than the mean,
+- the second one is the problem of **excess zero**, which means that
+  the mean probability of a zero value computed using the Poisson
+  distribution is often much less than the observed share of zero in
+  the sample.
+  
+  
+The fourth column of @tbl-empsurvey contains the mean variance
+ratio and shows that overdisperion seems to be the rule. The ratio is
+in general much larger than 1, noticeable exceptions being `bids`,
+`cartels` and `majordrg`. This overdispersion is important because we
+consider that the Poisson is the same for every observation, which
+corresponds to a Poisson model with no covariates. Adding covariates
+will give specific values for every observations and will then reduce
+the (conditional) variance. Anyway, we'll see in subsequent sections
+that the overdispersion problem maitains even after the introduction
+of covariates, beacause of unobserved heterogeneity. 
+
+The excess of zero problem is difficult to distinguish from
+overdispersion, as zero is an extreme value of the distribution and
+therefore, an excess of zero leads to overdispersion. The excess of
+zero can in part be explained by the fact that 0 is a special value
+that may not be correctly explained by the same process that explain
+strictly positive values. An example is `cigmales`, where 0 means no
+smoking and smoking vs non-smoking is quite different in nature than
+smoking a few or a lot of cigarettes. The 8th column returns the
+ration between the empirical share of zero and the average fitted
+probability of 0 and unsurprizingly, this ratio is huge for
+`cigmales`. Some models have been proposed that have a special
+treatment for the zero value and allows to obtain predicted
+probabilities greater that the one implied by the Poisson model.
+
+The rest of the chapter is organized as follow. Section 2 describes
+the landmark model for count data, which is the Poisson model and some
+tests 
+
+## The Poisson model
+
+### Derivation of the Poisson model
+
+The basic count data model is the Poisson model. It relies on the
+hypothesis that the dependent variable is Poisson :
+
+$$
+P(Y = y) = \frac{e^{-\theta}{\theta} ^ y}{y !}
+$$
+
+The Poisson distribution is defined by a unique parameter $\theta$,
+which is the mean and the variance of the distribution. This is a
+striking feature of the Poisson distribution which differs for
+example from the normal distribution which has two separate position
+and dispersion parameters (respectivaly the mean and the standard
+deviation). 
+
+In an econometric model, the mean of the distribution is writen as a
+function of a linear combination of some covariates $x$ : $\theta_n =
+\mbox{E}(Y | x) = f(\beta^\top x_n)$. The inverse of the $f$ function
+is called the link in the glm litterature. The most common choice for
+Poisson models is the log link, which means that the conxitional mean
+is writen as :
+
+$$
+\mbox{E}(y | x) = e^{\beta^\top x}
+$$
+
+or, equivalently: $\beta^\top x = \ln \mbox{E}(y | x)$.
+
+The likelihood is then:
+
+$$
+\ln L (\beta | y, X) = \sum_{n=1} ^ N \ln \frac{e^{-e^{\beta^\top x_n}}
+e ^{y_n\beta ^ x_n}}{y_n !} = \sum_{n=1} ^ N -e^{-\beta^\top x_n} +
+y_n \beta^\top x_n - \ln y_n !
+$$
+
+The first order conditions for a maximum are:
+
+$$
+\frac{\partial \ln L}{\partial \beta} = \sum_{n = 1} ^ N \left(y_n -
+e^{\beta^\top x_n}\right)x_n = 0
+$$
+
+which states, like in the OLS model, that the difference between $y$
+and its expected value (which can be called the residual) should be
+orthogonal to every covariate. It is a very important property at it
+implies that the Poisson model is consistent if the conditional
+expectation function is correctly specified, whether or not the
+hypothesis of the Poisson distribution is correct. Moreover, if the
+set of covariates contains a vector of one, the corresponding
+first-order condition implies that:
+
+$$
+\bar{y} = \frac{1}{N} \sum_{n=1} ^N e ^ {\beta^\top x_n}
+$$
+
+### Interpretation of the coefficients
+
+As for every non-linear models, the marginal effects are not the
+coefficients. Taking the derivative of the conditional expectation
+function, we get the following marginal effect for observation $n$:
+
+$$
+\frac{\partial \mbox{E}(y\mid x_n)}{\partial x_{kn}} = \beta_k e^{\beta^\top x_n}
+$$
+
+which can be consistently estimated by $\hat{\beta}_k
+e^{\hat{\beta}^\top x_n}$. Note that the ratio of the marginal effects
+of two covariates $k$ and $l$ is $\beta_k / \beta_l$ and therefore
+don't depends on the values of the covariates for a specific
+observation.
+
+To average marginal effect is the sample mean of the marginal effects
+for the $N$ observations.
+
+$$
+\hat{\beta}_k \frac{\sum_{n=1}^N e^{\hat{\beta}^\top x_n}}{N}
+$$
+
+but, if the regression contains an intercept, the sample mean of the
+predictions is the sample mean of the response. Therefore, the
+estimated average marginal effect is $\hat{\beta}_k
+\bar{y}$. Therefore, we can for example compares the estimate slopes
+in a linear model (which are directly the marginal effects) to the
+Poisson estimators multiplied by the mean of the response. 
+
+
+### Computation of the variance of the estimator
+
+which means that the average prediction of the model equals the mean
+of the response.
+
+The matrix of the second derivatives is:
+
+$$
+\frac{\partial \ln L}{\partial \beta\partial \beta ^
+\top}=-\sum_{n=1}^N e^{\beta^\top x_n}x_n x_n^\top
+$$
+
+The information matrix is either the opposite of the hessian (as it
+doesn't depend on $y$, it is equal to its expective value) or the
+variance of the gradient. The latter is:
+
+$$ 
+\sum_{n=1} ^ N \mbox{E}\left( (y_n - e^{\beta^\top x_n})^2 x_n
+x_n^\top\right) = \sum_{n=1} ^ N e^{\beta^\top x_n} x_n
+x_n^\top
+$$
+
+as $\mbox{E}\left( (y_n - e^{\beta^\top x_n}) ^2 \right)$ is the
+conditional variance which equals the conditional expecation for a
+Poisson distribution. The variance of the estimator is therefore:
+
+$$
+\mbox{V}(\hat{\beta}) = \left(\sum_{n=1} ^ N e^{\beta^\top x_n} x_n
+x_n^\top\right) ^ {-1}
+$$
+
+This expression is correct only if the distribution of $Y$ is Poisson
+and therefore if the variance equals the mean. On the contrary, this
+is a biased estimator of the variance, as the usual variance formula
+for the OLS is biased if the errors are heteroskedastic.
+
+A much more general estimator is based on the sandwich formula:
+
+$$
+\left(\sum_{n=1} ^ N \mu_n x_n
+x_n^\top\right) ^ {-1}
+\left(\sum_{n=1} ^ N (y_n - \mu_n)^2 x_n
+x_n^\top\right)
+\left(\sum_{n=1} ^ N \mu_n x_n
+x_n^\top\right) ^ {-1}
+$$ {#eq-sandpois}
+
+One alternative is to assume that the variance is proportional to the
+mean: $\mbox{V}(y|x) = \phi \mbox{E}(y|x)$ or:
+
+$$
+\mbox{E}\left( (y - \mbox{E}(y|x)) ^ 2\right) = \phi \mbox{E}(y|x)
+$$
+
+and $\phi$ can be consisently estimated by:
+
+$$
+\hat{\phi} = \frac{1}{\hat{\mu}}\frac{\sum_{n=1} ^ N (y_n - \hat{\mu}) ^ 2}{N}
+$$ {#eq-qpoisvar}
+
+which leads to the third estimator of the variance matrix of the
+estimator:
+
+$$
+\hat{\mbox{V}}(\hat{\beta}) = \hat{\phi}\sum_{n=1} ^ N \hat{\mu}_n x_n x_n^\top
+$$
+
+The "quasi-Poisson" model is defined by the exponential form for the
+conditional expectation and this formula for the variance. It leads to
+the same estimator than the Poisson model and a variance that is
+greater (respectively lower) that the one of the Poisson model if
+there is overdispersion (respectively underdispersion).
+
+### Overdispersion
+
+A more general expression for the variance is the following Negbin
+specification:
+
+$$
+\sigma_n ^ 2 = \mu_n + \alpha \mu_n ^ p
+$$
+
+with two special cases:
+
+- $p = 1$ which implies that the variance is proportional with the
+  expectation, $\sigma_n ^ 2 = (1 + \alpha) \mu_n$. This is
+  the Negbin1 formula for the variance and is the one that is used in
+  the "Quasi-Poisson" model,
+- $p = 2$ which implies that the variance is quadratic in the
+  expectation, $\sigma_n ^ 2 = \mu_n + \alpha \mu_n ^ 2$. This is the
+  Negbin2 formula for the variance.
+
+Tests for overdispersion can easily be implemented using one the three
+test principal: Wald test, likelihood ratio and score tests. The first
+two require the estimation of a more general model that don't impose
+the equality between the conditional mean and variance. This can be
+for example the Negbin model that will be described in the next
+section. The score test requires only the estimation of the
+constrained (Poisson) model. It can takes different form, we'll just
+present here the test advocated by @CAME:TRIV:86 which use an
+auxiliary regression. The null hypothesis is:
+
+$$
+\mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = \omega_n - \mu_n = 0
+$$
+
+With the Negbin1 specification, the alternative is:
+
+$$
+\mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = (1 + \alpha)\mu_n -
+\mu_n = \alpha \mu_n
+$$
+
+or:
+
+$$
+\frac{\mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right)}{\mu_n} = \alpha
+$$ {#eq-aregnb1}
+
+The hypothesis of equidispersion (ie $\alpha = 0$) can be tested by
+regressing $\frac{ (y_n - \mu_n) ^ 2 - y_n}{\mu_n}$ on a constant and
+comparing the student statistic to the relevant critical value.
+
+With the Negbin2 specification, the alternative is:
+
+$$
+\mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = \mu_n + \alpha\mu_n ^
+2 - \mu_n = \alpha \mu_n ^2
+$$
+
+or:
+
+
+$$
+\frac{\mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right)}{\mu_n} = \alpha \mu_n
+$$ {#eq-aregnb2}
+
+The hypothesis of equidispersion (ie $\alpha = 0$) can be tested by
+regressing $\frac{ (y_n - \mu_n) ^ 2 - y_n}{\mu_n}$ on $\mu_n$ and no
+intercept and comparing the student statistic to the relevant critical
+value.
+
+Score tests that are not obtained from auxiliary regressions are
+presented by @DEAN:92.
+
+## An example
+
+We consider here the `trips` data set. It was used by @TERZ:98 to
+investigate the problem of selection, a point that we won't analyse
+here. The response is the number of trips taken the day before the
+interview. 
+
+### Unconditional distribution of the response
+
+We first consider the unconditional distribution of the number of
+`trips`, computing the first two moments and the share of 0:
+
+```{r }
+trips %>% summarise(m = mean(trips), v = var(trips), s0 = mean(trips == 0))
+```
+This series exhibits important overdispersion, as the variance is
+about 5 times larger than the mean. The ML estimator is the sample
+mean if the link is identity and the log of the mean (ie $\ln 4.551 =
+1.52$ with the default log-link.
+
+```{r }
+trips_uncond <- glm(trips ~ 1, data =  trips, family = poisson)
+trips_uncond %>% coef %>% unname
+glm(trips ~ 1, data = trips, family = poisson(link = 'identity')) %>%
+    coef %>% unname
+```
+The fitted probability of 0 is:
+
+```{r }
+dpois(0, 4.551)
+```
+
+this 1\% is much larger than the actual percentage of 0 which is
+18.5\%. There is therefore a large excess of 0, which also can be
+associated with overdispersion as 0 is a value far from the mean of
+4.551.
+
+The `countreg` package provides a very interesting ploting function
+called `rootogram` to compare the actual and the fitted distribution
+of a count. The first one is represented by bars and the second one by
+points joined by a curve. The most simple representation is obtained
+by seting the `style` and the `scale` parameters respectively to
+`"standing"` and `"raw"` (see figure
+\@ref(fig:tripsuncond)). With the first one, the bottom of all
+the bars are on the horizontal axes, with the second one, the absolute
+frequencies are displayed on the vertical axes. For example, for
+$Y=0$, the absolute frequency is `r sum(trips$trips == 0)` and, as
+seen previously, the fitted probability is $0.01056$ which implies, as
+the number of observations is `nrow(trips)`, which means a fitted
+frequency of $577 \times 0.01056 = 6.1$. The frequencies are clearly
+over-estimated for values of the response close to the mean (3, 4, 5,
+6) and under-estimated for extreme values. This is particulary the
+case for 0, which indicates that a specific problem of excess of zero
+may be present **en plus** of the problem of over-dispersion.
+
+```{r tripsuncond, fig.cap = "Unconditional distribution of trips"}
+countreg::rootogram(trips_uncond, style = "standing", scale = "raw")
+```
+
+### Estimation of the Poisson model and interpretation of the coefficients
+
+The covariates are the share of trips for work or school
+(`workschl`), the number of individuals in the household (`size`), the
+distance to the central business district (`dist`) a factor (`smsa`)
+with two levels for small and large urban area, the number of fulltie
+worker in household (`fulltime`), the distance from home to nearest
+transit node, household income divided by the median income of the
+census tract (`realinc`), a dummy if the survey period is saturday or
+sunday (`weeekend`) and a dummy for owning at least a car (`car`). We
+fit a Poisson and a linear model and we use `modelsummary` to present
+the results in table @tbl-regtrips.
+
+```{r }
+#| label: tbl-regtrips
+#| tbl-cap: "Regressions for the trips data set"
+     # gof_map: list of lists
+     f1 <- function(x) format(round(x, 3), big.mark=",")
+     f2 <- function(x) format(round(x, 0), big.mark=",")
+     gm <- list(
+         list("raw" = "nobs", "clean" = "N", "fmt" = f2),
+         list("raw" = "AIC", "clean" = "aic", "fmt" = f1))
+
+pois_trips <- glm(trips ~ workschl + size + dist + smsa + fulltime + distnod +
+                   realinc + weekend + car, data = trips, family = poisson)
+qpois_trips <- glm(trips ~ workschl + size + dist + smsa + fulltime + distnod +
+                       realinc + weekend + car, data = trips, family = quasipoisson)
+lm_trips <- lm(trips ~ workschl + size + dist + smsa + fulltime + distnod +
+                   realinc + weekend + car, data = trips)
+modelsummary::msummary(list("linear model" = lm_trips,
+                            "Poisson model" = pois_trips,
+                            "quasi-Poisson model" = qpois_trips),
+                       estimate = "{estimate} ({std.error}){stars}",
+                       statistic  = NULL,
+                       gof_omit = 'DF|Deviance|R2|AIC|BIC|F|RMSE',
+                       fmt = 2)
+```
+Remind that the coefficients of the two regressions can't be compared
+as the Poisson model use the default log link.
+
+For example, an increase of 1 of `realinc` means that household's
+income increase by an amount equal to the local median income. The
+linear models tells that this increases the number of trips by $0.133$
+trips (the sample mean for trips being 4.55). The Poisson model, as
+the log link is used tells that the relative increase of trips $dy /
+y$ is equal to $0.019$, ie 2%. At the sample mean, it corresponds to
+an increase of $0.019 \times 4.55 = 0.086$ trips.
+
+If the interview concerns a week-end day, the ols coefficient is
+$-0.48$, which indicates that the number of trips taken during the week-end
+are about one half less compared to a week day. For such a dummy
+variable, denoting $\beta_w$ the coefficient and $\beta^\top x$ the
+linear predictor for all the covariates except `week-end`, we have a
+predicted number of trips equal to $e^{\beta^\top x}$ for a week-day
+and $e^{\beta^\top x + \beta_w}$ for a week-end day. The relative
+difference between the week-end and a week day $\tau$ is:
+
+$$
+\tau = \frac{e^{\beta^\top x + \beta_w}- e^{\beta^\top
+x}}{e^{\beta^\top x}} = e^{\beta_w} - 1 = e^{-0.07382} - 1 = - 0.07116
+= 7.1\%
+$$
+
+The previous expression indicates also that $\beta_w = \ln (1 +
+\tau) \approx \tau$. For small values of such coefficients, it can be
+interpreted as the relative difference of the response. In terms of
+absolute value, as the sample mean, the absolute difference is $-
+0.071 \times 4.55  = -0.323$, which is close to the OLS coefficient.
+
+Of course the approximation is only relevant for small values of the
+coefficient. If we consider the coefficient associated to `cars`, the
+value for the Poisson model is $1.413$ which implies an increase of
+$e^{1.413} - 1 = 3.1$ which implies that trips taken increased by
+$310$%, and not by $143$%. 
+
+### Estimations of the standard deviations
+
+The Poisson and the quasi-Poisson estimates are the same. The standard
+deviations of the quasi-Poisson model are inflated by a factor which
+is the square root of the estimate of the variance-mean ratio. This
+factor can be estimated using formula @eq-qpoisvar, which make use
+of the residuals of the Poisson regression. 
+
+```{r }
+y <- pois_trips %>% model.frame %>% model.response
+mu <- pois_trips %>% fitted
+e_resp <- pois_trips %>% resid(type = "response")
+e_pears <- pois_trips %>% resid(type = "pearson")
+```
+The **response** residual is $y_n - \hat{\mu}_n$ and we get the **Pearson**
+by dividing the response residual by the standard deviation, which is $\sqrt{\hat{\mu}_n}$.
+
+Therefore, the estimation of the variance-mean ratio is simply the sum
+of squares of the Pearson residuals divided by the sample size (or the
+number of degrees of freedom).
+
+```{r }
+phi <- sum(e_pears ^ 2) / df.residual(pois_trips)
+c(phi, sqrt(phi))
+```
+The estimated variance-mean ratio is more than 3, so that the standard
+deviations of the quasi-Poisson model are almost 2 times larger than
+those of the Poisson model (1.835).
+
+The sandwich estimator can be constructed by extracting from the
+fitted Poisson model the model matrix ($X$), the response residuals
+and the fitted values:
+
+```{r }
+mu <- pois_trips %>% fitted
+e <- pois_trips %>% residuals(type = "response")
+X <- pois_trips %>% model.matrix
+```
+We can get compute the "bread" (`B`) and the "meat" (`M`):
+
+```{r }
+B <- crossprod(mu * X, X)
+M <- crossprod(e ^ 2 * X, X)
+```
+Applying formula @eq-sandpois, and taking the square root of the
+diagonal elements, we get:
+
+```{r }
+sand_vcov <- solve(B) %*% M %*% solve(B)
+sand_se <- sqrt(diag(sand_vcov))
+```
+The `sandwich` package provides the `vcovHC` function which computes
+different flavors of the sandwich estimator of the variance. The one
+that corresponds to @eq-sandpois is obtained by setting `type`
+to `HC`.
+
+```{r }
+sand_vcov <- sandwich::vcovHC(pois_trips, type = "HC")
+```
+
+A table of coefficients using these covariance matrix can be obtained
+using the `lmtest::coeftest` function with the `vcov` argument set to
+`sand_vcov`:
+
+```{r }
+lmtest::coeftest(pois_trips, vcov = sand_vcov)
+```
+
+Taking the ratio of the simple standard deviations of the coefficients
+and the sandwich estimator, we get:
+
+
+```{r }
+sqrt(diag(sand_vcov)) / coef(summary(pois_trips))[, 2]
+```
+
+As previously, the robust standard deviations are about twice the
+basic ones, but the ratio now depends on the coefficient.
+
+### Testing and visiualizing overdispersion
+
+The equi-disporsion hypothesis can be easily tested using artificial
+regressions based on @eq-aregnb1 and @eq-aregnb2
+respectively for the NB1 and the NB2 specification of the variance. In
+this artificial regressions, the response is:
+
+$$
+\frac{(y_n -\mu_n) ^ 2 - y_n}{\mu_n}
+$$
+
+which is also the square of the Pearson residual minus the ratio of
+the actual and the fitted value of the response:
+
+```{r }
+hmu <- fitted(pois_trips)
+y <- model.response(model.frame(pois_trips))
+e_pears <- residuals(pois_trips, type = "response")
+resp_areg <- e_pears ^ 2 - y / hmu
+lm(resp_areg ~ 1) %>% summary %>% coef
+lm(resp_areg ~ hmu - 1) %>% summary %>% coef
+```
+In both regression, the t statistic is much higher than 1.96, the
+p-value is very close to zero so that the equi-dispersion hypothesis
+is strongly rejected. 
+
+To see in what extent the introduction of covariates has reduced the
+over-dispersion problem, we can produce once again a rootogram, this
+time on the fitted Poisson model. We use this time the default style
+which is `"hanging"`, which means that the bars are vertically aligned
+on the point that display the fitted frequency and the default scale
+which is `"sqrt"`; the vertical axe indicates the square root of the
+frequencies, to increase the lisibility of small frequencies.
+
+Rootograms for the Poisson model is presented on figure
+@fig-rootograms along with the previous rootogram for the
+unconditiona distribution of `trips`. The two figures are first
+created without being ploted by setting the `plot` argument to
+`FALSE`, and are then assembled in one figure using
+`ggpubr::ggarrange`. The `autoplot` function enables to coerce the
+figure to a `ggplot` figure and the limits on the vertical axe are set
+to the same values for the two plots so that the frequencies for the
+two figures can be easily compared.
+
+```{r }
+#| label: fig-rootograms
+#| fig.cap: "Rootograms for Poisson models with and without covariates"
+fig_naive <- countreg::rootogram(trips_uncond, plot = FALSE) %>%
+    autoplot + coord_cartesian(xlim = c(0, 15), ylim = c(-3, 12))
+fig_covar <- countreg::rootogram(pois_trips, plot = FALSE) %>%
+    autoplot + coord_cartesian(xlim = c(0, 15), ylim = c(-3, 12))
+figure <- ggpubr::ggarrange(fig_naive, fig_covar,
+                           labels = c("No covariates", "Covariates"),
+                           ncol = 2, nrow = 1)
+figure
+```
+One can see the bottom of the bars are closer to the horizontal axe
+for the left figure (Poisson model with covariates), which indicates
+that the inclusion of covariates reduce slightly the overdispersion
+problem, which anyway still remains. Moreover, The excess of zero
+largely remains, which suggest that a model that take the specificity
+of $Y = 0$ should be used.
+
+The over-dispersion phenomena can also be represented by plotting the
+square of the residuals against the fitted values, the straight
+line (NB1 hypothesis) and the parabol (NB2 hypothesis) that fit the
+data. The result is presented in figure \@ref(fig:overpts). 
+
+```{r }
+#| label: fig-overpts
+#| fig.cap: "Squared residuals and fitted values"
+tb <- tibble(e2 = residuals(pois_trips, type = "response") ^ 2,
+             mu = fitted(pois_trips))
+tb %>% ggplot(aes(mu, e2)) + geom_point() +
+    coord_cartesian(xlim = c(0, 15), ylim = c(0, 150)) +
+    geom_smooth(method = lm, se = FALSE, formula = y ~ x - 1, color = "red") +
+    geom_smooth(method = lm, se = FALSE, formula = y ~ x + I(x ^ 2) - 1)
+```
+
+## Advanced models
+
+More advanced models have been proposed to overcome the limits of the
+Poisson model, namely the fact that it doesn't deal correctly with
+overdispersion (the Negbin models) and excess of zero (the hurdle and
+the zip models).
+
+### The Negbin model
+
+As seen previously, overdispersion is almost the rule. In this case it
+is possible to use the Negbin model that relax the assumption of
+equality between the mean and the variance. This model allows
+overdispersion as it starts with the Poisson model, but assume that
+the Poisson parameter for an observation (which is the conditional
+mean) is random instead of being fixed. Previously, using the log
+link, the Poisson parameter was $\mu_n = e^{\beta ^ \top x_n}$. We now
+suppose that the conditional distribution of $y$ is Poisson with a
+parameter equal to $\lambda_n = \mu_n \nu_n$. $\nu_n$ is a
+multiplicative error term (positive as the Poisson parameter should be
+positive) and we'll assume that $\mbox{E}(\nu) = 0$, so that
+$\mbox{E}(\lambda_n) = \mu_n$ as in the Poisson model. In this case,
+the distribution of $y_n$ conditional on $x_n$ and $\nu_n$ is still
+Poisson:
+
+$$
+P(Y = y \mid x_n v_n ; \beta) = \frac{e^{- \mu_n \nu_n} (\mu_n\nu_n) ^ y}{y !}
+$$
+
+To get the distribution of $Y$ conditional on $x_n$ only, we need to
+integrate out $\nu_n$, assuming a specific distribution for $\nu$. A
+popular choice is the gamma distribution which is:
+
+$$
+g(\nu; \delta, \gamma) = \nu ^ {\delta - 1} e ^ {- \gamma \nu} \gamma ^ \delta / \Gamma(\delta)
+$$
+
+where $\delta$ and $\gamma$ are respectively called the shape and the
+instensity parameters. The expected value and the variance are
+respectively $\delta / \gamma$ and $\delta / \gamma ^ 2$. If $\beta$
+contains an intercept, the expected value of $\nu$ is not identified,
+so that we must switch to a one parameter gamma distribution. For
+example, setting $\gamma = \delta$, we get:
+
+$$
+g(\nu; \delta) = \nu ^ {\delta - 1} e ^ {- \delta \nu} \delta ^ \delta / \Gamma(\delta)
+$$
+
+and the expected value and variance of $\nu$ are respectively 1 and $1
+/ \delta$. 
+
+
+$g$ is called the mixing distribution. The distribution of $Y$
+conditional on $x_n$ is then:
+
+$$
+P(Y = y \mid x_n ; \beta, \delta) = \int_0 ^ {+\infty} P(Y = y \mid
+x_n v ; \beta) g(\nu; \delta) d\nu =
+\int_0 ^ {+\infty} 
+\frac{e^{- \mu_n \nu_n} (\mu_n\nu_n) ^ y}{y !}
+\nu ^ {\delta - 1} e ^ {- \delta \nu} \delta ^ \delta / \Gamma(\delta)
+d\nu
+$$
+
+Rearranging terms, we get:
+
+
+$$
+P(Y = y \mid x_n ; \beta, \delta) = 
+\frac{\mu ^ y \delta ^ \delta}{y !\Gamma(\delta)}
+\int_0 ^ {+\infty} 
+e^{- (\mu_n + \delta \nu_n)} \nu_n ^ {y + \delta - 1}
+d\nu
+$$
+
+$e^{- (\mu_n + \delta \nu_n)} \nu_n ^ {y + \delta - 1}$ is, up to a
+scaling constant $(\mu + \delta) ^ {y + \delta} / \Gamma(y + \delta)$
+is the a gamma density with parameters $y + \delta$ and $\mu +
+\delta$. Therefore:
+
+$$
+P(Y = y \mid x_n ; \beta, \delta) = 
+\frac{\mu ^ y \delta ^ \delta}{y !\Gamma(\delta)}
+\frac{\Gamma(y + \delta)}{(\mu + \delta) ^{y + \delta}}
+$$
+
+and finally, as, for integer values: $\Gamma(x + 1) = x!$:
+
+$$
+P(Y = y \mid x_n ; \beta, \delta) = 
+\frac{\Gamma(y + \delta)}{\Gamma(y + 1)\Gamma(\delta)}
+\left(\frac{\mu}{\mu + \delta}\right) ^ y \left(\frac{\delta}{\mu +
+\delta}\right) ^ \delta
+$$
+
+Conditional on $x_n$ and $\eta_n$, $\mbox{E}(y \ x_n, \eta_) =
+\mbox{V}(y \ x_n, \eta_) = \eta_n \lambda_n$. Conditional on $x_n$
+only, $\mbox{E}_\nu(y | x_n)= \mbox{E}_\nu(\nu \lambda_n) = \lambda_n$ (as
+$\mbox{E}(\nu) = 1$). To get the variance, we use the formula of
+variance decomposition:
+
+$$
+\mbox{V}_\nu(y |x_n) = \mbox{E}_\nu\left(\mbox{V}(y |x_n,
+\eta_n)\right) + \mbox{V}_\nu\left(\mbox{E}(y |x_n,
+\eta_n)\right) = 
+\mbox{E}_\nu(\nu_n\lambda_n) +
+\mbox{V}_\nu(\nu_n\lambda_n)=
+\lambda_n + \lambda_n ^ 2 \mbox{V}(\nu_n) = 
+\lambda_n + \lambda_n ^ 2 / \delta_n
+$$
+
+The first two moments of the negative binomial distribution are
+$\mbox{E}(y|\mu, \delta) = \mu$ and $\mbox{V}(y|\mu, \delta) = \mu
+(1 + \mu / \delta)$. Different parametrizations result in different
+flavours of the Negbin model. Replacing $\delta$ by $\alpha = 1 /
+\delta$ we get the NB2 model, with a quadratic conditional variance
+function:
+
+$$
+\mbox{V}(y|\mu, \alpha) = \mu + \alpha \mu ^ 2
+$$
+
+Replacing $\delta$ by $\mu / \gamma$, we get the NB1 model, with a
+linear conditional variance function:
+
+$$
+\mbox{V}(y|\mu, \delta) = (1 + \gamma) \mu
+$$
+
+Note that $\alpha$ and $\gamma$, as $\delta$ are necessary positive so
+that the Negbin models exhibit necesseraly overdispersion, with the
+special case of equi-dispersion if $\alpha$ or $\gamma$ equal
+zero. Actually, in this case, $\delta \rightarrow \infty$, so that the
+variance of $\nu$ tends to 0 and that the Poisson model is obtained as
+a limited case. 
+
+### Hurdle and ZIP models
+
+Has we have seen previously for the `trips` data set, it seems that
+the Poisson model is unable to model correctly the probability of $Y =
+0$. Different phenomena can explain zero values:
+
+- some people may never (or almost never) take a trip out of the house
+  because, for example, of a bad physical condition,
+- some people may take a trip infrequently (for example twice a week)
+  so that a 0 value may be reported if the survey concerns a tuesday
+  as the individal has taken a trip on monday and on thirsday.
+  
+This question is closely related to the analysis of consumption
+expenditures based on individual data for which are often censored at
+0 for certain goods. For example, a large share of the sample will
+report a null consumption on tobacco simply because they don't
+smoke. Some other individuals will report a null consumption of fish
+because fish is bought infrequently (once a month for example) as the
+length of the survey is two weeks. 
+
+#### Hurdle models
+
+For the first situation, @CRAG:71 proposed the hurdle model, for which
+the level of consumption of a good is taken into account by two
+different models:
+
+- the first model is a binomial model that explains the fact that the
+  expenditure is zero or positive,
+- the second model explains the level of the expenditure if positive.
+
+
+This hurdle model has been adapted by @MULL:86. The first model
+returns the probability $f_1(Y = 0\mid x_n ; \beta_1)$ vs the
+probability that $f_1(Y > 0\mid x_n ; \beta_1)$. Any binomial model
+can be used, the most common logit and probit models or a
+left-censored count model. For example, if a Poisson model is chosen,
+the probabilities of 0 and positive values are respectively
+$\exp\left\{- e^{\beta_1 ^ \top x_n}\right\}$ (which is the value of the Poisson
+probability $\exp\left\{- e^{\beta ^ \top x_n}\right\} e^{y_n\beta^\top x_n} /
+y_n !$ for $y = 0$ as $0! = 1$) and $1 - \exp\left\{-e^{\beta_1 ^ \top
+x_n}\right\}$. The individual contribution for the first part of the
+model is then:
+
+$$
+\left(\exp\left\{- e^{\beta_1 ^ \top x_n}\right\}\right)^{I(y_n = 0)}
+\left(1 - \exp\left\{-e^{\beta_1 ^ \top
+x_n}\right\}\right) ^{1 - I(y_n = 0)}
+$$
+
+the second model should use a count distribution left-truncated at
+zero. As the sum of the probabilities for all strictly positive values
+should be one, the untruncated distribution should be divided by the
+probability that $Y>0$. If once again, the Poisson distribution is
+used, the probabilities for positive values of $Y$ are:
+
+$$
+f_2(Y = y \mid x_n, y > 0 ; \beta_2) = 
+\frac{\exp\left\{- e^{\beta_2 ^ \top x_n}\right\} e^{y_n\beta_2^\top x_n} /
+y_n !}
+{1 - \exp\left\{-e^{\beta_2 ^ \top x_n}\right\}}
+$$ 
+
+As the two components of the hurdle model depends on a specific
+parameters vector ($\beta_1$ and $\beta_2$), the estimation can be
+performed by independently fitting the binomial model and the
+truncated count model. The general expression for the probability of
+one observation is the product of the two previous probabilities:
+
+$$
+\left(\exp\left\{- e^{\beta_1 ^ \top x_n}\right\}\right)^{I(y_n = 0)}
+\left(\frac{1 - \exp\left\{-e^{\beta_1 ^ \top x_n}\right\}}
+{1 - \exp\left\{-e^{\beta_2 ^ \top x_n}\right\}}
+\right) ^{1 - I(y_n = 0)}
+\left(\frac{\exp\left\{- e^{\beta_2 ^ \top x_n}\right\} e^{y_n\beta_2^\top x_n}}{y_n !}\right)^{1 - I(y_n = 0)}
+$$
+
+This expression illustrates the interest of using the same
+distribution (here Poisson) for the two parts of the model. In this
+case, the hurdle model is nested in the simple count model, the null
+hypothesis of the simple model being: $\mbox{H}_0: \beta_1 = \beta_2$.
+
+This model is a finite mixture obtained by combining two
+distributions, one that generate the zero values and the other one
+that generate the positive values. The expected value of the response
+is then:
+
+$$
+\mbox{E}(y | x) = P(y = 0 \mid x) \times 0 + P(y > 0 \mid x) \times
+\mbox{E}(y | x, y > 0) = 
+P(y > 0 \mid x) \times
+\mbox{E}(y | x, y > 0)
+$$
+
+
+The zero-inflated Poisson (or ZIP model), also called *with zeros*
+model proposed by @LAMB:92 starts from a count model (Poisson for
+example). The initial probability of 0 is then $e^{-\beta^\top
+x_2}$. It is inflated using a further parameter $\psi_n$:
+
+$$
+P(y = 0 | x_n) = \psi_n + (1 - \psi_n) e^{-\beta^\top
+x_2} = e^{-\beta^\top x_2} + \psi_n \left(1 - e^{-\beta^\top
+x_2}\right) > e^{-\beta^\top x_2}
+$$
+
+as the probability for positive values are Poisson deflated by a
+factor $(1 - \psi_n)$ which ensures that the probabilities for all
+values of $y$ sums to 1:
+
+$$
+P(y = k | x_n) = (1 - \psi_n) \frac{e^{-\mu_n}\mu_n ^r}{r!} \mbox{ for
+} r > 0
+$$
+
+$\phi_n$ can be a constant, or a function of covariates that returns a
+value between 0 and 1. For example, a logistic specification can be
+used:
+
+$$
+\psi_n = \frac{e^{\beta_1^\top x_n}}{1 + e^{\beta_1^\top x_n}}
+$$
+
+The NB2 model is implemented in `MASS::glm.nb`. We present the results
+of the NB2 model, along with the Poisson and quasi-Poisson model on
+table @tbl-nbtrips.
+
+```{r }
+#| label: tbl-nbtrips
+#| tbl-cap: "Negbin model for the trips data set"
+nb2_trips <- MASS::glm.nb(trips ~ workschl + size + dist + smsa + fulltime + distnod +
+                              realinc + weekend + car, data = trips)
+hdl_trips <- countreg::hurdle(trips ~ workschl + size + dist + smsa + fulltime + distnod +
+                              realinc + weekend + car, data = trips)
+modelsummary::msummary(list("Poisson model" = pois_trips,
+                            "quasi-Poisson model" = qpois_trips,
+                            "NB2 model" = nb2_trips),
+                       estimate = "{estimate} ({std.error}){stars}",
+                       statistic  = NULL,
+                       gof_omit = 'DF|Deviance|R2|AIC|BIC|F|RMSE')
+```
+
+We note that the coefficients of the Negbin and of the Poisson models
+are close. Moreover the standard deviations are similar to those
+obtained using the quasi-Poisson model.
+
+
+<!-- ## Panel data -->
+
+<!-- ### Fixed effects model -->
+
+<!-- Fixed effects Poisson and NegBin models are proposed by @HAUS:HALL:GRIL:84 . -->
+
+<!-- #### Poisson model -->
+
+<!-- The fixed effects Poisson model is very specific as it doesn't suffer -->
+<!-- from the incidental parameter problem and can therefore be obtained -->
+<!-- either by estimating the individual effects or by using a sufficient -->
+<!-- statistic^[[see chap. 9 @CAME:TRIV:13].]. -->
+
+<!-- In a panel context, the Poisson parameter for individual $\n$ in -->
+<!-- period $\t$ is written: -->
+
+<!-- $$ -->
+<!-- \poispar_{\n \t}=\id_\n\poiscov_{\n \t}=\id_\n e^{\coef^\top \x_{\n \t}} -->
+<!-- $$ -->
+
+<!-- which means that the individual effect is multiplicative. For a given -->
+<!-- value of the individual effect, the probability of observing -->
+<!-- $\y_{\n \t}$ is: -->
+
+<!-- $$ -->
+<!-- \PR(\y_{\n \t} \mid x_{\n \t},\id_\n,\beta)= -->
+<!-- \frac{e^{-\poispar_{\n \t}}\poispar_{\n \t}^{\y_{\n \t}}}{\y_{\n \t}!}  = -->
+<!-- \frac{e^{-\id_\n\poiscov_{\n \t}}(\id_\n\poiscov_{\n \t})^{\y_{\n \t}}}{\y_{\n \t}!} -->
+<!-- $$ -->
+
+<!-- Let $\sumy_\n=\sum_{\t=1}^\T \y_{\n \t}$ be the sum of all the values of -->
+<!--   the response for individual $\n$ and -->
+<!--   $\sumpois_\n=\sum_{\t=1}^\T \poiscov_{\n \t}$ the sum of the Poisson -->
+<!--   parameters. A sum of Poisson variables follows a Poisson -->
+<!--   distribution with parameter equal to the sum of the parameters of -->
+<!--   the summed variables. We therefore have: -->
+
+
+<!-- $$ -->
+<!-- \PR(\sumy_\n \mid x_\n,\id_\n,\beta)= -->
+<!-- \frac{e^{-\id_\n\sumpois_\n}(\id_\n \sumpois_\n)^{\sumy_\n}}{\sumy_\n!} -->
+<!-- $$ {#eq-sumy} -->
+
+<!--   Let $\y_\n=(\y_{i1},\y_{i2},\ldots,\y_{\n \t})$ be the vector of values -->
+<!--   of $\y$ for individual $\n$. We then have: -->
+
+
+<!-- $$ -->
+<!-- \PR(\y_\n \mid x_\n,\id_\n,\beta) = -->
+<!-- \frac{e^{-\id_\n\sum_{\t=1}^\T\poiscov_{\n \t}}\prod_{\t=1}^\T(\id_\n\poiscov_{\n \t})^{\y_{\n \t}}}{\prod_{\t=1}^\T \y_{\n \t}!} -->
+<!-- = -->
+<!-- \frac{e^{-\id_\n\sumpois_{i}}\id_\n^{\sumy_\n}\prod_{\t=1}^\T\poiscov_{\n \t}^{\y_{\n \t}}}{\prod_{\t=1}^\T \y_{\n \t}!} -->
+<!-- $$ {#eq-vecty} -->
+
+<!-- Applying Bayes' theorem, we obtain: -->
+
+<!-- $$ -->
+<!-- \PR(\y_\n\mid x_\n, \id_\n, \beta)=\PR(\y_\n\mid x_\n, -->
+<!-- \id_\n,\beta, \sumy_\n)\PR(\sumy_\n\mid x_\n, \id_\n, \beta) -->
+<!-- $$ -->
+<!--   ie the joint probability of the components of $\y_\n$ is -->
+<!--   the product of the conditional probability of $\y_\n$ given $\sumy_\n$ -->
+<!--   and the marginal distribution of $\sumy_\n$. This conditional -->
+<!--   probability is: -->
+
+<!-- $$ -->
+<!-- \PR(\y_\n\mid x_\n, \id_\n, \beta, \sumy_\n) -->
+<!-- =\frac{\PR(\y_\n\mid x_\n,\id_\n,\beta)} -->
+<!-- {\PR(\sumy_\n\mid x_\n,\id_\n,\beta)} -->
+<!-- $$ -->
+
+<!-- which implies: -->
+
+<!-- $$ -->
+<!-- \PR(\y_\n\mid x_\n,\beta,\sumy_\n)= -->
+<!-- \frac{\sumy_\n!}{\sumpois_\n^{\sumy_\n}}\prod_{\t=1}^\T\frac{\poiscov_{\n \t}^{\y_{\n \t}}}{\y_{\n \t}!} -->
+<!-- $$ {#eq-pwith} -->
+
+<!--   As for the logit model, $\sumy_\n$ is a sufficient statistic, which -->
+<!--   means that it allows to get rid of the individual effects. Taking -->
+<!--   the logarithm of this expression and summing over all individuals, -->
+<!--   we obtain the within Poisson model: -->
+
+<!-- $$ -->
+<!-- \ln L (\y \mid x, \beta, \sumy)= -->
+<!-- \sum_{\n=1}^\N\left(\ln \sumy_\n! - \sumy_\n \ln\sum_{\t=1}^\T\poiscov_{\n \t}+\sum_{\t=1}^\T\left(\y_{\n \t}\ln \poiscov_{\n \t}-\ln \y_{\n \t}!\right)\right) -->
+<!-- $$ {#eq-loglwa} -->
+
+<!--  or: -->
+
+
+<!-- $$ -->
+<!-- \begin{array}{rcl} -->
+<!--   \ln L (\y \mid x, \beta, \sumy)&=& -->
+<!--                                 \sum_{\n=1}^\N\left(\ln \sumy_\n! - \sum_{\t=1}^\T \ln \y_{\n \t}! + \sum_{\t=1}^\T \y_{\n \t} \ln\frac{\poiscov_{\n \t}}{\sum_{\t=1}^\T\poiscov_{\n \t}}\right) \\ -->
+<!--                             &\propto& \sum_{\n=1}^\N\left(\sum_{\t=1}^\T \y_{\n \t} \ln\frac{\poiscov_{\n \t}}{\sum_{\t=1}^\T\poiscov_{\n \t}}\right) -->
+<!-- \end{array} -->
+<!-- $$ {#eq-loglw} -->
+
+<!-- As stated previously, the Poisson model is not affected by the -->
+<!--   incidental parameter problem, as the same estimator may be obtained -->
+<!--   by estimating the individual effects. To show this result, we -->
+<!--   take the logarithm of the joint probability for the $\T$ -->
+<!--   observations of $\y$ for individual $\n$ (@eq-vecty), -->
+<!--   in order to obtain the log likelihood function: -->
+
+<!-- $$ -->
+<!-- \ln \PR(\y_\n \mid x_\n,\id_\n,\beta) =-\id_\n\sum_t\poiscov_{\n \t} -->
+<!-- + \sum_t\y_{\n \t}\ln(\id_\n\poiscov_{\n \t}) -\sum_t\ln \y_{\n \t}! -->
+<!-- $$ {#eq-lvecty} -->
+
+<!--   The first order condition for $\id_\n$ to maximise the log -->
+<!--   likelihood function is: -->
+
+<!-- $$ -->
+<!-- \frac{\partial \ln \PR_\n}{\partial \id_\n} = -->
+<!-- -\sum_t\poiscov_{\n \t}+\frac{1}{\id_\n}\sum_t\y_{\n \t} = 0 -->
+<!-- $$ -->
+
+<!--   which implies that: $\id_\n=\frac{\sum_t \y_{\n \t}}{\sum_t \poiscov_{\n \t}}$. -->
+
+<!--   Introducing this expression in (@eq-lvecty) and summing over all -->
+<!--   $\n$, we obtain the concentrated log-likelihood function: -->
+
+<!-- $$ -->
+<!-- \begin{array}{rcl} -->
+<!-- \ln L_{\mbox{conc}}(\y \mid x,\beta) &=&\sum_\n\left(-\sumy_\n + \sumy_\n\ln \sumy_\n +\sum_t \y_{\n \t}\frac{\poiscov_{\n \t}}{\sum_t \poiscov_{\n \t}} - \sum_t \ln \y_{\n \t}!\right) \\ -->
+<!-- &\propto& \sum_{\n=1}^\N\left(\sum_{\t=1}^\T \y_{\n \t} \ln\frac{\poiscov_{\n \t}}{\sum_{\t=1}^\T\poiscov_{\n \t}}\right) -->
+<!-- \end{array} -->
+<!-- $$ {#eq-llconc} -->
+
+<!--   The two log-likelihood functions @eq-loglw} and -->
+<!--   @eq-llconc are proportional, they therefore lead to the same -->
+<!--   estimators of $\beta$. Moreover, if a logarithmic link is chosen, we -->
+<!--   have: $\poiscov_{\n \t}=e^{\coef^\top \x}$. The likelihood is in -->
+<!--   this case proportional to: -->
+
+<!-- $$ -->
+<!-- \Pi_{\n=1}^\N\Pi_{\t=1}^\T\left(\frac{e^{\coef^\top \x_{\n \t}}}{\sum_\t -->
+<!--     e^{\coef^\top \x_{\n \t}}}\right)^{\y_{\n \t}} -->
+<!-- $$ -->
+
+<!--   which is similar to the likelihood of a multinomial logit -->
+<!--   model for which $\N$ individuals -->
+<!--   must choose one among $L$ exclusive alternatives. The difference is -->
+<!--   that in this latter model $\y_{\n \t}$ is either equal to 0 or to 1 -->
+<!--   and $\sum_{\t} \y_{\n \t}=1$, as in our context each $\y_{\n \t}$ is a -->
+<!--   natural integer. -->
+
+<!-- #### Negbin models -->
+<!--   @HAUS:HALL:GRIL:84 also propose a fixed effects NegBin -->
+<!--   model. We just present below without demonstration the joint -->
+<!--   probability for individual $\n$: -->
+
+<!-- $$ -->
+<!-- \PR(\y_\n\mid x_\n, \beta, \sumy_\n) =  -->
+<!-- \left(\prod_{\t=1}^\T\frac{\Gamma(\poiscov_{\n \t}+\y_{\n \t})}{\Gamma(\poiscov_{\n \t})\Gamma(\y_{\n \t}+1)}\right) -->
+<!-- \frac{\Gamma(\sumpois_\n)\Gamma(\sumy_\n+1)}{\Gamma(\sumpois_\n+\sumy_\n)} -->
+<!-- $$ {#eq-pnbwith} -->
+<!-- \end{equation} -->
+
+<!-- ### Random effects models -->
+
+<!-- #### Poisson models -->
+
+<!--   @HAUS:HALL:GRIL:84 also proposed a \emph{between} and a random -->
+<!--   effects Poisson model, integrating out the relevant probabilities -->
+<!--   (@eq-sumy and @eq-vecty respectively). A gamma distribution -->
+<!--   hypothesis is made for the individual effects, with the following -->
+<!--   density: -->
+
+<!-- $$ -->
+<!-- f(x,a,b)=\frac{a^b}{\Gamma(b)}e^{-ax}x^{b-1} -->
+<!-- $$ -->
+
+<!-- with: -->
+
+<!-- $$ -->
+<!-- \Gamma(z)=\int_0^{+\infty}t^{z-1}e^{-t}dt -->
+<!-- $$ -->
+
+
+<!--   the gamma function. The expected value and the variance of $x$ are -->
+<!--   respectively: -->
+
+<!-- $$\EV(x)=\frac{b}{a} \mbox{ and }  \mbox{V}(x)=\frac{b}{a^2}$$ -->
+
+<!--   If the model contains an intercept, the expected value is not -->
+<!--   identified and we can then suppose, whithout restriction, that it is -->
+<!--   equal to 1, which implies $a=b$. We then obtain a gamma distribution -->
+<!--   with one parameter (denoted $\gampar$): -->
+
+<!-- $$ -->
+<!-- f(\poisint)=\frac{\gampar^\gampar}{\Gamma(\gampar)}e^{-\gampar -->
+<!--   \poisint}\poisint^{\gampar-1} -->
+<!-- $$ -->
+
+<!-- Integrating out the conditional probabilities (@eq-sumy and -->
+<!--   @eq-vecty}), we obtain the unconditional probabilities for the -->
+<!--   between and the random effects models: -->
+
+<!-- $$ -->
+<!-- \PR(\sumy_\n\mid \xp_\n, \beta) =  -->
+<!-- \int_0^{+\infty}\PR(\sumy_\n,\xp_\n,\poisint,\coefp)f(\poisint)d\poisint -->
+<!-- =\frac{{\sumpois_\n}^{\sumy_\n}}{\sumy_\n!}\frac{\gampar^\gampar}{\Gamma(\gampar)} -->
+<!-- \frac{\Gamma(\sumy_\n+\gampar)}{(\sumpois_\n+\gampar)^{\sumy_\n+\gampar}} -->
+<!-- $$ -->
+
+<!-- $$ -->
+<!-- \PR(\y_\n,\x_\n,\coef)= -->
+<!-- \int_0^{+\infty}\PR(\y_\n,x_\n,\poisint,\beta)f(\poisint)d\poisint -->
+<!-- =\prod_{\t=1}^\T\frac{\poiscov_{\n \t}^{\y_{\n \t}}}{\y_{\n \t}!} -->
+<!-- \frac{\gampar^\gampar}{\Gamma(\gampar)} -->
+<!-- \frac{\Gamma(\sumy_\n+\gampar)}{(\sumpois_\n+\gampar)^{\sumy_\n+\gampar}} -->
+<!-- $$ -->
+
+<!--   which leads to the following log likelihood functions: -->
+
+<!-- $$ -->
+<!-- \begin{array}{rcl} -->
+<!-- \ln L (\sumy \mid \xp, \coefp)&=& -->
+<!-- \sum_{\n=1}^\N\left[\sumy_\n\ln \sum_t \poiscov_{\n \t} - \ln \sumy_\n! +\gampar \ln \gampar\right. \\ -->
+<!-- &-& \ln \Gamma(\gampar)+\ln \Gamma(\sumy_\n+\gampar)\\ -->
+<!-- &-&\left. (\sumy_\n+\gampar)\ln \left(\sum_{\t=1}^\T\poiscov_{\n \t}+\gampar\right)\right] -->
+<!-- \end{array} -->
+<!-- $$ {#eq-loglb} -->
+<!-- \end{equation} -->
+
+<!-- $$ -->
+<!-- \begin{array}{rcl} -->
+<!--   \ln L (\y \mid \xp, \coefp)&=& -->
+<!--   \sum_{\n=1}^\N\left[\sum_t\left(\y_{\n \t}\ln \poiscov_{\n \t} - \ln \y_{\n \t}!\right) +\gampar \ln \gampar\right. \\ -->
+<!--   &-& \ln \Gamma(\gampar)+\ln \Gamma(\sumy_\n+\gampar) \\ -->
+<!--    & -& \left.(\sumy_\n+\gampar)\ln \left(\sum_{\t=1}^\T\poiscov_{\n \t}+\gampar\right)\right] -->
+<!-- \end{array} -->
+<!-- $$ {#eq-loglr} -->
+
+<!-- #### Negbin models -->
+<!--   In addition to the Poisson, @HAUS:HALL:GRIL:84 also proposed -->
+<!--   \emph{between} and random effects NegBin models. We just present -->
+<!--   below without demonstration the joint probability for individual -->
+<!--   $\n$. -->
+
+
+<!-- $$ -->
+<!-- \PR(\sumy_\n\mid \x_\n, \coefp)= -->
+<!-- \frac{\Gamma(\sumpois_\n+\sumy_\n)}{\Gamma(\sumpois_\n)\Gamma(\sumy_\n+1)} -->
+<!-- \frac{\Gamma(a+b)\Gamma(a+\sumpois_\n)\Gamma(b+\sumy_\n)} -->
+<!-- {\Gamma(a)\Gamma(b)\Gamma(a+b+\sumpois_\n+\sumy_\n)} -->
+<!-- $$ {#eq-pnbbet} -->
+
+<!-- $$ -->
+<!-- \PR(\y_\n,\x_\n,\coefp)= -->
+<!-- \frac{\Gamma(a+b)\Gamma(a+\sumpois_\n)\Gamma(b+\sumy_\n)} -->
+<!-- {\Gamma(a)\Gamma(b)\Gamma(a+b+\sumpois_\n+\sumy_\n)} -->
+<!-- \left(\prod_{\t=1}^\T\frac{\Gamma(\poiscov_{\n \t}+\y_{\n \t})}{\Gamma(\poiscov_{\n \t})+\Gamma(\y_{\n \t}+1)}\right) -->
+<!-- $$ {#eq-pnbre} -->
+
+<!-- ```{r } -->
+<!-- #| eval: true -->
+<!-- #| cache: true -->
+<!-- #| echo: false -->
+<!-- form <- doctorco ~ sex + age + I(age ^ 2) + income + insurance + illness + actdays + hscore + chcond -->
+<!-- ols <- lm(form, doctor_aus) -->
+<!-- pois <- glm(form, doctor_aus, family = poisson) -->
+<!-- qpois <- glm(form, doctor_aus, family = quasipoisson) -->
+<!-- nb1 <- MASS::glm.nb(form, doctor_aus) -->
+<!-- modelsummary::msummary(list(ols = ols, poisson =  pois, quasipois = qpois, "Negbin 2" = nb1), estimate = "{estimate} ({std.error})", statistic = NULL) -->
+<!-- ``` -->
+
+
+
+
+<!-- ```{r } -->
+<!-- #| eval: false -->
+<!-- #| echo: false -->
+<!-- mdel <- p_majordrg -->
+<!-- tb <- tibble(y = model.response(model.frame(mdel)), -->
+<!--              mu = fitted(mdel), -->
+<!--              e2 = (y - mu) ^ 2, -->
+<!--              z = ( e2 - y) / mu) -->
+<!-- nb1 <- lm(e2 ~ mu - 1, tb) -->
+<!-- nb2 <- lm(e2 ~ mu + I(mu  ^2) - 1, tb) -->
+<!-- ggplot(tb, aes(mu, e2)) + geom_point() + -->
+<!-- #   scale_y_continuous(limits = c(0, 100)) + -->
+<!--     geom_smooth(method = lm, formula = y ~ x - 1, se = FALSE) + -->
+<!--     geom_smooth(method = lm, formula = y ~ x + I(x ^ 2) - 1, se = FALSE, color = 'red') -->
+
+<!-- ggplot(tb, aes(mu, z)) + geom_point() + -->
+<!-- #    coord_cartesian(ylim = c(-10, 50)) + -->
+<!--     geom_smooth(method = lm, formula = y ~ 1, se = FALSE) + -->
+<!--     geom_smooth(method = lm, formula = y ~ x - 1, se = FALSE, color = 'red') -->
+
+
+<!-- countreg::disptest(cam_triv_86, type = "scoreNB1") -->
+<!-- countreg::disptest(cam_triv_86, type = "scoreNB2") -->
+<!-- mu <- fitted(cam_triv_86) -->
+<!-- y <- model.response(model.frame(cam_triv_86)) -->
+<!-- N <- nobs(cam_triv_86) -->
+
+<!-- sum( ( (y - mu) ^ 2 - y) / mu) / sqrt(2 * N) -->
+<!-- sum( ( (y - mu) ^ 2 - y)     ) / sqrt(2 * sum(mu ^ 2)) -->
+
+<!-- lm( I( ((y - mu) ^ 2 - y) / mu) ~ mu - 1) %>% summary %>% coef %>% .[3] -->
+<!-- ``` -->
+
+
+
+<!-- ```{r } -->
+<!-- N <- 1E05 -->
+<!-- pz <- 0.3 -->
+<!-- mu <- 2.5 -->
+<!-- v <- dpois(0, mu) -->
+<!-- M <- 20 -->
+<!-- Probs <- c(pz, (1 - pz) * dpois(1:M, mu) / (1 - dpois(0, mu))) -->
+<!-- S <- sample(0:M, size = N, replace = TRUE, prob = Probs) -->
+<!-- c(mean(S), var(S)) -->
+
+<!-- Eyp <- mu / (1 - v) -->
+<!-- Vyp <- mu * (1 - v) - v * mu ^2 -->
+<!-- c(Eyp, Vyp) -->
+<!-- c(mean(S[S > 0]), var(S[S > 0])) -->
+
+<!-- Ey <- (1 - pz) * Eyp -->
+<!-- c(Eyp, Ey) -->
+
+
+<!-- ``` -->

@@ -1,0 +1,83 @@
+% a normal curve with given mu equal 1
+\documentclass[crop, tikz]{standalone}
+
+\usepackage{tikz,eurosym,rotating}
+\usetikzlibrary{patterns}
+\begin{document}
+
+<<echo = FALSE, results = tex>>=
+source("indifference.R")
+xmin <- -3
+xmax <- 3
+ymin <- 0
+ymax <- 0.5
+
+xdim <- xmax - xmin
+ydim <- ymax - ymin
+
+#xdim <- 7
+#ydim <- 1
+xunit <- round(xcm / xdim, 2)
+yunit <- round(ycm / ydim, 2)
+
+mu1 <- 0
+sigma <- 1
+thr1 <- - 0.5
+thr2 <- 1
+PI <- pnorm(0, mu1)
+xs <- seq(xmin, xmax, 0.01)
+ys1 <- dnorm(xs, mean = mu1, sd = sigma)
+ys2 <- ys1 / (1 - PI)
+E <- mu1 + exp(dnorm(mu1, log = TRUE) - pnorm(mu1, log.p = TRUE))
+
+cat(paste("\\begin{tikzpicture}[x = ", xunit, "cm, y = ", yunit, "cm]\n"))
+# draw the axes
+
+
+matptsup <- cbind(seq(xmin, thr1, 0.01), dnorm(seq(xmin, thr1, 0.01), mu1))
+matptsup <- rbind(c(xmin, 0), matptsup, c(thr1, dnorm(thr1, 0.5)), c(thr1, 0))
+cat(paste("\\fill[color = gray!30] ", TIKmat2path(matptsup), " -- cycle;", sep = ""))
+
+matptsup <- cbind(seq(thr2, xmax, 0.01), dnorm(seq(thr2, xmax, 0.01), mu1))
+matptsup <- rbind(c(thr2, 0), matptsup, c(xmax, dnorm(xmax, 0.5)), c(xmax, 0))
+cat(paste("\\fill[color = gray!5] ", TIKmat2path(matptsup), " -- cycle;", sep = ""))
+
+TIKline(list(c(xmin, 0), c(xmax, 0)), options = "->")
+TIKline(list(c(0, ymin), c(0, ymax)), options = "->")
+TIKline(cbind(xs, ys1))
+
+TIKnode(c(xmax, 0), "$\\epsilon$", pos = "right")
+TIKnode(c(0, ymax), "y", pos = "above")
+
+TIKline(list(c(thr1, 0), c(thr1, dnorm(thr1))), options = "dotted")
+TIKline(list(c(thr2, 0), c(thr2, dnorm(thr2))), options = "dotted")
+TIKnode(c(thr1, 0), "$\\mu_1- \\beta ^ \\top x$", pos = "below")
+TIKnode(c(thr2, 0), "$\\mu_2- \\beta ^ \\top x$", pos = "below")
+
+TIKnode(c(-.8, 0.05), "$\\mbox{P}(y = 1)$")
+TIKnode(c(.8, 0.05), "$\\mbox{P}(y = 2)$")
+TIKnode(c(1.9, 0.05), "$\\mbox{P}(y = 3)$")
+
+
+#matptsup <- cbind(seq(xmin, 0, 0.01), dnorm(seq(xmin, 0, 0.01), mu1))
+#matptsup <- rbind(c(xmin, 0), matptsup, c(0, dnorm(0, 0.5)), c(0, 0))
+#cat(paste("\\fill[color = gray!20] ", TIKmat2path(matptsup), " -- cycle;", sep = ""))
+#TIKnode(c(xmax, 0), "y", pos = "right")
+#TIKnode(c(0, ymax), "y", pos = "above")
+#TIKnode(c(0, 0), "0", pos = "below")
+#TIKnode(c(3.2, 0.3), "$\\frac{1}{\\sigma}\\phi\\left(\\frac{y-\\beta'x}{\\sigma#}\\right)$")
+#TIKline(list(c(2, 0.29), c(1.5, dnorm(1.5, 0))), options = "->") 
+#TIKnode(c(3.2, 0.5), "$\\frac{1}{\\sigma}\\frac{\\phi\\left(\\frac{y-\\beta'x}{#\\sigma}\\right)}{\\Phi\\left(\\frac{\\beta'x}{\\sigma}\\right)}$")
+#TIKline(list(c(2, 0.49), c(1.25, dnorm(1.25, mu1) / (1 - PI))), options = "->") 
+#TIKnode(c(0.1, 0.1), "$1-\\Phi\\left(\\frac{\\beta'x}{\\sigma}\\right)$")
+#TIKline(cbind(xs[xs > 0], ys2[xs > 0]), options = "dashed")
+#TIKcoords(c(mu1, dnorm(mu1, mean = mu1, sd = sigma)), labx = "$\\beta'x$")
+#TIKnode(c(E, 0), "$\\mbox{E}(y\\mid x)$", pos = "below")
+#TIKline(list(c(E, -0.01), c(E, +0.01)), options = "thick")
+
+
+
+@   
+\end{tikzpicture}
+
+\end{document}

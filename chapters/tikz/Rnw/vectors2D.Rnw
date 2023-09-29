@@ -1,0 +1,59 @@
+\documentclass[crop, tikz]{standalone}
+
+\usepackage{tikz}
+
+\begin{document}
+
+<<echo = FALSE>>=
+x <- c(4, 3)
+z <- c(4.5, 6)
+w <- c(-6, 4.5)
+norm_z <- sqrt(sum(z ^ 2))
+norm_x <- sqrt(sum(x ^ 2))
+norm_w <- sqrt(sum(w ^ 2))
+theta_x <- acos(x[1] / norm_x)
+theta_z <- acos(z[1] / norm_z)
+theta <- theta_z - theta_x
+dg <- function(x) x / pi * 180
+drawvect <- function(x, name = NULL, coord = FALSE, pos = "right", label = FALSE){
+    result <- paste("\\draw [->, >=stealth] (0, 0)--(",
+                    x[1], ",", x[2], ")")
+    if (! is.null(name)){
+        node <- paste("node[", pos, "]{$", name, "$};", sep = "")
+        result <- paste(result, node)
+    }
+    else result <- paste(result, ";")
+    if (coord){
+        coord <- paste("\\draw[dotted] (", x[1], ",0)--(", x[1], ",", x[2], ");")
+        coord <- paste(coord,
+                       "\\draw[dotted] (0,",x[2], ")--(", x[1], ",", x[2], ");")
+        result <- paste(result, coord)
+    }
+    if (label){
+        posx <- ifelse(x[2] > 0, "below", "above")
+        posy <- ifelse(x[1] > 0, "left", "right")
+        label <- paste("\\draw (", x[1], ",0) node[", posx, "] {$", x[1], "$};")
+        label <- paste(label,
+                       paste("\\draw (0,", x[2],") node[", posy, "] {$", x[2], "$};"))
+        result <- paste(result, label)
+    }
+    result
+}
+
+@ 
+
+\begin{tikzpicture}
+\draw [->, >=stealth] (-7, 0)--(5, 0);     % x1
+\draw [->, >=stealth] (0, 0)--(0, 7);     % x2
+
+<<results = tex, echo = FALSE>>=
+cat(drawvect(x, "x", coord = TRUE, label = TRUE))
+cat(drawvect(z, "z", coord = TRUE, label = TRUE))
+cat(drawvect(w, "w", coord = TRUE, label = TRUE, pos = "left"))
+cat(paste("\\draw (1, 0) arc(0:",dg(theta_x), ":1);\n"))
+cat(paste("\\draw (1.5, 0) arc(0:", dg(theta_z), ":1.5);\n"))
+@ 
+
+\end{tikzpicture}
+
+\end{document}

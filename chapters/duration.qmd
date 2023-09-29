@@ -1,0 +1,1066 @@
+```{r }
+#| include: false
+source("../_commonR.R")
+```
+
+# Duration models
+
+## Duration and hasard function
+
+When the response is a duration, specific models are used, which come
+from the biostatistics literature and focus on the survival time of
+individuals, for example after an hearth greff.
+
+Duration data have two main characteristics, that require the use of
+specific models:
+
+-   the response is a continuous positive variable,
+-   it is often censored, especially right-censored; for example, trying
+    to modelize the length of unemployment spells, we'll use survey data
+    on employment realized on a given period (for example two years). At
+    the end of the survey, some individuals are still unemployed because
+    the spell is not finished, so that the duration of their spell is
+    not observed, but only the fact that it is greater than the observed
+    duration at the end of the survey.
+
+Let's $t$ being the duration response. It's distribution is given by a
+probability $\mbox{P}(T \leq t) =F(t)$ and a density function $f(t)$.
+The survival function is often used, which is
+$S(t) = P(T > t) = 1 - F(t)$[^1]. For example, if $T$ is measured in
+month and if $t = 12$, $F(12) = 0.8$ means that 80% of unemployment
+spells are less than one year and $S(12) = 0.2$ means that 20% of
+unemployment spells are more than one year. For a small variation of the
+spell (say $dt = 1$ month), $f(t)dt$ is the probability that the length
+of the spell is between $t$ and $t + dt$ (between 12 and 13 months in
+our example). Assume that $f(12) = 0.06$. It means that 6% of the spells
+ends between the 12^th^ and the 13^th^ month. If we divide by
+$S(12) = 0.2$, we get $f(12) / S(12) = 0.3$, which means that 30% of the
+spells of at least one year ends during the 13^th^ month. This is called
+the hazard function and it plays a central role in duration analysis.
+More formally, the hazard function is define by:
+
+[^1]: The survival function is sometimes defined as
+    $S(t) = P(T \geq t)$, see [@cameron2005].
+
+$$
+\theta(t)=  \lim_{dt \rightarrow 0} \frac{\mbox{P}(t \leq T < t + dt \mid T > t)}{dt}
+$$
+
+$$
+\mbox{P}(t \leq T < t + dt \mid T > t)
+ =
+\frac{\mbox{P}(t \leq T < t + dt)}{\mbox{P}(T > t)}
+=
+\frac{F(t + dt) - F(t)}{1 - F(t)}
+$$
+
+$$
+\theta(t) = \lim_{dt \rightarrow 0} \frac{1}{1 - F(t)}\frac{F(t + dt) - F(t)}{dt} = 
+\frac{f(t)}{1 - F(t)} = \frac{f(t)}{S(t)}
+$$
+
+The hazard function is also the derivative of the opposite of the
+logarithm of the survival function:
+
+$$
+\frac{\partial \ln S}{\partial t} = \frac{- f(t)}{S(t)} = - \theta(t)
+$$
+
+Or, inversely, the log survival function is a primitive of the hazard,
+so that, using the fact that $S(0) = 1$, the **cumulative hazard**
+function $\Lambda(t)$ is:
+
+$$
+\Lambda(t) = \int_{0} ^ t \theta(t) dt = - \ln S(t)
+$$
+
+Now consider the area under the survival curve:
+$\int_{0} ^ {+\infty} S(t) d(t)$. Integrating by part, we get:
+$\int_0 ^ {+\infty} S(t) d(t) = \left[t S(t)\right]_0 ^ {+\infty} - \int_{0} ^ {+\infty} -f(t) t d(t) = \int_{0} ^ {+\infty} f(t) t d(t)$
+as $\lim_{t \rightarrow + \infty} S(t) t = 0$. Therefore, this area is
+the expected value of the duration of the spell.
+
+The hazard and survival functions can also be defined in terms of
+discrete time either because the duration is intrinsically discrete or
+because it is rounded to a given time unit (weeks or months for
+example). Consider that the event is observed for $K$ distinct failure
+times, denoted $t_1, t_2, \ldots t_k, \ldots t_K$. If there is no ties,
+which means that all the events occur at a specific time, then $K=N$.
+Otherwise, $K \leq N$.
+
+The **discrete-time hazard** function is the probability of transition
+at time $t_j$ given survival to time $t_j$:
+
+$$\lambda_j = P(T = t_j \mid T \geq t_j) = \frac{f^d(t_j)}{S^d(t_{j-})}$$
+
+where $S^d(t_{j-})$ is the value of the survival function just before
+$t_j$. The **discrete-time survivor functions** is obtained from the
+hazard function:
+
+$$S^d(t) = P(T \geq t) = \prod_{j | t_j \leq t} (1 - \lambda_j)$$
+
+For example the probability of surviving at least to $t_2$ is:
+
+$$S^d(t_2) = (1 - \lambda_1) (1 - \lambda_2)$$
+
+The first term is the probability of no transition at $t_1$ and the
+second one is the probability of no transition at $t_2$ conditional on
+surviving to just before $t_2$.
+
+## The Kaplan-Meier estimator
+
+The Kaplan-Meier estimator is a non-parametric estimator of the survival
+function. As such, it is very useful as a primarily tool before
+developping more complicated parametric models.
+
+### Uncensored sample
+
+To demonstrate this estimator, it is convenient to use first uncensored
+data. This is the case of the `oil` [@FAVE:PESA:SHAR:94] data set which
+indicates the number of months between the discovery of an oil field and
+the beginning of development. For each failure times $t_k$, we count the
+number of events $d_k$ (the number of spells ending at time $t_k$) and
+the number of observations **at-risk**, ie the number of spells which
+haven't ended just before $t_k$, denoted $r_k$.
+
+For the `oil` data set, we have 53 observations and the first ordered
+values of duration are:
+
+```{r }
+#| include: false
+#| message: false
+options(tibble.print_max = 5, tibble.print_min = 5)
+library("tidyverse")
+library("micsr")
+theme_set(theme_classic())
+```
+
+```{r }
+#| message: false
+library("tidyverse")
+oil %>% arrange(dur) %>% pull(dur) %>% head
+```
+
+Therefore, $t_1 = 1$ and $r_1 = 53$ because all the spells are at risk
+just before time equal to 1. The hazard function for $t_1$ is then
+estimated by $1/53 = 0.0189$, and the survival function by
+$1 - 1/53 = 0.981$, which means that the estimated probability that the
+spell is greater than 1 one month is $98.1$%. For $t_2= 3$, we have
+$d_2 = 2$ and the number of observation at risk are the ongoing spells
+just before time equal to 2, which is $r_2 = r_1 - d_1 = 52$. The hazard
+function for $t_2 = 3$ is then $d_2 / r_2 = 2 / 52 = 0.038$, which means
+that the estimated probability of ending at time 3 for spells which are
+least 1 month long is $3.8$%. The survival function for time equal to 3
+is
+therefore:$(1 - d_1 / r_1) \times (1 - d_2 / r_2) = 0.981 \times 0.961 = 0.943$.
+Note that as $r_1 = N$ and $r_2 = r_1 - d_1 = N - d_1$, the estimated
+survival probability for $t_2$ is $(1 - d_1 / N)(1 - d_2 / (N - d_1))$,
+which simplifies to $1 - (d_1 + d_2) / N$. For $t_3 = 7$, we have
+$d_3 / r_3 = 1 / 50 = 0.02$ and the survival function can be either
+estimated by $0.943 \times (1 - 0.02)$ or by $(1 - 4 / 53) = 0.9245$.
+
+The whole survival series can be easily obtained with the following
+code; we first create a frequency table of durations (the durations are
+then automatically arranged in an increasing order), the `n` column then
+contains the number of spells that ends at each period. We then compute
+the cumulative sums of this counts `cumn` and the survival probabilities
+as the cumulative count divided by $N$.
+
+```{r }
+surv_tb <- oil %>%
+    count(dur) %>% 
+    mutate(cumn = cumsum(n),
+           surv = 1 - cumn / 53)
+surv_tb
+```
+
+A more complex calculus (but which will prove to be useful if there are
+censored spells) consists on computing the number of spells at risk, the
+hazard and then the survival function as the cumulative product of 1
+minus the hazard rate.
+
+```{r }
+oil %>% 
+    count(dur) %>%
+    mutate(cumn = cumsum(n),
+           at_risk =  ifelse(dur == 1, 53, 53 - lag(cumn)),
+           hazard = n / at_risk,
+           surv = cumprod(1 - hazard))
+```
+
+The survival function can also be ploted. As it is a step function,
+using the `geom_step` function is particularly useful, see
+@fig-survcurve.
+
+```{r }
+#| label: fig-survcurve
+#| fig-cap: "Survival curve for the oil data set"
+#| message: false
+km_oil <- surv_tb %>% ggplot(aes(dur, surv)) + geom_step()
+km_oil
+```
+
+Reminding than $\frac{\partial \ln S(t)}{\partial t} = - \lambda(t)$, it
+is useful to use a logarithmic y axis as, the hazard is then the slope
+(in absolute value) of the curve (see @fig-logsurvcurve). In particular,
+the constant hazard hypothesis would induce a roughly linear survival
+curve.
+
+```{r }
+#| label: fig-logsurvcurve
+#| message: false
+#| warning: false
+#| fig-cap: "Survival curve for the oil data set with a log scale"
+km_oil + coord_cartesian(xlim = c(0, 150)) +
+    scale_y_continuous(trans = "log", breaks = c(0.01, 0.1, 1)) + 
+    geom_smooth(se = FALSE)
+```
+
+We can see in this example that the hazard rate seems to be roughly
+constant for a wide range of values of duration (0-100 months) and then
+decreasing for high values of duration ($>100$).
+
+The kaplan-Meier estimator can also be computed using the
+`survreg::surfit` function, with the usual formula-data interface. The
+response must be a `Surv` object and the right-hand side of the formula
+is just an intercept. A `Surv` object is obtained using the `Surv`
+function. With uncensored data, its only argument is the duration
+response. We then have:
+
+```{r }
+library("survival")
+sf <- survfit(Surv(dur) ~ 1, data = oil)
+sf
+```
+
+The `print` method returns the number of observations (`n`) the number
+of events (`events`), which is equal to the number of observations if
+all the spells are uncensored, the median spell duration and its 95%
+confidence interval. The `summary` function returns a table with one row
+for each time some spells end and different columns. As the object
+returned by it is not a data frame and cannot be easily coerced to a
+data frame, we provide a head function to print the first lines of this
+table:
+
+```{r}
+#| echo: false
+head.summary.survfit <- function(x, n = 6L){
+    nms <- c("time", "n.risk", "n.event", "n.censor", "surv",
+             "std.err", "cumhaz", "std.chaz", "lower", "upper")
+    y <- x
+    for (i in nms) y[[i]] <- y[[i]][1:n]
+    y
+}
+```
+
+```{r }
+sf %>% summary %>% head(5)
+```
+
+### Censored sample
+
+When there are censored observations, the computation is modified.
+Consider the `retirement` data set [@an2004]. It contains the join
+duration until retirement for both spouses of 243 couples in Denmark.
+
+```{r }
+retirement <- edf.duration::retirement
+retirement
+```
+
+`id` is the couple identifier, there are several annual observations for
+every couple (because some covariates are time-varying), the duration
+until retirement for males is `durm` and `censm` is a dummy which equals
+one if the observation is right-censored. The corresponding variables
+for women are `durf` and `censf`. To get one observation for each
+couple, we simply select these two variables, which are time invariant
+and we keep only the distinct rows:
+
+```{r }
+ret <- retirement %>%
+    select(id, durm, censm, durf, censf) %>% 
+    distinct
+ret
+```
+
+The number of lines of this table is 243 (the number of couples), to get
+a table with line for each person, we transform this table in a long
+format:
+
+```{r}
+ret <- ret %>% 
+  set_names(c("id", "dur_male", "cens_male", 
+                    "dur_female", "cens_female")) %>% 
+  pivot_longer(- id) %>% 
+  separate(name, into = c("variable", "sex")) %>% 
+  pivot_wider(names_from = variable, values_from = value) %>% 
+  mutate(cens = factor(cens, levels = 0:1, labels = c("no", "yes")))
+```
+
+We then construct a table containing for each period the number of
+events and the number of censored spells:
+
+```{r }
+ret_tbl <- ret %>%
+    count(dur, cens, sex) %>% 
+    pivot_wider(names_from = cens, values_from = n, values_fill = 0)
+ret_tbl
+```
+
+There is no transition before $t=7$, we therefore merge the first 6
+periods:
+
+```{r }
+ret_tbl <- ret_tbl %>%
+    mutate(dur = ifelse(dur < 7, "1-6", dur),
+           dur = factor(dur, levels = c("1-6", 7:10))) %>%
+    group_by(dur, sex) %>%
+    summarise(across(where(is.numeric), sum), .groups = "drop")
+ret_tbl
+```
+
+To get results for the whole sample, we remove the `sex` variable and
+merge the values for each duration:
+
+```{r}
+ret_tbl_un <- ret_tbl %>% 
+  select(- sex) %>% 
+  group_by(dur) %>% 
+  summarise(across(where(is.numeric), sum))
+```
+
+For each discrete-time, we define the number of spells that exit the
+sample, either because of transition ($d_j$) or censoring ($m_j$):
+
+```{r }
+ret_tbl_un %>% mutate(cumn = cumsum(yes + no))
+```
+
+The observations **at risk** just before $t_j$ is equal to the total
+sample size minus the lag of `cumn`:
+
+```{r }
+ret_tbl_un <- ret_tbl_un %>%
+    mutate(cumn = cumsum(yes + no),
+           atrisk = 486 - lag(cumn),
+           atrisk = ifelse(is.na(atrisk), 486, atrisk))
+ret_tbl_un
+```
+
+$\hat{\lambda}_j$ is the ratio of the number of events at $t_j$ and the
+number of observations at risk just before $t_j$ and $\hat{S}_j$ is the
+cumulative product of $(1 -\hat{\lambda}_j)$.
+
+```{r }
+ret_tbl_un %>%
+    mutate(hazard = no / atrisk,
+           surv = cumprod(1 - hazard))
+```
+
+The same results are easily obtained using `survfit`. Once again, a
+formula-data interface is used, the response being a `Surv` object. In
+the context of a sample with right-censored observations, this object is
+obtained using the `Surv` function with two arguments:
+
+-   `time` : the duration (observed or right-censored),
+-   `event` : a dummy for observed durations (ie uncensored
+    observations). It can be either a boolean (`TRUE` for event), 0/1 or
+    1/2.
+
+If the `Surv` function is used with two unnamed arguments, it is assumed
+that these two arguments are `time` and `event` in that order.
+
+We use in our example a boolean obtained from the `cens` variable:
+
+```{r }
+library("survival")
+surv_ret <- survfit(Surv(dur, cens == "no") ~ 1, data = ret)
+print(surv_ret)
+summary(surv_ret)
+```
+
+### Different groups
+
+When the observations belongs to 2 or more groups, the survival curves
+can be estimated for each group. In the `retirement` data set, we can
+consider the two groups of individuals defined by the sex. Then, the
+previous computation can be performed by grouping by `sex`:
+
+```{r}
+ret_tbl_sex <- ret_tbl %>%
+  group_by(sex) %>% 
+    mutate(cumn = cumsum(yes + no),
+           atrisk = 243 - lag(cumn),
+           atrisk = ifelse(is.na(atrisk), 243, atrisk),
+           hazard = no / atrisk,
+           surv = cumprod(1 - hazard)) %>% 
+  arrange(sex, dur) %>% 
+  filter(dur != "1-6") %>% 
+  mutate(dur = as.numeric(as.character(dur)))
+ret_tbl_sex
+```
+
+or using `survfit` with a formula where the right-hand side is now a
+factor and not just an intercept:
+
+```{r}
+survfit_sex <- survfit(Surv(dur, cens == "no") ~ sex, ret)
+survfit_sex %>% summary
+```
+
+The `plot` method now plots two survival curves, one for males and one
+for females:
+
+```{r}
+
+survfit_sex %>% plot(lty = 1:2, xlim = c(6, 10))
+```
+
+As the `plot` method produces base **R** figures, we use the `lty` and
+`xlim` arguments (the first one to define the line type for the two
+groups and the second one to restrict the range of the x axis).
+
+Using **ggplot** with our self constructed table, we obtain a similar
+figure, setting the `linetype` aesthetics to `sex`:
+
+```{r}
+ret_tbl_sex %>% 
+  ggplot(aes(dur, surv)) + 
+  geom_step(aes(linetype = sex))
+```
+
+The hypothesis of identical survival curves can be tested using a
+log-rank test. Denoting $d_{tg}$ and $r_{tg}$ the number of failures and
+the number of observations at risk for the $t$^th^ duration and the
+\$g\$th group, under the hypothesis of identical survival curves, the
+fitted number of failures is:
+$$\hat{d}_{tg}=\frac{d_{t1} + d_{t2}}{r_{t1} + r_{t2}} r_{tg}$$
+
+```{r}
+test_sex <- ret_tbl_sex %>% 
+  select(dur, sex, n.event = no, n.risk = atrisk) %>% 
+  group_by(dur) %>% 
+  mutate(n.event.tot = sum(n.event), n.risk.tot = sum(n.risk)) %>%
+  ungroup %>%
+  mutate(n.event.est = n.event.tot / n.risk.tot * n.risk) %>%
+  select(sex, dur, n.event, n.risk, n.event.est, n.event.tot)
+test_sex
+```
+
+The test statistic is based on $\sum_t (d_{tg} - \hat{d}_{tg})$. Note
+that the value for the second group is necessary the opposite of the one
+for the first group:
+
+```{r}
+Diff <- test_sex %>%
+    group_by(sex) %>%
+    summarise(Diff = sum(n.event - n.event.est))
+Diff
+```
+
+The variance of this statistic is:
+
+$$V = \frac{r_{t1}r_{t2}(r_t - d_t) d_t}{r_t^2(r_t-1)}$$
+
+```{r}
+V <- test_sex %>%
+    select(sex, dur, n.event.tot, n.risk) %>%
+    pivot_wider(names_from = sex, values_from = n.risk) %>%
+    mutate(at.risk = female + male) %>%
+    summarise(V = sum(female * male * (at.risk - n.event.tot) * n.event.tot /
+                      at.risk ^ 2 / (at.risk - 1))) %>% 
+  pull
+V
+```
+
+The statistic is then
+$\left(\sum_t (d_{tg} - \hat{d}_{tg})\right) ^ 2 / V$ and is $\chi ^ 2$
+with 1 degree of freedom under the hypothesis of same survival:
+
+```{r}
+pull(slice(Diff, 1), 2) ^ 2 / V
+```
+
+This test can be automatically computed using the `surfdiff` function of
+the **survival** package, with the same syntax as the one used for
+`survfit`:
+
+```{r}
+survdiff(Surv(dur, cens == "no") ~ sex, ret)
+```
+
+The hypothesis of identical survival for males and females is not
+rejected.
+
+## Constant hazard and the exponential distribution
+
+Consider the special case where the hazard is a constant $\theta$. The
+cumulative hazard is then: $\int_0 ^ {t} \theta ds = \theta t$, the
+survival function is then $S(t) = e^{-\theta t}$ and the opposite of its
+derivative is the density function $f(t) = \theta e ^ {-\theta t}$.
+Therefore, if the hazard is constant, the distribution of $T$ is the
+exponential distribution with parameter $\theta$, which will be denoted:
+$T \sim E (\theta)$.
+
+The **moment generating function** of $T$ for the exponentional
+distribution is:
+
+$$M(s) = \mbox{E}\left(e^{sT}\right) = \int_0 ^ {+\infty}e^{sT}\theta e^{-\theta t} dt =  \frac{\theta}{\theta - s}$$
+
+for $\theta > s$. The **cumulant generating function** is the logarithm
+of the moment generating function:
+
+$$
+K(s) =\ln M(s) = \ln \theta - \ln(\theta - s)
+$$
+
+and the limit for $s\rightarrow 0$ of its first two derivatives with
+respect to $s$ are the expected value and the variance of $T$.
+Therefore, $\mbox{E}(T)= \frac{1}{\theta}$ and
+$\mbox{V}(T) = \frac{1}{\theta ^ 2}$.
+
+Denote $Z=\int_0 ^ T \theta(s) ds$ the cumulative hazard. This is a
+transformation of the time-scale such that
+$dZ = \frac{\partial Z}{\partial T} dT = \theta(T) dT$. With constant
+hazard, $Z$ is simply proportional to $T$, as $dZ = \theta dT$.
+
+As the hazard is positive, we have:
+
+$$ \mbox{P}(T \geq t) = \mbox{P}\left(\int_0 ^ T \theta(s) ds \geq
+\int_0 ^ t \theta(s) ds\right) = \mbox{P}(Z \geq z) $$
+
+As $\mbox{P}(T \geq t) = e^ {-\int_0 ^ t \theta(s) ds}$, we finally get:
+$\mbox{P}(Z \geq z) = e ^ {-z}$, which means that $Z$, the cumulative
+hazard, is a unit exponential random variate: $Z \sim E(1)$.
+
+Finally, consider the moment generating function of $\ln T$ with
+$T \sim E(\theta)$:
+
+$$M(s)_{\ln T} = \mbox{E}\left( e ^ {s\ln T}\right) = \mbox{E}\left(T ^ s\right) = \int_0^{+\infty}t ^ s \theta e ^ {-\theta t}dt = \frac{\Gamma (1 + s)}{\theta ^ s}$$
+
+with $\Gamma(z) = \int_0^{+\infty}t^{z-1}e^{-t}dt$ is the Gamma
+function. The corresponding cumulant generating function is:
+$K(s)_{\ln T} = \ln \Gamma(1 + s) - s\ln \theta$, from which we obtain
+the expected value $\psi(1) - \ln \theta$ and the variance, $\psi'(1)$,
+where $\psi$ and $\psi'$ are the first and second derivative of
+$\ln \Gamma$. $\psi$ is called the digamma function and $-\psi(1)$ is
+equal to the Euler-Mascheronni constant, which is approximately equal to
+$0.57721$. $\psi'$ is called the trigamma function and
+$\psi'(1) = \pi ^ 2 / 6$. Write now the log of the time in a
+regression-like form:
+
+$$\ln T = - \ln \theta + U$$
+
+where, from the previous results, the expected value and the variance of
+$U$ are $\psi(1)$ and $\psi'(1)$. Moreover, as $\theta T$ is the
+cumulative hazard, $e^U=Z$ is distributed as $E(1)$. Therefore, the
+density of $U$ is $f(U) = e^{-e^U}\frac{dZ}{dU}=e^U e^{-e^U}$, which is
+the extreme value distribution of type one, for which the cumulative
+density is $F(U) = 1 - e^{-e^U}$ and the survival function is
+$S(U) = e^{-e^U}$.
+
+Up to the constant $\psi(1)$, $-\ln \theta$ is the expected value of the
+log of the duration. $\theta$ can be parametrized as
+$e ^ {-\beta ^ \top x_n}$, so that $\ln T_n = \beta ^ \top x_n + u_n$.
+
+## Accelerated failure model
+
+The previous model is a special case of a class of models called
+**accelerated failure models**, for which the duration can be written
+as: $T = T_0 / \lambda(\beta ^ \top x)$, where $T_0$ is a random
+variable that don't depend on $\beta$ and $x$. $\lambda(\beta ^ \top x)$
+therefore have a multiplicative effect on failure time, and failure time
+is decelerated if $\lambda < 1$ and accelerated if $\lambda > 1$.
+
+The exponential model is such a model, with $T_0 \sim E(1)$, or
+equivalently $\ln T_0$ is extreme value of type1.
+
+A natural extension of this model is to write the regression-like
+version of the model as:
+
+$$ \ln T = - \ln \lambda + \frac{1}{\alpha} U $$
+
+In this case, $\alpha \ln(\lambda T) = U$ is extreme value of type 1.
+The density of $T$ is therefore:
+
+$$f(T) = e ^ {\alpha \ln(\lambda T)} e ^ {- e ^ {\alpha \ln(\lambda T)}} \frac{dU}{dT} = (\lambda T) ^ \alpha e ^ {- (\lambda T) ^ \alpha} \frac{\alpha}{T} = \alpha \lambda ^ \alpha t ^ {\alpha - 1} e ^ {-(\lambda t) ^ \alpha}$$
+
+and the corresponding survival function is:
+
+$$S(t) = e ^ {-(\lambda t) ^ \alpha}$$
+
+which is a Weibull distribution with a shape parameter equal to $\alpha$
+and a scale parameter equal to $\frac{1}{\lambda}$. The corresponding
+hazard function is :
+
+$$
+\theta(t) = \alpha \lambda ^ \alpha t ^ {\alpha - 1}
+$$
+
+This **Weibull** model is the most common model used in duration
+analysis. It is particularly appealing as it is is very easy to estimate
+and because it can deal with either a hazard function that increase
+($\alpha > 1$) or decrease ($\alpha < 1$) with time. In the first case,
+there is a **positive time dependence** and in the second case, a
+**negative time dependence**. Obviously, the Weibull reduces to the
+exponentional model if $\alpha = 1$.
+
+A more general model is obtained by specifying $e ^ U$ as a gamma
+variate (and not as a unit exponentional distribution). In this case,
+the density of $Z = e ^ U = (\lambda T) ^ \alpha$ is
+$f(Z)=\frac{z ^ {m - 1} e ^ {-z}}{\Gamma(m)}$ (which reduces to
+$e ^ {-z}$ if $m=1$). The density of $T$ is then, noting that
+$dZ = \alpha \lambda ^ \alpha T ^ {\alpha - 1}$
+
+$$f(t) = \alpha \lambda ^ \alpha T ^ {\alpha - 1} \frac{(\lambda T) ^ {\alpha(m - 1)} e ^ {-(\lambda T) ^ \alpha}}{\Gamma(m)} = \alpha \Lambda ^ {\alpha m} T ^{\alpha m - 1} e ^ {- (\lambda T) ^ \alpha} / \Gamma(m)$$
+
+which is a **generalized gamma distribution** with shape parameters
+$p = \alpha$ and $d = \alpha m$ and scale parameter $a = 1 / \lambda$.
+This reduce to:
+
+-   the gamma distribution if $p = \alpha = 1$,
+-   the Weibull distribution if $d = p$ (or $m = 1$),
+-   the exponentional distribution if $p = d = 1$ (or $\alpha = m = 1$).
+
+The hazard function (which has no closed-form) is very flexible: it is
+(denoting $d = \alpha m$):
+
+-   monotically increasing if $\alpha > 1$ and $d > 1$,
+-   monotically decreasing if $\alpha < 1$ and $d < 1$,
+-   U-shaped if $\alpha < 1$ and $d > 1$,
+-   inverted U-shaped if $\alpha > 1$ and $d < 1$.
+
+With $U \sim N(0, \sigma)$,
+$\ln T = - \ln \lambda + U \sim N(-\ln \lambda, \sigma)$ and therefore
+the time duration is log-normal and the hazard function is:
+
+$$\theta(t) = \frac{1}{\sigma t} \frac{\phi\left(\frac{\ln t + \ln \lambda}{\sigma}\right)}{1 - \Phi\left(\frac{\ln t + \ln \lambda}{\sigma}\right)} = \frac{1}{\sigma t} r\left(\frac{\ln t + \ln \lambda}{\sigma}\right)$$
+
+with $\phi$ and $\Phi$ the density and the probability functions of a
+standard normal variable and $r(z) = \phi(z) / \left(1 - \Phi(z)\right)$
+being known as the inverse Mills' ratio.
+
+Finally, consider that the distribution of $U$ is standard logistic, so
+that $f(u) = \frac{e^u}{(1 + e ^ u) ^ 2}$. As
+$\alpha \ln T \lambda = U$, $\frac{dU}{dT} = \alpha / T$ and the density
+of $T$ is then:
+
+$$f(T) = \frac{ (\lambda T) ^ \alpha}{\left(1 + (\lambda T) ^ \alpha\right) ^ 2} \alpha / T = \frac{\alpha v T ^ {\alpha - 1}}{(1 + v T ^ \alpha) ^ 2}$$
+
+with $v = \lambda ^ \alpha$. The cumulative density and the survival
+function are $F(t) = \frac{vT ^ \alpha}{1 + vT ^ \alpha}$ and
+$S(t) = \frac{1}{1 + vT ^ \alpha}$, so that the hazard function is:
+
+$$\theta(t) = \alpha \frac{v t ^ {\alpha - 1}}{1 + v t ^ \alpha}$$
+
+which is the **log-logistic model**.
+
+If $\alpha = 1$, the hazard reduce to $\theta(t) = v / (1 + vT)$ and is
+therefore decreasing from $v$ for $T\rightarrow 0$ to 0 for
+$T\rightarrow + \infty$.
+
+The derivative of the hazard function is:
+
+$$\theta'(t) = - \frac{\alpha v T ^ {\alpha - 2}}{\left(1 + vT ^ \alpha\right) ^ 2} \left[v T ^ \alpha + (1 - \alpha)\right]$$
+
+If $\alpha < 1$ $\theta'(t)$ is negative for all $T$, so that the hazard
+function is decreasing, from $+\infty$ to 0.
+
+Finally, if $\alpha > 1$, the hazard function is U-shaped, with a
+maximum for $T=\left(\frac{\alpha - 1}{v}\right) ^ {1 / \alpha}$ and
+tends to 0 for $T \rightarrow 0$ and $T \rightarrow + \infty$.
+
+## Proportional hazard models
+
+Suppose that the hazard function can be written as:
+
+$$\theta(t | x) = \lambda(t, \theta) f(x, \beta)$$
+
+It is therefore the product of two functions:
+
+-   the first one depends only on the duration and on some unknown
+    parameters,
+-   the second one depends on some covariates and some unknown
+    parameters, but not on duration.
+
+Consider two individuals characterized by two sets of values for the
+covariates $x_1$ and $x_2$. The ratio of their hazard for a given
+duration is:
+
+$$\frac{\theta(t|x_1)}{\theta(t|x_2)}= \frac{f(x_1, \beta)}{f(x_2, \beta)}$$
+
+and therefore doesn't depend on the duration. This model is called for
+this reason the **proportional hazard model**. The marginal effect of
+one covariate on the hazard is:
+
+$$\frac{\partial \theta(t|x)}{\partial x_k} = \lambda(t, \theta) \frac{\partial f}{\partial x_k}$$
+
+In the special and most common case where $f(x) = e ^ {\beta ^ \top x}$,
+the marginal effect simplifies to $\beta_k \theta(t|x)$ and, therefore,
+the marginal effect is proportional to the hazard (more precisely, it is
+just $\beta_k$ times the hazard).
+
+The proportional hazard model can be estimated using either a full
+parametric or a semi-parametric method. In the first case, the
+functional form of $\lambda(t, \theta)$ should be specified and the full
+set of parameters $(\theta, \beta)$ are jointly estimated. Two natural
+specifications for the baseline hazard function are $\lambda(t) = c$ and
+$\lambda(t) = ct ^ {1 - \alpha}$, which leads respectively to the
+exponentional and the Weibull proportional hazard models. These two
+models are exactly the same as their accelerated failure conter-part,
+except that the parametrization is in general different. For example,
+for the AFM exponentional model, we have: $\ln T = - \ln \theta + U$ and
+$\beta ^ \top x_n = - \ln \theta$, as for the proportional hazard model,
+$\theta = e ^ {\beta x_n}$ so that the opposite coefficients are
+estimated. For example, if $x_k$ is age in years,
+$\hat{\beta}_k = - 0.02$ means that one more year reduce the duration by
+two percent in the AFM model. In the corresponding PH model, we would
+have $\hat{\beta}_k = 0.02$, so that one more year increase the
+conditional probability of failure by 2 percent.
+
+The Weibull and the exponentional models are the only two models which
+belongs to the AFM and the PH family.
+
+Two more specifications of proportional hazard models are often used,
+namely the generalized Weibull model and the Gompertz models.
+
+The Cox proportional hazard model is semi-parametric as only the $f()$
+function is estimated and not the baseline hazard function. It is better
+understood using a simple example. Without lack of generality, consider
+that the observations are arranged in an increasing order of duration.
+Consider a sample of size 3, with $t = (2, 3, 5, 8)$. For time
+$t_1 = 2$, all the observations are at risk (none of them failed
+before). Consider the probability that one observation $n$ fails at time
+$t_1=2$, given that it was at risk. This writes:
+$P(t_n = t_1 | t_n \geq t_1)=\lambda(t_1) f(x_n, \beta)$. The
+probability that an observation fails at $t_1 = 2$ is the sum of this
+expression for the 4 observations:
+$\lambda(t_1)\sum_{n = 1} ^ 4 f(x_n, \beta)$. Finally, the probability
+that observation $n$ fails given that one observation fails is:
+
+$$\frac{\lambda(t_1)f(x_n, \beta)}{\lambda(t_1)\sum_{n = 1} ^ 4 f(x_n, \beta)} = \frac{f(x_n, \beta)}{\sum_{n = 1} ^ 4 f(x_n, \beta)}$$
+
+This probability therefore doesn't depend on the baseline hazard
+function. Moreover, if $f(x_n, \beta) = e ^ {\beta^\top x_n}$, it has a
+logit form: $e^{\beta^\top x_n} / \sum_n e^{\beta^\top x_n}$. As this
+the first observation that fails for $t_1 = 2$, the contribution of this
+observation is:
+
+$$\frac{e^{\beta^\top x_1}}{e^{\beta^\top x_1} + e^{\beta^\top x_2} + e^{\beta^\top x_3}+e^{\beta^\top x_2}}$$
+
+The reasoning is similar for $t_2 = 3$. The set of observations at risk
+is the last three observations and the contribution of observation $2$
+is then:
+
+$$\frac{e^{\beta^\top x_2}}{e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4}}$$
+
+For observation 3, the set of observations at risk reduce to
+observations 3 and 4:
+
+$$\frac{e^{\beta^\top x_3}}{e^{\beta^\top x_3} + e^{\beta^\top x_4}}$$
+
+Finally, for the last observation, the set of observations at risk is
+only this observation, so that the contribution of observation $4$ is:
+
+$$\frac{e^{\beta^\top x_4}}{e^{\beta^\top x_4}} = 1$$
+
+The **partial likelihood** for the whole sample is the product of these
+three contributions:
+
+$$L = \frac{e^{\beta^\top x_1}}{e^{\beta^\top x_1} + e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4} }\times\frac{e^{\beta^\top x_2}}{e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4} }\times \frac{e^{\beta^\top x_3}}{e^{\beta^\top x_3} + e^{\beta^\top x_4}} \times 1$$
+
+A more general expression is obtained by denoting $R_m$ the set of
+observations for which $t_n \geq t_m$, ie the set of observations at
+risk at time $t_m$:
+
+$$L = \prod_{n=1}^N\frac{e^{\beta ^ \top x_n}}{\sum_{n \in R_n}e^{\beta ^ \top x_n}}$$
+
+and the partial log-likelihood is therefore:
+
+$$\ln L = \sum_{n=1}^N\left(\beta ^ \top x_n - \ln \sum_{n \in R_n}e^{\beta ^ \top x_n}\right)$$
+An interesting feature of Cox proportional hazard model is that the
+duration response is only used as a way to order the observations. For
+example, if $t = (1, 2, 3, 4)$ instead of $t = (2, 3, 5, 8)$, we would
+obtain exactly the same likelihood and therefore the same fitted
+parameters.
+
+Censored observations contribute only to the partial likelihood as the
+set of observations at risk for some observations. For example, if
+observation $2$ is censored, the likelihood is:
+
+$$L = \frac{e^{\beta^\top x_1}}{e^{\beta^\top x_1} + e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4} }\times \frac{e^{\beta^\top x_3}}{e^{\beta^\top x_3} + e^{\beta^\top x_4}} \times 1$$
+
+and the general formula for the partial log-likelihood is, denoting
+$\delta_n$ a dummy equal to 0 if observation $n$ is censored and 1
+otherwise:
+
+$$\ln L = \sum_{n=1}^N\delta_n\left(\beta ^ \top x_n - \ln \sum_{n \in R_n}e^{\beta ^ \top x_n}\right)$$
+
+Consider now that the sample includes ties, for example
+$t = (2, 4, 4, 8)$. Durations for $n = 2$ and $n = 3$ are equal because
+of rounding measures and we don't know which observation fails first. If
+the event occurs first for $n=2$, the probability for observation $2$
+and $3$ is:
+
+$$\frac{e^{\beta^\top x_2}}{e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4}} + \frac{e^{\beta^\top x_3}}{e^{\beta^\top x_3} + e^{\beta^\top x_4}}$$
+On the contrary, if the event occurs first or $n=3$:
+
+$$\frac{e^{\beta^\top x_3}}{e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4}} + \frac{e^{\beta^\top x_2}}{e^{\beta^\top x_2} + e^{\beta^\top x_4} }$$
+The probability for observations $2$ and $3$ is the sum of these two
+probabilities and the partial likelihood is then:
+
+$$\left(\frac{e^{\beta^\top x_2}}{e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4}} + \frac{e^{\beta^\top x_3}}{e^{\beta^\top x_3} + e^{\beta^\top x_4}}+\frac{e^{\beta^\top x_3}}{e^{\beta^\top x_2} + e^{\beta^\top x_3} + e^{\beta^\top x_4}} + \frac{e^{\beta^\top x_2}}{e^{\beta^\top x_2} + e^{\beta^\top x_4}}\right)$$
+Therefore, in the case of a tie with two observations, the product of
+two probabilities is replaced by the sum of 4 probabilities. If there
+were a tie with 3 observations, the product of three probabilities would
+be replaced by the sum of 18 probabilities. More generally, with a tie
+of $k$ observations, the number of probabilities that should be computed
+is $k\times k!$. For example, with $k=10$, more than $30$ millions of
+probabilities should be computed. Therefore, this formula can only be
+applied when there are few and "thin" ties. Otherwise, some
+approximations have been proposed by Breslow and Efron.
+
+## Multiple states models
+
+Consider now the case where several events are possible, for example two
+events denoted $a$ and $b$. Let $\tilde{t}_n^a$ and $\tilde{t}_n^b$ the
+duration for individual $n$ for the two events $a$ and $b$. The observed
+duration is $t_n$. Three cases should be considered:
+
+-   $t_n < \mbox{min}(\tilde{t}_n^a, \tilde{t}_n^b)$ (which means that
+    $t_n < \tilde{t}_n ^a$ and $t_n < \tilde{t}_n^b$), the observation
+    is then censored,
+-   $t_n = \mbox{min}(\tilde{t}_n^a, \tilde{t}_n^b)$, the event is:
+    -   $a$ if $\tilde{t}_n ^ a < \tilde{t}_n ^ b$,
+    -   $b$ if $\tilde{t}_n ^ a > \tilde{t}_n ^ b$.
+
+The **competing risk** is a very simple multi-state model which extends the Cox proportional hazard model to the multi-state case. Consider for example state $a$. For an observation $n$, if the event $a$ is observed, we have an observation of a complete spell. Otherwise, if the event is $b$, this means that $t_n = \tilde{t}_n^b < \tilde{t}_n^a$ and the observation is censored as far as we are interested on state $a$. We can therefore estimate the **competing risk** model with two independent Cox PH models:
+
+- for the first one, the event is $a$ and censoring occurs either if the observation is censored or if the event is $b$,
+- for the second one, the event is $b$ and censoring occurs either if the observation is censored or if the event is $a$,
+
+For example, [@bierens2007] consider the duration between prison release and a new crime for former prisoners, the event can take the form of a felony or a misdemeanor and the duration is censored if no new crime has been committed during the period of survey. The survey stops on April 16, 1988 and, as the date of release depends on the individuals, so does the censoring time. The authors consider that recidivism can take the form of a misdemeanor or of a felony. The sample contains $16355$  individuals from $11$ states.
+
+```{r}
+rec <- edf.duration::recidivism
+rec
+```
+
+The duration `time` is the number of days since prison release and `arrest` is a factor with levels `"censored"` (no arrest, the observation is censored), `"misdemeanor"` or `"felony"`. The covariates are `sex` (a factor with levels `"female"` and `"male"`), `race` (a factor with levels `"other"` and `"black"`), `release` (0 if the prisoner was released on parole or probation and 1 otherwise), `age` (the age in thousands of days) and `sent` (the actual time served before release, in thousands of days). The competing risk model can then be estimated using the following two calls to `coxph`:
+
+```{r}
+misd <- coxph(Surv(time, arrest == "misdemeanor") ~ sex + race + 
+                release + age + sent, rec, subset = state == "florida")
+felo <- coxph(Surv(time, arrest == "felony") ~ sex + race + 
+                release + age + sent, rec, subset = state == "florida")
+```
+
+where the `event` argument is a dummy equal to `TRUE` when `arrest` equals `"misdemeanor"` for the first regression and `"felony"` for the second regression. 
+
+The competing risk model can be estimated more simply with a simple call to `coxph` when the `event` argument is a factor for which the first level indicates censored observations. 
+
+```{r}
+rec %>% pull(arrest) %>% levels
+```
+
+As it is the case for the `arrest` variable, the competing risk model is estimated using:
+
+```{r}
+cr <- coxph(Surv(time, arrest) ~ sex + race +  release + age + sent, 
+            rec, subset = state == "florida", id = id)
+```
+
+Note that the `id` argument is mandatory. This is the individual identifier and is really useful only when there are several observations of the same individuals, which is not the case here. 
+
+```{r}
+cr
+```
+
+```{r}
+ud <- edf.duration::UnempDuration
+coxph <- coxph(Surv(duration, censored == "no") ~ gender + age + wage, ud)
+
+ud_exp <- survreg(Surv(duration, censored == "no") ~ gender + age + wage, 
+                  ud, dist = "exponential")
+ud_wei <- update(ud_exp, dist = "weibull")
+ud_norm <- update(ud_exp, dist = "gaussian")
+ud_log <- update(ud_exp, dist = "logistic")
+ud_lnorm <- update(ud_exp, dist = "lognormal")
+ud_llog <- update(ud_exp, dist = "loglogistic")
+gof_omit_cox <- c("iter", "n", "nevent", "statistic.log", "p.value.log", 
+              "statistic.sc", "p.value.sc", "statistic.wald", "p.value.wald", 
+              "statistic.robust", "p.value.robust", "r.squared.max")
+modelsummary::msummary(list(exponential = ud_exp, weibull = ud_wei, 
+                            `log-logistic` = ud_llog, `log-normal` = ud_lnorm, 
+                            `Cox PH` = coxph),
+                       gof_omit = paste(gof_omit_cox, collapse = "|"))
+```
+
+## Interval regression
+
+Sometimes, the exact value of the response is not known, but only an
+interval that contains the value. For example, income is often
+indicated this way in individual surveys:
+
+- less than 10 000 dollars,
+- from 10 to 20 000 dollars,
+- from 20 to 50 000 dollars,
+- more than 50 000 dollars.
+
+Note that in this case, there is no bound for the last cathegory, so
+that we also have a right-censoring problem.
+
+Denote $\mu_l$ and $\mu_u$ the lower and the upper bound of the
+interval and $f$ the density of the distrbution of the variable of
+interest. The three different cases are presented on figure
+@fig-intervreg.
+
+The variable of interest is represented on the horizontal axis and its
+distribution by the density curve. The lower bound and upper bounds
+are respectively denoted $\mu_l$ and $\mu_u$. For the first subfigure,
+we have $\mu_l = 0$, so that the interval is left-censored. On the
+second subfigure, both the lower and the upper bound are
+observed. Finally, on the last subfigure, only the lower bound is
+observed and the interval is therefore right-censored.
+
+::: {#fig-intervreg layout="[[-5,40,-10,40,-5], [-30,40,-30]]"}
+
+![Uncensored interval](./tikz/fig/intervalreg){#fig-surus}
+
+![Left-censored interval](./tikz/fig/intervalreg2){#fig-hanno}
+
+![Right-censored interval](./tikz/fig/intervalreg3){#fig-hanno}
+
+Interval regression
+:::
+
+
+Denoting $F(y_n;\theta_n)$ the cumulative density function for $y$,
+the general formula for the probability that enters the likelihood
+function for one observation is: $F(\mu^u_n ; \theta_n) - F(\mu^l_n ;
+\theta_n)$ which simplifies respectively to $F(\mu^l_n)$ and $1 -
+F(\mu^u_n)$ for the cases where $\mu_l = 0$ (left-censored interval)
+and $\mu_u = \infty$ (right-censored interval).
+
+Popular choices of distribution functions are the log-normal and the
+Weibul distribution. For first one, a simple parametrization is to set
+the mean of $\ln y$ equal to $\beta ^ \top x_n$ and its standard
+deviation to $\sigma$. The probability is then:
+
+$$
+\Phi\left(\frac{\ln \mu_u - \beta ^ \top x_n}{\sigma}\right) - 
+\Phi\left(\frac{\ln \mu_l - \beta ^ \top x_n}{\sigma}\right)
+$$
+
+
+For the Weibull distribution, the cummulative density function is:
+$F(y ; \lambda, k) = 1 - \exp{ -\left(\frac{y}{\lambda}\right) ^ k}$
+and the expected value is proportional to $\lambda$ ($\mbox{E}(y) =
+\lambda \Gamma(1 + 1 / k)$). Setting $\lambda_n = \beta ^ \top x_n$,
+we get:
+
+$$
+e^{-k \mu^l_n e^{-k \beta^\top x_n}} - e^{-k \mu^u_n e^{-k \beta^\top x_n}}
+$$
+
+An interesting case of interval response occurs in ecological
+economics, for which one of the method used to estimate the value of
+non-market ressources is contingent valuation. Consider for example
+the `kakadu` data set, which was used by @CARS:WILK:IMBE:94 and
+@WERN:99. The study concerns the Kakadu Conservation zone, and the
+question was whether mining should proceed in this zone or it should
+be added to the Kakadu National park. The double-bouded,
+discrete-choice elicitation method of @HANE:91 is used; a respondant
+is asked whether he is willing to pay a pre-chosen randomly assigned
+amount to preserve the zone. If the answer is yes (no), he is asked
+wheter he is willing to pay a higher (lower) pre-chosen amount. Four
+sets of dollar amounts wer used ($[A: 100, 250, 50], [B: 50, 100, 20],
+[C: 20, 50, 5], \mbox{ and } [D:5, 20, 2]$). The response is therefore
+a factor with 4 modalities: (no, yes), (yes, no), (no, no) and (yes,
+yes). For the first two levels, the interval is closed as the willing
+to pay is in the interval formed by the two successive amounts. For
+(no, no), the willing to pay is lower than the second amount and for
+(yes, yes), it is greater than the second amount. In the Kakadu, the
+lower and the upper bonds are respectively `lower` and `upper` and
+`NA`s are indicated for unbounded willingness to pay. The interval
+regression model can be estimated using the `survival::survreg`
+function. The model is described as usual by a formula, but the
+response should be a `Surv` object, create by the homonymous
+function. The lower and the upper bounds correspond to the `time` and
+the `time2` argument and the `type` argument should be set to
+`"interval2"`. The set of covariates is the one used by [@WERN:99,
+table 4 p. 484]. The results are presented on table @tbl-intkakadu.
+
+
+```{r }
+#| label: tbl-intkakadu
+#| tbl-cap: "Interval regression for the Kakadu data set"
+library("survival")
+kakadu <- micsr::kakadu %>% mutate(upper = ifelse(upper == 999, NA, upper),
+                            lower = ifelse(lower == 0, NA, lower))
+kak_weil <- survreg(Surv(time = log(lower), time2 = log(upper), 
+                         type = "interval2") ~ jobs + lowrisk + 
+                      aboriginal + finben + mineparks + moreparks + 
+                      envcon + age + income + major, 
+                    kakadu, dist = "weibull")
+kak_ln <- update(kak_weil, dist = "lognormal")
+modelsummary::msummary(list(Weibull = kak_weil, `Log-normal` = kak_ln))
+```
+
+In this example, the log-normal model fits slightly better the data
+than the Weibull model. The `predict` methods enables to obtain the
+fitted values (or the predicted values if a new data frame is
+provided). The argument `type` can be set to `"response"` to get
+fitted value of the response or to `"link"` to obtain the linear
+predictor. For example, the mean and the median values of the
+willingness to pay are, for the two models:
+
+
+```{r }
+c(mean(predict(kak_weil)), median(predict(kak_weil)))
+c(mean(predict(kak_ln)), median(predict(kak_ln)))
+```
+
+
+
+```{r }
+tibble(weibul = predict(kak_weil), lognorm = predict(kak_ln)) %>%
+    pivot_longer(1:2, names_to = "distribution", values_to = "y") %>% 
+    ggplot(aes(y)) + geom_density(aes(linetype = distribution)) +
+    coord_cartesian(xlim = c(0, 5E03))
+```
+
+
+```{r eval = FALSE, echo = FALSE}
+va <- as.data.frame(model.response(model.frame(kak_weil))) %>% bind_cols(kak_weil$linear.predictors) %>% set_names(c("time1", "time2", "status", "lp"))
+
+mylp <- drop(model.matrix(kak_weil) %*% coef(kak_weil))
+k <- exp(kak_weil$icoef[2])
+k <- kak_weil$scale
+
+summary(exp(mylp) ^ (- k) * gamma(1 + k))
+summary(exp(- mylp) ^ (- k) * gamma(1 + k))
+summary(exp(mylp)   ^ (- k) * (log(2)/2) ^ k)
+summary(exp(- mylp) ^ (- k) * (log(2)/2) ^ k)
+
+summary(exp(mylp)   ^ (- 1 / k) * (log(2/2)) ^ (1 / k))
+summary(exp(- mylp) ^ (- 1 / k) * (log(2)/2) ^ (1 / k))
+summary(exp(mylp) ^ (- k) * gamma(1 + k))
+
+
+
+summary(predict(kak_weil))
+
+
+kakadu %>% select(lower, upper) %>%
+    add_column(lp_ln = kak_ln$linear.predictors,
+               lp_we = kak_weil$linear.predictors) %>%
+    mutate(dp_ln = exp(lp_ln + 0.5 * kak_ln$scale ^ 2),
+           dp_we = exp( lp_we / kak_weil$scale) * gamma(1 + 1 / kak_weil$scale),
+           dpmed_we = exp(lp_we) * log(2) ^ (1 / kak_weil$scale)) %>%
+    summarise(mean_ln = mean(dp_ln), med_ln = median(dp_ln),
+              mean_we = mean(dp_we), med_we = median(dp_we))
+
+
+```
+

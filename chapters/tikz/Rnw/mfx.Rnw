@@ -1,0 +1,91 @@
+% a normal curve with given mu equal 1
+\documentclass[crop, tikz]{standalone}
+
+\usepackage{tikz,eurosym,rotating}
+
+\begin{document}
+
+<<echo = FALSE, results = tex>>=
+source("indifference.R")
+xmin <- -2
+xmax <- 4
+ymin <- -0.05
+ymax <- 0.6
+
+xdim <- xmax - xmin
+ydim <- ymax - ymin
+
+#xdim <- 7
+#ydim <- 1
+xunit <- round(xcm / xdim, 2)
+yunit <- round(ycm / ydim, 2)
+mu1 <- 0.5
+mu2 <- 1.5
+sigma <- 1
+Pi1 <- 1 - pnorm(0, mu1)
+Pi2 <- 1 - pnorm(0, mu2)
+xs <- seq(xmin, xmax, 0.01)
+
+ys1 <- dnorm(xs, mean = mu1, sd = sigma)
+ys2 <- dnorm(xs, mean = mu2, sd = sigma)
+
+mills <- function(x) exp(dnorm(x, log = TRUE) - pnorm(x, log.p = TRUE))
+
+E1 <- mu1 + sigma * mills(mu1)
+E2 <- mu2 + sigma * mills(mu2)
+
+
+cat(paste("\\begin{tikzpicture}[x = ", xunit, "cm, y = ", yunit, "cm]\n"))
+# draw the axes
+
+matptsup <- rbind(c(mu1+mu2, dnorm(mu1+mu2, mu1)),
+                  cbind(seq(mu1+mu2, xmax, 0.01),  dnorm(seq(mu1+mu2, xmax, 0.01), mu1)),
+                  c(xmax, dnorm(xmax, mu2)),
+                  cbind(seq(xmax, mu1+mu2, -0.01), dnorm(seq(xmax, mu1+mu2, -0.01), mu2)))
+                    
+cat(paste("\\fill[color = gray!20] ", TIKmat2path(matptsup), " -- cycle;", sep = ""))
+
+TIKline(list(c(xmin, 0), c(xmax, 0)), options = "->")
+TIKline(list(c(0, ymin), c(0, ymax)), options = "->")
+TIKnode(c(xmax, 0), "$y$", pos = "right")
+
+TIKline(cbind(xs, dnorm(xs, mu1)))
+TIKline(cbind(xs, dnorm(xs, mu2)))
+
+TIKline(cbind(xs[xs > 0], dnorm(xs[xs > 0], mu1) / Pi1), options = "dashed")
+TIKline(cbind(xs[xs > 0], dnorm(xs[xs > 0], mu2) / Pi2), options = "dashed")
+
+TIKline(list(c(E1, -0.04), c(E2, -0.04)), options = "->, thick")
+
+TIKnode(c(E1, 0), "$\\mbox{E}_1$", pos = "below")
+TIKline(list(c(E1, -0.01), c(E1, +0.01)), options = "thick")
+
+TIKnode(c(E2, 0), "$\\mbox{E}_2$", pos = "below")
+TIKline(list(c(E2, -0.01), c(E2, +0.01)), options = "thick")
+
+TIKnode(c(mu1+mu2+0.03, 0), "$\\mu_1+\\mu_2$", pos = "below")
+TIKline(list(c(mu1+mu2, -0.005), c(mu1+mu2, +0.005)))
+
+TIKnode(c(mu1, 0), "$\\mu_1$", pos = "below")
+TIKline(list(c(mu1, -0.005), c(mu1, +0.005)))
+
+TIKnode(c(mu2-0.03, 0), "$\\mu_2$", pos = "below")
+TIKline(list(c(mu2, -0.005), c(mu2, +0.005)))
+
+TIKline(list(c(mu1, 0), c(mu1, dnorm(mu1, mu1) / Pi1)), options = "dotted")
+TIKline(list(c(mu2, 0), c(mu2, dnorm(mu2, mu2) / Pi2)), options = "dotted")
+TIKline(list(c(mu1+mu2, 0), c(mu1+mu2, dnorm(mu1+mu2, mu2))), options = "dotted")
+TIKline(list(c((mu1+mu2)/2, 0), c((mu1+mu2)/2, dnorm((mu1+mu2)/2, mu2))), options = "dotted")
+
+step <- 0.03
+TIKnode(c(xmax - 2.8, ymax), "$\\mu_1=\\alpha+\\beta x_1$", pos = "right")
+TIKnode(c(xmax - 2.8, ymax - step), "$\\mu_2=\\alpha+\\beta x_2$", pos = "right")
+TIKnode(c(xmax - 2.8, ymax - step * 2), "$\\mbox{E}_1=\\mbox{E}(y\\mid x_1)=\\alpha+\\beta x_1 + \\sigma r\\left(\\frac{\\alpha+\\beta x_1}{\\sigma}\\right)$", pos = "right")
+TIKnode(c(xmax - 2.8, ymax - step * 3), "$\\mbox{E}_2=\\mbox{E}(y\\mid x_2)=\\alpha+\\beta x_2 + \\sigma r\\left(\\frac{\\alpha+\\beta x_2}{\\sigma}\\right)$", pos = "right")
+@   
+\end{tikzpicture}
+
+\end{document}
+
+
+

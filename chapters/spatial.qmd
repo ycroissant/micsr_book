@@ -1,0 +1,842 @@
+<!-- Spatial correlation occurs when one can define a distance relationship -->
+<!-- between observations. The notion of distance is broad, but we'll -->
+<!-- consider in this section only geographical distance. For each -->
+<!-- observation, one can in this case define a set of neighboors. If the -->
+<!-- geographical representation of an observation is a **polygon** (which -->
+<!-- is the relevant choice for countries or region), two observations can -->
+<!-- for example said to be neighboors if they have a common border. If the -->
+<!-- geographical representation of an observation is a **point** (for -->
+<!-- example for a city), two observations are neighboors if the distance -->
+<!-- between them is less than, say, 100 kilometers. Once the set of -->
+<!-- neighboors have been defined for every observations, weights can be -->
+<!-- computed. The weights can be equal or may depend on the distance -->
+<!-- between the observation and its neighboors.  -->
+
+```{r}
+#| echo: false
+source("../_commonR.R")
+library(generics)
+st_nb <- function(x, queen = TRUE){
+    .crs <- st_crs(x)
+    .nb <- poly2nb(x, queen = queen)
+    as(nb2lines(.nb, coords = st_centroid(st_geometry(x))), "sf")
+}
+glance.htest <- function(x, ...){
+    .stat <- x$statistic %>% unname
+    .pval <- x$p.value
+    .estimate <- x$estimate[1] %>% unname
+    c(estimate = .estimate, statistic = .stat, pvalue = .pval)
+}
+```
+
+# Spatial econometrics
+
+## Simple features
+
+The first task is to get geographical informations about the
+observations. This is usualy done by importing external files in
+**R**, for example shapefiles. This task is performed by the **sf**
+library (for **s**imple **f**eature) and the result is a `sf`
+object. To understand what a simple feature is, it is best to
+construct a simple one "by hand". The geographical representation of
+an observation is a `sfg` for simple feature geometry. It can be a
+point, a set of points that forms a line or a polygon if the line ends
+where it started.
+
+We first load the **sf** package:
+
+```{r message = FALSE}
+library(tidyverse)
+library(sf)
+library(micsr)
+```
+The message indicates that **sf** use three important external
+libraries:
+
+- **GEOS** to compute topological operations,
+- **GDAL** to read external files with a large variety of format,
+- **PROJ** to transform the coordinates in a specific **CRS**
+  (coordinate reference system). 
+
+We consider in this example the three main cities in
+France. For Paris, the latitude^[The latitude is a coordinate that
+specifies the north/south position of a point on earth. Its is 0 at
+the equator and 90 at the poles. The value is positive in the northern
+emispherus and negative in the northern hemisphere and positive in the
+southern hemisphere.] is $48.87$ and the longitude^[The longitude is a
+coordinate that specifies the east/west position of a point on
+hearth. Meridians are lines that connect the two poles and the
+longitude is the angular value of the position of a point to the
+reference (Greenwhich) meridian.] is $2.33$.
+
+The `st_point` function can be used to construct a `sfg` for Paris:
+
+```{r }
+paris <- st_point(c(2.33, 48.87))
+paris
+```
+We then perform the same operation for Lyon and Marseille:
+
+```{r }
+lyon <- st_point(c(4.85, 45.76))
+marseille <- st_point(c(5.37, 43.30))
+```
+
+We then construct a `sfc` (simple feature collection) which is a set
+of `sfg`s. The different elements are entered as unnamed arguments of
+the function and a `crs` argument can be used to specify the
+**CRS**. Several format are available:
+
+- **proj4string** is a character string,
+- **EPSG** is an integer,
+- **WKT** (for well known text) is a list.
+
+We can use here either `"+proj=longlat +datum=WGS84 +no_defs"` or
+`4326`. The datum is the representation of the earth from which the
+latitudes and the longitudes are computed. 
+
+```{r }
+cities_coords <- st_sfc(paris, lyon, marseille, crs = 4326)
+cities_coords
+```
+Printing the `sfg` gives interesting informations, as the bounding box
+(the coordinates of the rectangle that contains the data) and the **CRS**.
+
+Finally, we can construct a `sf` object by putting together the `sfg`
+and a tibble containing informations about our cities. 
+
+```{r }
+cities_data <- tibble(pop = c(2.161, 0.513, 0.861),
+                      area = c(105.4, 47.87, 240.6))
+cities <- st_sf(cities_data, cities_coords)
+cities
+```
+
+A `sf` is just a data frame with a specific column that contains the
+coordinates of the observations. This column (called geometry) can be
+extracted using the `st_geometry` function:
+
+```{r }
+#| results: "hide"
+#| echo: true
+cities %>% st_geometry
+```
+
+and is "sticky", which means that if some column are selected, the
+geometry column is always returned:
+
+```{r }
+cities %>% select(pop)
+```
+
+We can then plot our three cities, along with a map of France, which
+is obtained using the `geodata::gadm` function.^[This function is an
+interface to the `http://www.gadm.org` site which provides the
+boundaries of all countries in the world with different administrative
+level. The second argument set to 1 means that we want the boundaries
+of French regions and the third argument set to `"."` means that the
+file is stored in the current directory.]. 
+
+```{r }
+#france <- geodata::gadm("FR", 1, ".")
+france <- readr::read_rds("gadm41_FRA_1_pk.rds") %>% terra::vect()
+france %>% class
+```
+
+`france` is not an object of class `sf`, so we first coerce it to a
+`sf` and then we extract the geometry:
+
+```{r }
+france <- france %>% st_as_sf %>%
+    select(region = NAME_1) %>%
+    st_set_crs(4326)
+```
+Imported vector data are often large and unnecessary detailed:
+
+```{r }
+france %>% object.size %>% format("MB")
+```
+
+and they can be simplified using the `rmapshaper::ms_simplify`
+function, with a `keep` argument which indicates the degree of
+simplification ($0.01$ means that we seek to obtain a `sf` 100 times
+lighter than the initial one).
+
+```{r }
+france <- france %>%
+    rmapshaper::ms_simplify(keep = 0.01, keep_shapes = FALSE)
+france %>% object.size %>% format("MB", digits = 2)
+```
+
+`sf` can be ploted using thematic map using **ggplot**, which has a
+`geom_sf` function. For example, to get points with a size
+proportional to the population of the cities, we can use:
+
+```{r }
+france %>% ggplot() + geom_sf() +
+    geom_sf(data = cities, aes(size = pop))
+```
+
+**sf** provides several function to compute values of interest, like
+distance between two points. For example, to get the distance from
+Paris to Lyon and Marseille, we would use:
+
+```{r }
+st_distance(cities[1, ], cities[2:3, ]) %>% units::set_units(km)
+```
+`st_distance` always returns a matrix, the number of elements of the
+first (second) argument being the number of rows (columns). If only
+one argument is supplied, the result is a square matrix with 0 on the
+diagonal.
+
+`st_area` computes the area of a polygon.
+
+```{r }
+st_area(france) %>% units::set_units(km ^ 2)
+```
+
+## Computation on sf objects
+
+The regression discontinuity framework can be adapted to consider
+geographic discontinuities. Some entities are considered on both sides
+of the border and the forcing variable is then the distance to the
+border.^[with the convention that the sign of the distance is
+different on both sides of the border.] 
+
+The `us_counties` data set contains the borders of US counties:
+
+```{r }
+#| message: false
+us_counties %>% print(n = 3)
+```
+
+@KUMA:18 investigates the effect of a legal restriction on home equity
+extraction which is specific to Texas on mortgage defaults. He
+measures mortgage default rates in Texas and in the bordering states
+and compares mortgage default rates for counties which are closed to
+the Texas border (on both sides). Let's first plot the map of the
+counties. It is easily done with **ggplot2** which provides a specific
+`geom` called `geom_sf` (see @fig-counties):
+
+```{r }
+#| label: fig-counties
+#| fig-cap: Map of American Counties
+#| warning: false
+us_counties %>%
+    filter(! state %in% c("Alaska", "Hawaii")) %>%
+    ggplot() + geom_sf()
+```
+
+The polygons can be merged using the `group_by` / `summarise`
+functions of **dplyr**. If the `sf` is grouped by states, the
+statistics computed by the `summarise` function are done by state and
+the `geometry` now contains the coordinates of the states. With a void
+call to `summarise`, we get only this new `geometry` and can use it to
+plot a map of states (see @fig-states):
+
+
+```{r }
+#| label: fig-states
+#| fig-cap: Map of American States
+#| warning: false
+states <- us_counties %>%
+    filter(! state %in% c("Alaska", "Hawaii")) %>%
+    group_by(state) %>%
+    summarise()
+states %>% ggplot() + geom_sf()
+```
+
+To get the border state, we use spacial indexation, ie we use the `[`
+operator. The first argument is used to select rows, it is normaly a
+vector of integers (the positions of the lines to extract), a vector
+of characters (the names of the lines to extract) or a logical
+vector. Here we can index a `sf` by another `sf` and the result is (by
+default) a new `sf` containing the elements of the first one which has
+any common point with the second one:
+
+```{r }
+border_states <- states[filter(states, state == "Texas"), ]
+border_states
+```
+
+We then compute the Texas border. It is defined by the common points
+of the borders of Texas and border states. This is obtained using the
+`st_intersection` function which return 4 lines (one for each border
+state) and the border is then obtain by merging these 4 lines using
+the `st_union` function. The result is presented on @fig-border.
+
+```{r }
+#| fig-cap: Border States and Texas Borders
+#| label: fig-border
+#| warning: false
+border <- st_intersection(st_geometry(filter(border_states, state == "Texas")),
+                          st_geometry(filter(border_states, state != "Texas"))) %>%
+    st_union
+border_states %>% ggplot() +
+    geom_sf() +
+    geom_sf(data = border, color = "red", linewidth = 1) +
+    geom_sf_label(aes(label = state)) 
+```
+
+We then select the counties that belong to any of these states and
+we compute the distance to the Texas border. It is defined as the
+distance between the centroid of the county and the closest point of
+the border. The centroids are obtained using the `st_centroid`
+function and the distance by the `st_distance` function.
+
+```{r }
+border_counties <- us_counties %>%
+    filter(state %in% pull(border_states, state))
+centroids <- border_counties %>% st_geometry %>% st_centroid
+dists <- st_distance(centroids, border)[, 1]
+head(dists)
+```
+
+`st_distance` returns a matrix of distance, each column corresponding
+to a line of the second argument. As here there is only one line, we
+convert this matrix to a vector by taking its first column. Note that
+the returned value have a unit of measurment, meters in our case. We
+can convert these distance in miles like in the original article by
+using `units::set_units`:
+
+```{r }
+dists <- dists %>% units::set_units(miles)
+```
+
+We then add these distances to our `sf`:
+
+```{r }
+border_counties <- border_counties %>% add_column(dists)
+```
+
+As in the original article , we draw on @fig-close_counties_dist counties
+which are less than 25, 50, 75 and 100 miles from the border:
+
+
+```{r }
+#| label: fig-close_counties_dist
+#| fig-cap: Counties close to the Texan border
+#| warning: false
+border_counties %>%
+    mutate(dist_class = cut(dists, c(0, 25, 50, 75, 100))) %>%
+    ggplot() + geom_sf(aes(fill = dist_class)) +
+    scale_fill_discrete(na.translate = FALSE) +
+    scale_fill_brewer(na.translate = FALSE) + 
+    geom_sf(data = border) + theme_minimal()
+```
+
+Finally, we select the relevant variable from the data set of the
+paper, called `mortgage_default` and we merge it with
+`border_counties`:
+
+```{r }
+mortgage_defaults <- mortgage_defaults %>%
+    full_join(border_counties, by = c("fips")) %>%
+    st_sf(agr = "geometry") %>%
+    mutate(dists = ifelse(state == "Texas", dists, - dists))
+```
+
+Note that the first argument of `dplyr::full_join` is a tibble, so
+that the result is also a tibble. To coerce it to a `sf`, we use the
+`sf::st_sf` which have two arguments: a tibble and a second argument
+called `arg` that should contain the name of the column that contains
+the geographic coordonates.
+
+Finally, we plot the discontinuity on @fig-disc_texas.
+
+```{r }
+#| warning: false
+#| fig-cap: "Discontinuity of the mortgage defaults data set"
+#| label: fig-disc_texas
+mortgage_defaults %>%
+    filter(abs(dists) < 50) %>% 
+    mutate(state = ifelse(state == "Texas", "Texas", "other")) %>% 
+    ggplot(aes(dists, default)) +
+    micsr::geom_binmeans(aes(size = after_stat(n)), shape = 21) +
+    geom_smooth(aes(linetype = state, weight = loans), method = "lm", se = FALSE)
+```
+
+## Spatial correlation
+
+In order to analyse spatial correlation between units, it is
+essential:
+
+- first to identify other units that will considered as neighbours,
+- second to give a weight to each neighbour.
+
+These operations are easily performed using the **spdep** package. 
+
+
+### Two examples
+
+To illustrate, we'll use two data sets. 
+
+#### Agglomeration economies and diseconomies
+
+The first one is from @WHEE:03.
+
+```{r }
+agglo_growth
+```
+@WHEE:03 investigates the existence of:
+
+- agglomeration economies, which implies that the growth of a given
+  territory will be positively correlated with its size, 
+- agglomeration diseconomies for large cities which experience
+  congestion, crime, pollution, etc.
+
+The hypothesis is therefore that the relation between size and growth
+should inverted U shaped, which means that for small territories, the
+agglomeration economies effect is dominant, as for large territories,
+the agglomeration diseconomies becomes dominant. The data set contains
+3106 US counties, which are identified by their **fips**
+code. @WHEE:03 use either the growth of the population and of the
+labor force between 1980 to 1990 as the response, the main covariate
+being the logarithm of population or labor force in 1980. We'll
+reproduce some of his results using counties of Louisiana. We first
+join the tibble to a `sf` called `us_counties` which contains the
+geometries of the counties. 
+
+```{r }
+louisiana <- us_counties %>%
+    right_join(agglo_growth, by = "fips") %>%
+    filter(state == "Louisiana")
+```
+Note the use of the quite unusual `dplyr::right_join` function. It is relevant
+to use it here because the `###_join` functions return an object of
+the first class of its first argument (a `sf` in our case).
+
+We first plot a thematic map, with colors for counties related to the
+growth of the population (`pop_gr`). It is best create first a
+catogerical variable using `base::cut`:
+
+```{r }
+louisiana %>%
+    mutate(pop_gr = cut(pop_gr, (-3:3) / 10)) %>% 
+#    mutate(pop_gr = cut(pop_gr, (0:6) / 10)) %>%
+    ggplot() + geom_sf(aes(fill = pop_gr)) +
+    scale_fill_brewer(palette = "Oranges")
+```
+
+The inverted U shaped hypothesis between the log of the initial
+population and the growth rate can be tested by regressing the growth
+rate on the log population and its square if the later coefficient is
+negative.
+
+```{r }
+mod1 <- lm(pop_gr ~ poly(log(pop), 2, raw = TRUE), louisiana)
+summary(mod1)
+```
+The coefficient of the square term is significant and we get a maximum
+growth for the fitted model as a value of `log(pop)` equal to $0.213
+/ 0.0087 / 2 = 12.20$, ie a population of about 200 thousands
+inhabitants. 
+
+This result can be illustrated graphically with a scatterplot with the
+growth of population and the logarithm of the initial population and
+add a fitting line:
+
+```{r }
+louisiana %>% ggplot(aes(log(pop), pop_gr)) +
+    geom_point() +
+    geom_smooth(method = "lm", formula = y ~ poly(x, 2, raw = TRUE), se = FALSE)
+```
+The inverted U shaped is apparent. This is confirmed by the result of
+the regression:
+
+
+#### Solow model
+
+The second example is @ERTU:KOCH:07 who estimate a growth model for
+the countries of the world taking spatial correlation into account. 
+
+Note that this table has two geometry columns, polygons for the
+borders of the countries (`border`) and points for the capitals
+(`center`). Note also that the active geometry column is
+`center`. Following @ERTU:KOCH:07, we compute the relevant variables
+for the estimation of a growth model:
+
+- the log of the saving rate,
+- the log of the sum of the growth rate of the labor force, the rate
+  of depreciation and the rate of technical progress; as the later two
+  variables are difficult to measure, it is assume that their sum is
+  equal to 0.05 for all the countries.
+- the annual growth rate, the difference of the logs of the gdp for
+  1995 and 1960 divide by 35.
+
+```{r }
+sp_solow <- sp_solow %>% st_set_geometry("border")
+sp_solow <- sp_solow %>%
+    mutate(lns = log(saving), lnngd = log(labgwth + 0.05),
+                    growth = (log(gdp95) - log(gdp60)) / 35)
+```
+
+We can then plot the countries of the world with their capitals, with
+colors depending on the growth rate:
+
+```{r }
+sp_solow %>%
+    mutate(growth = cut(growth, c(-0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08))) %>%
+    ggplot() + geom_sf(aes(fill = growth)) +
+    geom_sf(data = st_set_geometry(sp_solow, "point"), aes(size = gdp60)) +
+    scale_fill_brewer(palette = "RdBu") +
+    scale_size(range = c(0, 1)) + 
+    theme_minimal()
+```
+
+The basic solow model is then estimated:
+
+```{r }
+lm(log(gdp95) ~ I(lns - lnngd), sp_solow) %>% summary
+```
+
+### Contiguity and weights
+
+To get the matrix of contiguity, we use the `spdep::poly2nb` function:
+
+```{r }
+#| message: false
+library(spdep)
+nb_louis <- poly2nb(louisiana)
+nb_louis
+```
+The print method indicates the number of contiguity links
+(276). Instead of storing this links in a full matrix (with 1 for
+contiguis counties and 0 otherwise) which would have 58 ^ 2 = 3364$
+cells with only 276 of them with a value of 1 (about 8%), a `nb`
+object is returned. It is a list of 58 vectors which contain, for each
+observation the positions of its neighboors. For example
+
+```{r }
+nb_louis %>% head(3)
+```
+The first two counties have 5 neighboors and the third one has 6. A
+`summary` method provides more details. `poly2nb` has a `queen`
+argument which is `TRUE` by default. Queen contiguity means that two
+polygons which have one common point are neighboors. Setting `queen`
+to `FALSE` implies that rook continuity is used. In this case, only
+counties which have a common border are neighboors. 
+
+
+```{r }
+nb_louis_rook <- poly2nb(louisiana, queen = FALSE)
+```
+
+Printing `nb_nc_rook`, one can check that the number of contiguity
+links (268) is slightly lower than previously (276). `nb` objects
+can't be ploted as is with **ggplot**. We provide a convenient `st_nb`
+function which perform this task, as it returns a `sf` object:
+
+
+```{r }
+louisiana %>%
+    ggplot() +
+    geom_sf(fill = NA) +
+    geom_sf(data = st_nb(louisiana), color = "red") +
+    geom_sf(data = st_nb(louisiana, queen = FALSE), color = "blue") +
+    theme_minimal()
+```
+
+We first plot queen contiguity links in red and then rook contiguity
+links in blue, so that the specific queen contiguity links appears in
+red.
+
+A matrix of weight is obtained by using the `nb2listw` function:
+
+```{r }
+W <- nb_louis %>% nb2listw
+```
+which returns a `listw` object which contains two lists: the first one
+(`neighbours`) is the same as the one of the `nb` object. The second
+one contains weights:
+
+```{r }
+W$weights %>% head(2)
+```
+
+We can see that weights of neighbours for a given observation are all
+equal and sum to one (for example 0.25 for the first observation which
+has 4 neighbours). Therefore, premultiplying a vector $(y - \bar{y})$ by $W$
+results in a vector with typical value $\sum_j w_{ij}
+y_j - \bar{y} = \tilde{y}_i - \bar{y}$
+
+A `nb` and a `listw` object can be coerced to matrices using the
+`nb2mat` and `listw2mat` functions.
+
+
+```{r }
+sp_solow2 <- sp_solow %>% na.omit %>% st_set_geometry("point")
+d <- dnearneigh(st_centroid(st_geometry(sp_solow2)), 0, Inf)
+w <- nb2listwdist(d, st_centroid(st_geometry(sp_solow2)),
+             type = "idw", alpha = -1, style = "W") %>% .$weights %>% .[[1]]
+```
+
+### Tests for spatial correlation
+
+The spatial correlation hypothesis can be tested either for a specific
+variable or using the residuals of a linear model regression. Two
+principal tests have been proposed. The first one is the Moran test,
+the statistic being defined as:
+
+$$
+\frac{(y - \bar{y})^\top W (y - \bar{y})}{(y - \bar{y})^\top (y - \bar{y})} =
+\frac{\sum_i (y_i  - \bar{y})(\tilde{y}_i - \bar{y})}{\sum_i (y_i  - \bar{y})^2}
+$$
+
+which is simply the ratio of the covariance between $y$ and
+$\tilde{y}$ and the variance of $y$. It therefore can be obtained as
+the coefficient of $y$ in a linear regression of $\tilde{y}$ on
+$y$. If the variance of $\tilde{y}$ and $y$ were equal, it would also
+be the coefficient of correlation and can therefore be interpreted as
+such, even it is not guarentee to lies in the -1 +1 interval.
+
+The Moran test is computed using the `spdep::moran.test` function
+which takes as argument a series and a `listw` object:
+
+```{r }
+moran.test(louisiana$pop_gr, W) %>% glance
+```
+
+```{r include = FALSE}
+Y <- louisiana$pop_gr
+N <- length(Y)
+Wmat <- W %>% listw2mat
+DX <- outer(Y, Y, "-") ^ 2
+(sum(Wmat * DX) / N) / (sum((Y - mean(Y)) ^ 2) / (N - 1)) / 2 
+geary.test(louisiana$pop_gr, W) %>% .[["estimate"]] %>% unname %>% .[1]
+mrn <- moran.test(louisiana$pop_gr, W) %>% .[["estimate"]] %>% unname %>% .[1]
+(N - 1) / N / 2 * (1 - 2 * mrn + sum( (Y - mean(Y)) ^ 2 * apply(Wmat, 2, sum)) / sum( (Y - mean(Y)) ^ 2))
+```
+
+The value of the statistic is $0.136$ in our example.  Under the
+hypothesis of no correlation, the expected value of this statistic is
+$- 1 / (N-1)$ and the expression of the variance can be found in
+@BIVA:WONG:18. The standardized statistic is asymptotically normal.
+
+An alternative to the $I$ Moran's test is Geary's $C$ test, which is
+defined as:
+
+$$
+C = \frac{N - 1}{2N}\frac{\sum_n \sum_m w_{nm} (y_n - y_m) ^ 2}{\sum_n
+(y_n - \bar{y})^ 2}
+$$
+
+Introducing deviations from mean in the previous expression and developping, we
+get:
+
+$$
+C = \frac{1}{2}\frac{N - 1}{N} \left(1 - 2 I + \frac{\sum_n (y_m-
+\bar{y}) ^ 2 \sum_m w_{mn}}{\sum_n (y_n - \bar{y}) ^ 2}\right)
+$$
+
+If the weight matrix were symetric, as $\sum_n w_{nm} = 1$, we also
+would have $\sum_m w_{mn} = 1$, so that the last term is one and $C =
+\frac{N - 1}{N}(1 - I)$. Therefore, we can expect $C$ to be close to
+$(1 - I)$. Geary's test is implemented in the `spdep::geary.test` function
+
+```{r }
+geary.test(louisiana$pop_gr, W) %>% glance
+```
+These tests are unconditional tests of spatial correlation. The same
+tests can be performed on the residuals of least squares models.
+
+```{r }
+model_louisiana <- lm(pop_gr~poly(log(pop),2,raw =TRUE), louisiana)
+lm.morantest(model_louisiana, W) %>% glance
+```
+The hypothesis of no spatial correlation is still rejected at the 5%
+level, but the p-value is much higher than the one associated with the
+unconditionnal test. 
+
+
+### Local spatial correlation
+
+A first glance of local spatial correlation can be obtained using the
+Moran's plot, implemented in the `spdep::moran.plot` function, where
+$y_n - \bar{y}$ is on the $x$ axis and $\tilde{y}_n - \bar{y}$ on the
+$y$ axis. Therefore, both variables have zero mean and the intercept
+of the fitting line is therefore 0, the slope being the Moran test.
+
+```{r }
+moran.plot(louisiana$pop_gr, W)
+```
+Each observation is situated in one of the 4 quarter of
+plane. Observations in the:
+
+- the upper-right quarter are *"high-high"* observations, which means
+  that the value of $y$ for observation $n$ and its neighbours are
+  higher than the sample mean,
+- the lower-left quarter are *"low-low"* observations, which means
+  that the value of $y$ for observation $n$ and its neighbours are
+  lower than the sample mean,
+- the upper-left quarter are *"low-high"* observations, which means
+  that the value of $y$ for observation $n$ are lower than the sample
+  mean and its neighbours are higher than the sample mean,
+- the lower-right quarter are *"high-low"* observations, which means
+  that the value of $y$ for observation $n$ are higher than the sample
+  mean and its neighbours are lower than the sample mean.
+
+In case of no spatial correlation, the points should be randomly
+disposed around the origin and the slope of the regression line should
+be 0. On the contrary, in case of positive spatial correlation, a
+majority of points should be of the *"low-low"* or *"high-high"*
+cathegory and the regression line should have a positive slope. 
+
+@ANSE:95 proposed local versions of Moran and Geary's test. We then
+have for each observation $I_n$ and $G_n$ so that $\sum_n I_n$ and
+$\sum_n G_n$ are respectivelly proportionnal to the global Moran and
+Geary test. Local Moran is defined as:
+
+$$
+I_n = (y_n - \bar{y}) \sum_m w_{nm} (y_m - \bar{y}) = (y_n - \bar{y})(\tilde{y}_n - \bar{y})
+$$
+
+and their sum is $(y_n - \bar{y})(\tilde{y}_n - \bar{y})$, which is
+the numerator of the Moran test. Therefore, we have:
+
+$$
+I = \frac{\sum_n I_n}{\sum_n (y_n - \bar{y}) ^ 2}
+$$
+
+The local Moran is obtained using the `spdep::localmoran` function:
+
+```{r }
+locmor <- localmoran(louisiana$pop_gr, W)
+```
+which returns a matrix, with a line for every observations and columns
+containing the local Moran values, their expectation, variance, the
+statistic and the p-value. It's easier to coerce this matrix to a
+tibble in order to extract extreme values of the statistic:
+
+```{r }
+locmor %>% as_tibble %>% filter(`Pr(z != E(Ii))` < 0.01)
+```
+There are therefore 11 out of 64 (17%) observations for which the p-value is lower
+than 1%, which confirm the presence of spatial correlation. The local
+Moran statistic can also be represented in a map, in order to identify
+the "hot spots":
+
+```{r }
+z_locmor <- locmor %>% as_tibble %>% pull(Ii) %>% as.numeric
+z_locmor <- z_locmor %>% cut(c(-1, - 0.5, 0, 0.5, 1, 1.5, 2, 2.5, Inf))
+louisiana %>% add_column(z = z_locmor) %>%
+    ggplot + geom_sf(aes(fill = z)) + scale_fill_brewer(palette = "Blues")
+```
+
+Two hot spots are then identified, in the north-west and the
+south-west of the state.
+
+
+```{r include = FALSE, eval = FALSE}
+crossproduct <- function(x, y){
+    J <- length(x$weights)
+    sapply(1:J, function(j) sum(y[x$neighbours[[j]]] * x$weights[[j]]))
+y_yb <- crime_nc$crime_rate - mean(crime_nc$crime_rate)
+as.numeric(crossprod(crossproduct(W, y_yb), y_yb)) / sum(y_yb ^ 2)
+N <- length(y_yb)
+S0 <- N
+Wm <- W %>% listw2mat
+S1 <- sum((Wm + (t(Wm))) ^ 2) / 2
+S2 <- sum( (apply(Wm, 1, sum) + apply(Wm, 2, sum)) ^ 2)
+S3 <- (sum(y_yb ^ 4) / N) / (sum(y_yb ^ 2) / N) ^ 2
+S4 <- (N ^ 2 - 3 * N + 3) * S1 - N * S2 + 3 * S0 ^ 2
+S5 <- (N ^ 2 - N) * S1 - 2 * N * S2 + 6 * S0 ^ 2
+V <- (N * S4 - S3 * S5) / ( (N - 1) * (N - 2) * (N - 3) * S0 ^ 2) - 1 / (N - 1) ^ 2
+```
+
+## Spatial models
+
+
+We consider here linear gaussian models that are extended in order to
+integrate the spatial feature of the sample, using the weighting
+matrix described in the previous section. Two main models can be
+considered. The first one is the **SEM** for spatial error model which
+can be writen in matrix form as:
+
+$$
+y = X \beta + \epsilon \; \mbox{with} \; \epsilon = \rho W \epsilon + \eta
+$$ {#eq-sem}
+
+Therefore, the error for observation $n$ is linearly related to the
+errors of its neighboors $\tilde{\epsilon}_n$. **OLS** estimation
+gives unbiased and consistent estimators but, as always with
+non-spherical errors, it is inefficient and the simple formula of the
+covariance matrix of the coefficients ($\sigma ^ 2 (X\top X) ^ {-1}$)
+leads to a biased estimator.
+
+The second model is either called **SAR** (spatial autoregressive
+model) or **SLM** (spatial lag model). It extends the basic gaussian
+linear model by adding as a regressor the mean value of the response
+for the neighboor units. For one observation, the model writes $y_n =
+\beta ^ \top x_n + \lambda \tilde{y}_n + \epsilon_n$ or, in matrix
+form:
+
+$$
+y = X \beta + \lambda W y + \epsilon
+$$
+
+The reduced form of the model is:
+
+$$
+y = (I - \lambda W) ^ {-1} X \beta + (I - \lambda W) ^ {-1}\epsilon
+$$  {#eq-sar}
+
+Therefore, the values of $y$ depends on all the values of $\epsilon$
+and $\tilde{y}_{n}$ is therefore correlated with $\epsilon_n$. The
+**OLS** estimator is therefore biased and unconsistent. Moreover, in
+@eq-sar$, the spatial dependence in the parameter $\lambda$ feeds back
+[@BIVA:MILL:PIRA:21], which is not the case for @eq-sem. This means
+that for the **SEM** model, the marginal effect of a covariate is the
+corresponding coefficient. This is not the case for the **SAR** model.
+
+Moreover, the matrix $(I - \lambda W) ^ {-1}$ can be written as an
+infinite series:
+
+$$
+(I - \lambda W) ^ {-1} = I + \lambda W + \lambda^2 W^2 + \lambda^3
+W^3 + \ldots
+$$
+
+Spatial models were initially estimated by maximum likelihood, by
+assuming a multivariate normal distribution for the iid errors. For
+the **SEM** model, the idiosyncratic errors can be writen as a
+function of the response:
+
+
+$$
+\eta = (I - \rho W) y - (I - \rho W) X\beta
+$$ {#eq-etasem}
+
+so that the Jacobian of the transformation is 
+
+$$\left| \frac{\partial \eta}{\partial y} \right| = 
+\left| I - \rho W \right|$$. 
+
+the likelihood is similar to the one of the linear
+gaussian model except that an extra term, which is the log of the
+Jacobian should be added:
+
+$$
+-N/2 (\ln 2\pi + \ln \sigma ^ 2) + \ln \left| I - \rho W \right|  -
+\frac{1}{\sigma ^ 2} \eta^\top \eta
+^ 2
+$$
+
+where $\eta$ is given by @eq-etasem.
+
+For the **SAR** model, @eq-sar indicates that the Jacobian is the
+same, so that the log-likelihood is:
+
+$$
+-N/2 (\ln 2\pi + \ln \sigma ^ 2) + \ln \left| I - \rho W \right|  -
+\frac{1}{\sigma ^ 2} \epsilon^\top \epsilon
+^ 2
+$$
+
+with $y - X \beta - \lambda Wy$. 
+
+The log likelihood function can be concentrated on $\beta$ and $\sigma
+^ 2$ so that it can be expressed as a function of one parameter
+($\lambda$ for the **SAR** model and $\rho$ for the **SEM** model).
+
+
