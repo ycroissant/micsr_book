@@ -1,0 +1,43 @@
+% a normal curve with given mu equal 1
+\documentclass[crop, tikz]{standalone}
+
+\usepackage{tikz,eurosym,rotating}
+
+\begin{document}
+
+<<echo = FALSE, results = tex>>=
+source("indifference.R")
+xmin <- -7
+xmax <- 5
+ymin <- 0
+ymax <- 7
+
+xdim <- xmax - xmin
+ydim <- ymax - ymin
+
+#xdim <- 7
+#ydim <- 1
+xunit <- round(xcm / xdim, 2)
+yunit <- round(ycm / ydim, 2)
+
+xs <- seq(xmin, xmax, 0.01)
+mills <- function(x) exp(dnorm(x, log = TRUE) - pnorm(x, log.p = TRUE))
+ys1 <- mills(xs)
+
+
+cat(paste("\\begin{tikzpicture}[x = ", xunit, "cm, y = ", yunit, "cm]\n"))
+# draw the axes
+
+
+TIKline(list(c(xmin, 0), c(xmax, 0)), options = "->")
+TIKline(list(c(0, ymin), c(0, ymax)), options = "->")
+TIKnode(c(xmax, 0), "x", pos = "right")
+#TIKnode(c(0, ymax), "y", pos = "above")
+TIKnode(c(0, 0), "0", pos = "below")
+TIKnode(c(0, ymax), "$\\frac{\\phi(x)}{\\Phi(x)}$", pos = "above")
+TIKline(cbind(xs, ys1)[ys1 < 6.5, ])
+TIKline(rbind(c(0,0), c(-6.5, 6.5)), options = "dashed")
+@   
+\end{tikzpicture}
+
+\end{document}

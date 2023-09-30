@@ -1,0 +1,48 @@
+% a normal curve with given mu equal 1
+\documentclass[crop, tikz]{standalone}
+
+\usepackage{tikz,eurosym,rotating}
+\usetikzlibrary{patterns}
+\begin{document}
+
+<<echo = FALSE, results = tex>>=
+source("indifference.R")
+xmin <- 0
+xmax <- 3
+ymin <- 0
+ymax <- 0.7
+
+xdim <- xmax - xmin
+ydim <- ymax - ymin
+xunit <- round(xcm / xdim, 2)
+yunit <- round(ycm / ydim, 2)
+
+thr1 <- 1
+thr2 <- 2
+xs <- seq(xmin, xmax, 0.01)
+mu1 <- 0
+sigma <- 1
+ys1 <- dlnorm(xs, mean = mu1, sd = sigma)
+
+cat(paste("\\begin{tikzpicture}[x = ", xunit, "cm, y = ", yunit, "cm]\n"))
+# draw the axes
+
+matptsup <- cbind(seq(thr2, xmax, 0.01), dlnorm(seq(thr2, xmax, 0.01)))
+matptsup <- rbind(c(thr2, 0), matptsup, c(xmax, dlnorm(xmax)), c(xmax, 0))
+cat(paste("\\fill[color = gray!30] ", TIKmat2path(matptsup), " -- cycle;", sep = ""))
+
+TIKline(list(c(xmin, 0), c(xmax, 0)), options = "->")
+TIKline(list(c(0, ymin), c(0, ymax)), options = "->")
+TIKline(cbind(xs, ys1))
+
+TIKnode(c(xmax, 0), "$y$", pos = "right")
+
+TIKline(list(c(thr2, 0), c(thr2, dlnorm(thr2))), options = "dotted")
+TIKnode(c(thr2, 0), "$\\mu_l$", pos = "below")
+
+TIKnode(c((thr2 + xmax) / 2, 0.01), "$\\mbox{P}(y > \\mu_l)$", pos = "above")
+
+@   
+\end{tikzpicture}
+
+\end{document}
