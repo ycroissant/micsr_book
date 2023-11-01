@@ -365,7 +365,7 @@ level. 4 cathegories can be considered:
 
 They are represented on @fig-ivset. 
 
-![The 4 cathegories of individuals](../iv_set.pdf){#fig-ivset}
+![The 4 cathegories of individuals](./tikz/iv_set.pdf){#fig-ivset}
 
 
 There are 4 observable cathegories of individuals, represented by the

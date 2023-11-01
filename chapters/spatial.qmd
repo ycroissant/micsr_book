@@ -138,8 +138,7 @@ of French regions and the third argument set to `"."` means that the
 file is stored in the current directory.]. 
 
 ```{r }
-#france <- geodata::gadm("FR", 1, ".")
-france <- readr::read_rds("gadm41_FRA_1_pk.rds") %>% terra::vect()
+france <- geodata::gadm("FR", 1, ".")
 france %>% class
 ```
 

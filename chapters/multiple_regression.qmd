@@ -5,12 +5,25 @@ source("../_commonR.R")
 
 # Multiple Regression Model
 
-In this chapter, we'll analyze the computation and the properties of the **OLS** when the number of covariates ($K$) is at least 2. Actually, we'll analyze in depth the case when $K=2$ (generalizing from $K=2$ to $K>2$ being quite simple) and, compared two the previous two chapters, we'll insist on two features of the multiple regression model:
+In this chapter, we'll analyze the computation and the properties of
+the **OLS** when the number of covariates ($K$) is at
+least 2. Actually, we'll analyze in depth the case when $K=2$
+(generalizing from $K=2$ to $K>2$ being quite simple) and, compared
+two the previous two chapters, we'll insist on two features of the
+multiple regression model:
 
-- the first one is the use of matrix algebra, which makes the computation of the estimator elegant and compact,
-- the second one is the correlation between the covariates which is the main point of difference between the simple and the multiple linear model.
+- the first one is the use of matrix algebra, which makes the
+  computation of the estimator elegant and compact,
+- the second one is the correlation between the covariates which is
+  the main point of difference between the simple and the multiple
+  linear model.
 
-We'll roughly follow the same plan for the simple linear model: we'll first present the structural model and the data set that we'll use throughout the chapter, we'll then present the computation of the estimator (from a theoritical point of view and with **R**), the geometry of the multiple linear model, its statistical properties and its inference procedures (confidence interval and tests).
+We'll roughly follow the same plan for the simple linear model: we'll
+first present the structural model and the data set that we'll use
+throughout the chapter, we'll then present the computation of the
+estimator (from a theoritical point of view and with **R**), the
+geometry of the multiple linear model, its statistical properties and
+its inference procedures (confidence interval and tests).
 
 
 
@@ -265,7 +278,10 @@ $$
 \right.
 $$
 
-We therefore have a system of two linear equations with two unknown parameters ($\beta_1$ and $\beta_2$) that could be solved, for example, by substitution. However, the use of matrix algebra enables two solve such a problem much simpler. Denote:
+We therefore have a system of two linear equations with two unknown
+parameters ($\beta_1$ and $\beta_2$) that could be solved, for
+example, by substitution. However, the use of matrix algebra enables
+two solve such a problem much simpler. Denote:
 
 $$
 X=\left(\begin{array}{cc}
@@ -1699,5 +1715,437 @@ We get exactly the same estimators as previously for `e2` and `v`, but now the j
 
 ```{r}
 summary(mrw_ncb)$fstatistic
+```
+
+## System estimation and constrained least squares
+
+
+```{r }
+#| include: false
+#| message: false
+source("clm.R")
+```
+
+### System of equations
+
+Very often in economics, the phenomenon under investigation is not
+well described by a single equation, but by a system of
+equations. Moreover, there may be inter-equations constraints on the
+coefficients. It is particulary the case in the field of the
+micro-econometrics of consumption or production. For example, the
+behavior of a producer is described by a minimum cost equation along
+with equations of factor demand and the behavior of a consumer is
+described by a set of demand equations. 
+
+
+We consider therefore a system of $L$ equations denoted
+$y_l=X_l\beta_l+\epsilon_l$, with $l=1\ldots L$. In matrix form, the
+system can be written as follows:
+
+$$
+\left(
+  \begin{array}{c}
+    y_1 \\ y_2 \\ \vdots \\ y_L
+  \end{array}
+\right)
+=
+\left(
+  \begin{array}{ccccc}
+    X_1 & 0 & \ldots & 0 \\
+    0 & X_2 & \ldots & 0 \\
+    \vdots & \vdots & \ddots & \vdots \\
+    0 & 0 & \ldots & X_L
+  \end{array}
+\right)
+\left(
+  \begin{array}{c}
+    \beta_1 \\ \beta_2 \\ \vdots \\ \beta_L
+  \end{array}
+\right)
++
+\left(
+  \begin{array}{c}
+    \epsilon_1 \\ \epsilon_2 \\ \vdots \\ \epsilon_L
+  \end{array}
+\right)
+$$
+
+Therefore, the whole system can be estimated directly by stacking the
+vector of responses and by constructing a block-diagonal matrix of
+covariates, each block being the matrix of covariates for one of the
+equation. 
+
+To analyze production characteristics (returns to scale, elasticities
+of substitution between pairs of inputs), the modern approach is to
+consider the minimum cost function, which depends on the level of
+production and on input unit prices $C(y, p_1, \ldots p_J)$ and, using
+Shepard Lemma, to derive from this cost function the demands for
+input:
+
+$$
+\frac{\partial C}{\partial p_j} = x_j(y, p_1, \ldots, p_J)
+$$
+
+The cost function is obviously homogenous of degree 1 with price,
+which means that, for a given level of input, if all the price
+increase proportionnally, the quantity of the different inputs are the
+same and therefore the cost function increases by the same
+percentage. This writes: $C(y, \lambda p_1, \ldots \lambda p_J) =
+\lambda C(y, p_1, \ldots, p_J)$ and $x_j(y, \lambda p_1, \ldots,
+\lambda p _J) = x_j(y, p_1, \ldots p_J)$ the latter relation
+indicating that the demands for input are homogenous of degree 0 with
+the price. Among the different functional forms that were proposed to
+estimate the cost function, the translog specification is the most
+popular. It can be considered as the second-order approximation of a
+general cost function:
+
+$$
+\ln C = \beta_o + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y \sum_i \beta_i \ln p_i + \frac{1}{2}
+\sum_i\sum_j \beta_{ij} \ln p_i \ln p_j
+$$
+
+Using Shephard Lemma, the cost share of input $i$ is the derivative of
+$\ln C$ with $\ln p_i$:
+
+$$
+s_i = \frac{\ln C}{\ln p_i} = \frac{p_i x_i}{C} = \beta_i + \sum_{j=1} ^ I \beta_{ij} \ln p_j
+$$
+
+Homogeneity of degree 1 with price implies that the cost shares don't
+depends on the level of price. Therefore, $\sum_j^I \beta_{ij} = 0$,
+or $\beta_{iI} = - \sum_j^{I-1} \beta_{ij}$. Therefore:
+
+$$
+\begin{array}{rcl}
+\sum_i^I\sum_j^I \beta_{ij} \ln p_i \ln p_j &=&
+\sum_i^I \ln p_i \left[\sum_j^{I-1} \beta_{ij}\ln p_j  + \beta_{iJ}\ln
+p_I\right] \\
+&=& \sum_i^I \ln p_i \sum_j^{I-1} \beta_{ij} \ln\frac{p_j}{p_I} \\
+&=& \sum_i^{I-1} \ln p_i \sum_j^{I-1} \beta_{ij} \ln\frac{p_j}{p_I} + 
+\ln p_I \sum_j^{I-1} \beta_{Ij} \ln\frac{p_j}{p_I} \\
+&=& \sum_i^{I-1} \ln p_i \sum_j^{I-1} \beta_{ij} \ln\frac{p_j}{p_I} + 
+\ln p_I \sum_j^{I-1} \beta_{jI} \ln\frac{p_j}{p_I} \\
+&=& \sum_i^{I-1} \ln p_i \sum_j^{I-1} \beta_{ij} \ln\frac{p_j}{p_I} -
+\ln p_I \sum_i^{I-1} \sum_j^{I-1}\beta_{ji} \ln\frac{p_j}{p_I} \\
+&=& \sum_i^{I-1} \sum_j^{I-1} \beta_{ij} \ln \frac{p_i}{p_I}\ln\frac{p_j}{p_I}
+\end{array}
+$$
+
+Moreover, the cost shares sums to 1 whatever the price, so that
+$\sum_i \beta_i = 1$. Therefore, the cost function can be rewriten as:
+
+$$
+C^* = \beta_0 + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y + \sum_i ^{I-1}\beta_i p_i^* + 
+\frac{1}{2} \sum_{i=1} ^ {I - 1} \beta_{ii} {p_i^*} ^ 2 +  
+\sum_{i=1} ^ {I - 1} \sum_{j>i} ^ {I - 1} \beta_{ij} p_i^* p_j^* 
+$$
+
+where $z^* = \ln (z / p_I)$  and the cost shares are:
+
+$$
+s_i = \beta_i + \sum_{j=1} ^ {I-1} p_j ^ *
+$$
+
+Consider the case where $I=3$. In this case, the complete system of
+equation is:
+
+$$
+\left\{
+\begin{array}{rcl}
+C^* &=& \beta_0 + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y + \beta_1 p_1 ^ * + \beta_2 p_2 ^ *
++ \frac{1}{2} \beta_{11} {p_1^*} ^ 2 + \beta_{12} p_1^* p_2^* +
+  \frac{1}{2} \beta_{22} {p_2^*} ^ 2 \\
+s_1 &=& \beta_1 + \beta_{11} p_1 ^ * + \beta_{12} p_2 ^ * \\
+s_2 &=& \beta_2 + \beta_{12} p_1 ^ * + \beta_{22} p_2 ^* \\
+\end{array}
+\right.
+$$
+
+There are 14 parameters to estimate in total (8 in the cost function
+and 3 in each of the cost share equations), but there are 6 linear
+restrictions; for example, the coefficient of $p_1^*$ in the cost
+equation should be equal to the intercept of the cost share for the
+first factor. 
+
+
+To estimate the translog cost function, we use the data set of
+@IVAL:LADO:OSSA:SIMI:96 who studied the production cost of apple
+producers. Farms in this sample produce apples and other fruits
+(respectively `apples` and `otherprod`). The authors observe the sales
+of apples and other fruits but also the quantity of apple
+produced. Therefore, they are able to compute the unit price of
+apples. Both sales are divided by this unit price, so that `apples` is
+measured in apple quantity and `otherprod` is measured in "equivalent"
+apple quantities. Therefore, they can be summed in order to have a
+unique output variable `y`. The expenses in the tree factors are given
+by `capital`, `labor` and `materials` and the corresponding unit
+prices are `pc`, `pl` and `pm`. The data set is an unbalanced panel of
+173 farms observed for three years (1984, 1985 and 1986). We consider
+only one year (1986)` and, for a reason that we'll be clear latter, we
+divide all the variables by their sample mean:
+
+```{r }
+ap <- apples %>% filter(year == 1985) %>%
+    transmute(y = otherprod + apples,
+              ct = capital + labor + materials,
+              sl = labor / ct, sm = materials / ct,
+              pk = log(pc / mean(pc)), pl = log(pl / mean(pl)) - pk,
+              pm = log(pm / mean(pm)) - pk, ct = log(ct / mean(ct)) - pk,
+              y = log(y / mean(y)), y2 = 0.5 * y ^ 2,
+              ct = ct, pl2 = 0.5 * pl ^ 2,
+              pm2 = 0.5 * pm ^ 2, plm = pl * pm
+              )
+```
+
+We then create three formulas corresponding to the system of 3
+equations (the cost function and the two factor shares):
+
+```{r }
+eq_ct <- ct ~ y + y2 + pl + pm + pl2 + plm + pm2
+eq_sl <- sl ~ pl + pm
+eq_sm <- sm ~ pl + pm
+```
+These equations can be estimated one by one using **OLS**, but in this
+case, the trans-equations restrictions are ignored. The whole system can also be
+estimated directly by stacking the three vectors of covariates and
+constructing a block diagonal matrix of covariates, each block being
+the relevant set of covariates for one equation. We use for this
+purpose the **Formula** package. We first create a "meta" formula
+which contains the three responses on the left side and the whole set
+of covariates on the right side. Then, we extract, using
+`model.matrix`, the three model matrices for the three
+equations (`X_c`, `X_l` and `X_m` respectively for the cost, the labor
+share and the material share equations). The column names of this
+matrices are customized using the `nms_cols` function, which for
+example, turns the original column names of `X_l` (`(Intercept)`, `pl`
+and `pm`) to `sl_cst`, `sl_pl` and `sl_pm`. We then construct the
+block diagonal matrix (using the `Matrix::bdiag` function) and use our
+customized names:
+
+```{r }
+library(Formula)
+eq_sys <- Formula(ct + sl + sm ~ y + y2 + pl + pm + pl2 + plm + pm2)
+mf <- model.frame(eq_sys, ap)  ; X_c <- model.matrix(eq_ct, mf) 
+X_l <- model.matrix(eq_sl, mf) ; X_m <- model.matrix(eq_sm, mf)
+nms_cols <- function(x, label)
+    paste(label, c("cst", colnames(x)[-1]), sep = "_")
+nms_c <- nms_cols(X_c, "cost") ; nms_l <- nms_cols(X_l, "sl")
+nms_m <- nms_cols(X_m, "sm")
+Xs <- Matrix::bdiag(X_c, X_l, X_m) %>% as.matrix
+colnames(Xs) <- c(nms_c, nms_l, nms_m)
+head(Xs, 2)
+```
+
+`model.part` enables to retrieve the three responses (a data frame
+with three variables `ct`, `sl` and `sm` and, using `pivot_longer`, we
+stack the three responses' vectors in one column:
+
+```{r }
+Y <- model.part(eq_sys, mf, rhs = 0, lhs = 1)
+Ys <- Y %>% pivot_longer(1:3, cols_vary = "slowest", names_to = "equation",
+                         values_to = "response")
+print(Ys, n = 2)
+```
+
+The estimation can be performed using the response vector and the
+matrix of covariates:
+
+```{r }
+#| results: false
+lm(Ys$response ~ Xs - 1)
+```
+
+However, nicer imput is obtained by constructing a tibble by biding
+the columns of `Ys` and `Xs` and then using the usual formula-data
+interface. In order to avoid to write the whole long list of
+covariates, the dot can be used in the right hand side of the formula,
+which means in this context all the variables (except the response
+which is on the left hand side of the formula). The intercept and the
+`response` variable should be omitted from the regression.
+
+```{r }
+stack_data <- Ys %>% bind_cols(Xs)
+ols_unconst <- lm(response ~ . - 1 - equation, stack_data)
+ols_unconst
+```
+
+### Constrained least squares
+
+Linear restrictions on the vector of coefficients to be estimated can be
+represented using a restriction matrix $R$ and a numeric vector $q$:
+
+$$
+R\beta = q
+$$
+
+where $\beta ^ \top = (\beta_1 ^ \top, \ldots, \beta_L ^ \top)$ is the
+stacked vector of the coefficients for the whole system of equations.
+For example, if the sum of the first two coefficients must equal 1 and
+the first and third ones should be equal, the joint restrictions can
+be written as:
+
+$$
+\left(
+\begin{array}{ccc}
+  1 & 1 & 0 \\
+  1 & 0 & -1 \\
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+  \beta_1 \\ \beta_2 \\ \beta_3
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+1 \\ 0
+\end{array}
+\right)
+$$
+
+To estimate the constrained **OLS** estimator, we write the Lagrangian:
+
+$$
+L = \epsilon^\top \epsilon + 2\lambda^\top(R\beta-q)
+$$
+
+with $\epsilon=y - X\beta$ and $\lambda$ the vector of Lagrange
+multipliers associated to the different constraints.[^non_spherical-1]
+The Lagrangian can also be written as:
+
+[^non_spherical-1]: These multipliers are multiplied by two in order to
+    simplify the first order conditions.
+
+$$
+L = y^\top y - 2 \beta^\top X^\top y + \beta^\top X^\top X \beta +
+2\lambda (R\beta-q)
+$$
+
+The first order conditions are:
+
+$$
+\left\{
+  \begin{array}{rcl}
+    \frac{\partial L}{\partial \beta}&=&-2X^\top y + 2 X^\top X \beta + 2R^\top \lambda =0\\
+    \frac{\partial L}{\partial \lambda}&=&2(R\beta-q)=0
+  \end{array}
+\right.
+$$
+
+which can also be written in matrix form as:
+
+$$
+\left(
+\begin{array}{cc}
+  X^\top X & R^\top \\
+  R & 0 \\
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+  \beta \\ \lambda 
+\end{array}
+\right)
+=
+\left(
+\begin{array}{c}
+  X^\top y\\ q
+\end{array}
+\right)
+$$
+
+The constrained **OLS** estimator can be obtained using the formula for
+the inverse of a partitioned matrix:
+
+$$
+\left(
+  \begin{array}{cc}
+    A_{11} & A_{12} \\
+    A_{21} & A_{22}
+  \end{array}
+\right)^{-1}
+=
+\left(
+  \begin{array}{cc}
+    B_{11} & B_{12} \\
+    B_{21} & B_{22}
+  \end{array}
+\right)
+=
+\left(
+  \begin{array}{cc}
+    A_{11}^{-1}(I+A_{12}F_2A_{21}A_{11}^{-1}) & - A_{11}^{-1}A_{12}F_2 \\
+    -F_2A_{21}A_{11}^{-1} & F_2
+  \end{array}
+\right)
+$$
+
+with $F_2=\left(A_{22}-A_{21}A_{11}^{-1}A_{12}\right)^{-1}$ and
+$F_1=\left(A_{11}-A_{12}A_{22}^{-1}A_{21}\right)^{-1}$.
+
+We have here $F_2=-\left(R(X^\top X)^{-1}R^\top\right)^{-1}$. The
+constrained estimator is then: $\hat{\beta}_c=B_{11}X^\top y+ B_{12}q$,
+with
+$B_{11} = (X^\top X)^{-1}\left(I-R^\top(R(X^\top X)^{-1}R^\top)^{-1}R(X^\top X)^{-1}\right)$
+and
+$B_{12}=(X^\top X)^{-1}R^\top\left(R(X^\top X)^{-1}R^\top\right)^{-1}$
+
+The unconstrained estimator being
+$\hat{\beta}_{nc}=\left(X^\top X\right)^{-1}X^\top y$, we finally get:
+
+$$
+\hat{\beta}_c=\hat{\beta}_{nc} - (X^\top X)^{-1}R^\top(R(X^\top
+X)^{-1}R^\top)^{-1}(R\hat{\beta}_{nc}-q)
+$$ {#eq-const_lm}
+
+The difference between the constrained and the unconstrained
+estimators is then a linear combination of the excess of the linear
+constraints of the model evaluated for the unconstrained model.
+
+
+For the system of cost and factor shares for apple production
+previously described, we have 14 coefficients and 6 restrictions:
+
+
+
+```{r }
+R <- matrix(0, nrow = 6, ncol = 14)
+R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
+    R[5, c(7, 13)] <- R[6, c(8, 14)] <- c(1, -1)
+```
+
+Applying @eq-const_lm, we get:
+
+```{r }
+excess <- R %*% coef(ols_unconst)
+XpX <- crossprod(model.matrix(ols_unconst))
+beta_c <- coef(ols_unconst) -
+    drop(solve(XpX) %*% t(R) %*%
+         solve(R %*% solve(XpX) %*% t(R)) %*% excess)
+beta_c
+```
+More simply, `micsr::clm` can be used, which compute the constrained
+least squares estimator with as arguments a `lm` object (the
+unconstrained model) and `R`, the matrix of restrictions (and
+optionnaly a `q` vector):
+
+```{r }
+ols_const <- clm(ols_unconst, R)
+```
+and returns a `lm` object.
+
+
+Finally, the **systemfit** library is devoted to system
+estimation. Its main arguments are a list of equations and a data
+frame, but it also has a `restrict.matrix` and a `restrict.rhs`
+arguments to provide respectively $R$ and $q$.
+
+```{r }
+#| results: hide
+#| message: false
+library(systemfit)
+sft <- systemfit(list(cost = eq_ct, labor = eq_sl, materials = eq_sm),
+                 data = ap, restrict.matrix = R)
 ```
 

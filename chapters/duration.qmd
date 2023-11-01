@@ -996,8 +996,8 @@ table 4 p. 484]. The results are presented on table @tbl-intkakadu.
 #| label: tbl-intkakadu
 #| tbl-cap: "Interval regression for the Kakadu data set"
 library("survival")
-kakadu <- micsr::kakadu %>% mutate(upper = ifelse(upper == 999, NA, upper),
-                            lower = ifelse(lower == 0, NA, lower))
+kakadu <- kakadu %>% mutate(upper = ifelse(upper == 999, NA, upper),
+                           lower = ifelse(lower == 0, NA, lower))
 kak_weil <- survreg(Surv(time = log(lower), time2 = log(upper), 
                          type = "interval2") ~ jobs + lowrisk + 
                       aboriginal + finben + mineparks + moreparks + 

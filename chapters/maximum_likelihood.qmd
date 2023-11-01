@@ -1451,7 +1451,7 @@ elast <- function(x) (coef(gpf)["log(m)"] + 1) / (1 + coef(gpf)["gamma"] * x)
 tibble(production = c("min", "Q1", "median", "Q3", "max"),
        y = fivenum(y),
        elast = elast(y)) %>% 
-    knitr::kable(digits = c(0, 2, 3), booktabs = TRUE)
+    knitr::kable(digits = c(0, 2, 3), booktabs = TRUE, format = "markdown")
 ```
 
 Returns to scale are increasing for more than three quarters of the
@@ -2400,12 +2400,6 @@ that the computed likelihood would be wrong. **micsr** provide a
 fitted using `lm`, but the contributions to the likelihood, to the
 gradient and the hessian are computed correctly, taking into account
 the fact that the response is $y$ and not $\ln y$. 
-
-```{r }
-#| echo: false
-source("loglm.R")
-
-```
 
 
 ```{r }

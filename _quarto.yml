@@ -16,12 +16,12 @@ book:
     chapters:
     - ./chapters/simple_regression.qmd
     - ./chapters/simple_regression_properties.qmd
-    - ./chapters/multiple_regression.qmd
-    - ./chapters/coefficients.qmd
-  - part: Beyound the OLS estimator
-    chapters:
-      - ./chapters/non_spherical.qmd
-      - ./chapters/maximum_likelihood.qmd
+  #   - ./chapters/multiple_regression.qmd
+  #   - ./chapters/coefficients.qmd
+  # - part: Beyound the OLS estimator
+  #   chapters:
+  #     - ./chapters/non_spherical.qmd
+  #     - ./chapters/maximum_likelihood.qmd
   #     - ./chapters/endogeneity.qmd
   #     - ./chapters/treateff.qmd
   #     - ./chapters/spatial.qmd
@@ -46,7 +46,8 @@ format:
   html:
     theme: cosmo
   pdf:
-    documentclass: krantz  
+    documentclass: krantz 
+    classoption: [krantz2]
 #    documentclass: scrreprt
 #    template: ./latex/eisvogel.tex
 #    toc-own-page: true

@@ -3,13 +3,8 @@
 source("../_commonR.R")
 ```
 
-<!-- 1586 / 7.73 -->
-
 # Non-spherical disturbances
 
-::: content-hidden
-{{< include ../latex/macros.tex >}}
-:::
 
 ```{r}
 #| echo: false
@@ -27,7 +22,7 @@ heps <- residuals(pxt)
 ```
 
 In the first part of the book, we assumed that
-$\V(\epsilon) = \sigma_\epsilon ^ 2 I$, which implies that:
+$\mbox{V}(\epsilon) = \sigma_\epsilon ^ 2 I$, which implies that:
 
 -   the errors are **homoskedastic**, (they all have the same variance
     $\sigma^2_\epsilon$), so that all the elements of the covariance
@@ -265,7 +260,7 @@ $$
 \Omega ^ {r} = \sigma_\nu ^ {2r} W + \sigma_\iota ^ {2r}B
 $$ {#eq-poweromegaec}
 
-### Seemingly unrelated regression
+### System of equations
 
 Very often in economics, the phenomenon under investigation is not well
 described by a single equation, but by a system of equations. It is
@@ -318,139 +313,6 @@ equations:
     these restrictions can be taken into account using the method of
     constrained least squares.
 
-#### Constrained least squares
-
-Linear restrictions on the vector of coefficients to be estimated can be
-represented using a restriction matrix $R$ and a numeric vector $q$:
-
-$$
-R\beta = q
-$$
-
-where $\beta ^ \top = (\beta_1 ^ \top, \ldots, \beta_L ^ \top)$ is the stacked vector of the coefficients for the whole system of equations. 
-For example, if the sum of the first two coefficients must equal 1 and
-the first and third ones should be equal, the joint restrictions can be
-written as:
-
-$$
-\left(
-\begin{array}{ccc}
-  1 & 1 & 0 \\
-  1 & 0 & -1 \\
-\end{array}
-\right)
-\left(
-\begin{array}{c}
-  \beta_1 \\ \beta_2 \\ \beta_3
-\end{array}
-\right)
-=
-\left(
-\begin{array}{c}
-1 \\ 0
-\end{array}
-\right)
-$$
-
-To estimate the constrained **OLS** estimator, we write the Lagrangian:
-
-$$
-L = \epsilon^\top \epsilon + 2\lambda^\top(R\beta-q)
-$$
-
-with $\epsilon=y - X\beta$ and $\lambda$ the vector of Lagrange
-multipliers associated to the different constraints.[^non_spherical-1]
-The Lagrangian can also be written as:
-
-[^non_spherical-1]: These multipliers are multiplied by two in order to
-    simplify the first order conditions.
-
-$$
-L = y^\top y - 2 \beta^\top X^\top y + \beta^\top X^\top X \beta +
-2\lambda (R\beta-q)
-$$
-
-The first order conditions are:
-
-$$
-\left\{
-  \begin{array}{rcl}
-    \frac{\partial L}{\partial \beta}&=&-2X^\top y + 2 X^\top X \beta + 2R^\top \lambda =0\\
-    \frac{\partial L}{\partial \lambda}&=&2(R\beta-q)=0
-  \end{array}
-\right.
-$$
-
-which can also be written in matrix form as:
-
-$$
-\left(
-\begin{array}{cc}
-  X^\top X & R^\top \\
-  R & 0 \\
-\end{array}
-\right)
-\left(
-\begin{array}{c}
-  \beta \\ \lambda 
-\end{array}
-\right)
-=
-\left(
-\begin{array}{c}
-  X^\top y\\ q
-\end{array}
-\right)
-$$
-
-The constrained **OLS** estimator can be obtained using the formula for
-the inverse of a partitioned matrix:
-
-$$
-\left(
-  \begin{array}{cc}
-    A_{11} & A_{12} \\
-    A_{21} & A_{22}
-  \end{array}
-\right)^{-1}
-=
-\left(
-  \begin{array}{cc}
-    B_{11} & B_{12} \\
-    B_{21} & B_{22}
-  \end{array}
-\right)
-=
-\left(
-  \begin{array}{cc}
-    A_{11}^{-1}(I+A_{12}F_2A_{21}A_{11}^{-1}) & - A_{11}^{-1}A_{12}F_2 \\
-    -F_2A_{21}A_{11}^{-1} & F_2
-  \end{array}
-\right)
-$$
-
-with $F_2=\left(A_{22}-A_{21}A_{11}^{-1}A_{12}\right)^{-1}$ and
-$F_1=\left(A_{11}-A_{12}A_{22}^{-1}A_{21}\right)^{-1}$.
-
-We have here $F_2=-\left(R(X^\top X)^{-1}R^\top\right)^{-1}$. The
-constrained estimator is then: $\hat{\beta}_c=B_{11}X^\top y+ B_{12}q$,
-with
-$B_{11} = (X^\top X)^{-1}\left(I-R^\top(R(X^\top X)^{-1}R^\top)^{-1}R(X^\top X)^{-1}\right)$
-and
-$B_{12}=(X^\top X)^{-1}R^\top\left(R(X^\top X)^{-1}R^\top\right)^{-1}$
-
-The unconstrained estimator being
-$\hat{\beta}_{nc}=\left(X^\top X\right)^{-1}X^\top y$, we finally get:
-
-$$
-\hat{\beta}_c=\hat{\beta}_{nc} - (X^\top X)^{-1}R^\top(R(X^\top
-X)^{-1}R^\top)^{-1}(R\hat{\beta}_{nc}-q)
-$$ The difference between the constrained and the unconstrained
-estimators is then a linear combination of the excess of the linear
-constraints of the model evaluated for the unconstrained model.
-
-#### Inter-equations correlation
-
 The covariance matrix of the errors of the system is:
 
 $$
@@ -487,7 +349,7 @@ $$
 Denoting $\Sigma$ the matrix of inter-equations covariances, we have:
 
 $$
-\Sigma=  
+\Sigma=
 \left(
   \begin{array}{cccc}
   \sigma_{11} & \sigma_{12} & \ldots &\sigma_{1L} \\
@@ -496,13 +358,17 @@ $$
   \sigma_{1L} & \sigma_{2L} & \ldots & \sigma_{LL}
   \end{array}
 \right)
-$$ $$
+$$ 
+
+$$
 \Omega=\Sigma \otimes I
 $$
 
 ## Robust inference
 
-If the errors are not spherical, the simple estimator of the covariance of the **OLS** estimates is biased. More general estimators can then be used instead. They rely on the idea that:
+If the errors are not spherical, the simple estimator of the
+covariance of the **OLS** estimates is biased. More general estimators
+can then be used instead. They rely on the idea that:
 
 -   if the errors were observed, a natural estimator of the unknown
     expected values of the squares or the cross-product of the errors
@@ -513,7 +379,8 @@ If the errors are not spherical, the simple estimator of the covariance of the *
 -   as the errors are not observed, we can use the residuals instead
     $\hat{\epsilon}$ as they are unbiased estimators of the errors.
 
-We present the robust estimator first in the context of the simple linear model and then for the multiple linear model. 
+We present the robust estimator first in the context of the simple
+linear model and then for the multiple linear model.
 
 ### Simple linear model
 
@@ -523,7 +390,10 @@ $$
 \mbox{V}(\hat{\beta} \mid x) = \frac{\mbox{E}\left(\left[\sum_n (x_n - \bar{x})\epsilon_n\right]^2\mid x\right)}{\left(\sum_n (x_n - \bar{x}) ^ 2\right) ^ 2}
 $$
 
-The numerator is the sum of the expectations of $N ^ 2$ terms. For $N = 4$, replacing the errors $\epsilon_n$ by the **OLS** residuals $\hat{\epsilon}$ and dropping the expectation operator, these 16 terms can be presented conveniently in the following matrix:
+The numerator is the sum of the expectations of $N ^ 2$ terms. For $N
+= 4$, replacing the errors $\epsilon_n$ by the **OLS** residuals
+$\hat{\epsilon}$ and dropping the expectation operator, these 16 terms
+can be presented conveniently in the following matrix:
 
 ```{r }
 #| echo: false
@@ -595,7 +465,8 @@ cat(strgr)
 cat("\\end{array}\\right)$$\n")
 ```
 
-which leads to the clustered estimated variance. More generally, for $N$ observations belonging to $G$ groups, this estimator is:
+which leads to the clustered estimated variance. More generally, for
+$N$ observations belonging to $G$ groups, this estimator is:
 
 $$
 \hat{\sigma}_{CL\hat{\beta}} = \frac{1}{S_{xx}^2}\sum_{g = 1} ^ G \left(\sum_{n \in g} (x_n -
@@ -605,13 +476,21 @@ $$
 which is consistent with the hypothesis that errors are correlated
 *within* a group, but uncorrelated *between* group.
 
-To illustrate the computation of robust covariance estimators, we use the data set `urban_gradient` of @DURA:PUGA:20. It contains, the population, the area and the distance to the **CBD** for 2315 block groups for Alabama. 
+To illustrate the computation of robust covariance estimators, we use
+the data set `urban_gradient` of @DURA:PUGA:20. It contains, the
+population, the area and the distance to the **CBD** for 2315 block
+groups for Alabama.
 
 ```{r}
 urban_gradient %>% head
 ```
 
-A classic model in urban economics states that urban density is a negative exponential function of the distance to the central business district : $y = A e^{\beta x}$ where $y$ is measured in inhabitants per square kilometers and $x$ is measured in kilometers and $\beta<0$ is called the urban gradient. Taking logs, this leads to a semi-log linear regression model:
+A classic model in urban economics states that urban density is a
+negative exponential function of the distance to the central business
+district : $y = A e^{\beta x}$ where $y$ is measured in inhabitants
+per square kilometers and $x$ is measured in kilometers and $\beta<0$
+is called the urban gradient. Taking logs, this leads to a semi-log
+linear regression model:
 
 $$
 \ln y_n = \alpha + \beta x_n + \epsilon_n
@@ -625,7 +504,10 @@ ug_ols <- lm(log(density) ~ distance, urban_gradient)
 coeftest(ug_ols)
 ```
 
-The estimated standard deviation of the slope is `r round(vcov(ug_ols)[2, 2], 4)` but it may be seriously biased if the errors are heteroskedastic and/or correlating. We first plot the data and the regression line on @fig-dataug.
+The estimated standard deviation of the slope is `r
+round(vcov(ug_ols)[2, 2], 4)` but it may be seriously biased if the
+errors are heteroskedastic and/or correlating. We first plot the data
+and the regression line on @fig-dataug.
 
 ```{r}
 #| label: fig-dataug
@@ -635,7 +517,11 @@ urban_gradient %>% ggplot(aes(distance, log(density))) +
   geom_smooth(method = "lm", se = FALSE)
 ```
 
-Heteroskedasticity seems to be present in this data set, as the size of the residuals seems to be an increasing function of the unique covariate. We first compute the robust standard deviation of the slope by first computing the mean of the covariate, the sum of squares of the covariate and finally the standard deviation.
+Heteroskedasticity seems to be present in this data set, as the size
+of the residuals seems to be an increasing function of the unique
+covariate. We first compute the robust standard deviation of the slope
+by first computing the mean of the covariate, the sum of squares of
+the covariate and finally the standard deviation.
 
 ```{r}
 dist_mean <- urban_gradient %>% pull(distance) %>% mean
@@ -652,7 +538,13 @@ sd_hc <- urban_gradient %>%
 sqrt(vcovHC(ug_ols, type = "HC0")[2, 2])
 ```
 
-`type = "HC0"` is the simplest version of the estimator, the one we have previously computed "by hand". Other flavors of this heteroskedasciticy-robust estimator can be obtained by setting the `type` to `"HC1"`, $\ldots$, `"HC5"` to perform some kind of degrees of freedom correction. For example, when `type = "HC1"`, the covariance matrix is multiplied by $N / (N - K)$:^[See ZEIL:06 for more details concerning the other values of the `type` argument.]
+`type = "HC0"` is the simplest version of the estimator, the one we
+have previously computed "by hand". Other flavors of this
+heteroskedasciticy-robust estimator can be obtained by setting the
+`type` to `"HC1"`, $\ldots$, `"HC5"` to perform some kind of degrees
+of freedom correction. For example, when `type = "HC1"`, the
+covariance matrix is multiplied by $N / (N - K)$:^[See ZEIL:06 for
+more details concerning the other values of the `type` argument.]
 
 ```{r }
 #| collapse: true
@@ -661,9 +553,17 @@ sqrt(vcovHC(ug_ols, type = "HC1")[2, 2])
 sd_hc * sqrt(N / (N - 2))
 ```
 
-In this example, the difference between the simple and the heteroskedastic-robust estimation of the standard deviation of the slope is small. However, we also have to invistigate the potential between the errors of some observations. 
+In this example, the difference between the simple and the
+heteroskedastic-robust estimation of the standard deviation of the
+slope is small. However, we also have to invistigate the potential
+between the errors of some observations.
 
-There are 12 **msa** in Alabama and 22 counties. It is possible that the errors for the different block groups of the same county or the same msa are correlated (because of some unobserved common features of block groups in the same county or msa). In this case the covariance matrix of the **OLS** estimates are biased. We compute the estimation of the clustered standard deviation of the slope at the **msa** level. 
+There are 12 **msa** in Alabama and 22 counties. It is possible that
+the errors for the different block groups of the same county or the
+same msa are correlated (because of some unobserved common features of
+block groups in the same county or msa). In this case the covariance
+matrix of the **OLS** estimates are biased. We compute the estimation
+of the clustered standard deviation of the slope at the **msa** level.
 
 ```{r }
 G <- urban_gradient %>% pull(msa) %>% unique %>% length
@@ -677,13 +577,22 @@ sd_CL_base <- urban_gradient %>%
 sd_CL_base
 ```
 
-This time, we get a much higher estimate of the standard deviation (about three time larger than the one obtained with the simple formula). The `sandwich` package provides a `vcovCL` function for the computation of clustered covariance matrix. The clustering variable is defined using the `cluster` argument that can be set to a one-sided formula. The `type` argument is similar to the one of `vcovHC` and there is also a `cadjust` argument which, if `TRUE`, multiplies the covariance matrix by $G / (G - 1)$, $G$ being the number of clusters. 
+This time, we get a much higher estimate of the standard deviation
+(about three time larger than the one obtained with the simple
+formula). The `sandwich` package provides a `vcovCL` function for the
+computation of clustered covariance matrix. The clustering variable is
+defined using the `cluster` argument that can be set to a one-sided
+formula. The `type` argument is similar to the one of `vcovHC` and
+there is also a `cadjust` argument which, if `TRUE`, multiplies the
+covariance matrix by $G / (G - 1)$, $G$ being the number of clusters.
 
 ```{r}
 sqrt(vcovCL(ug_ols, type = "HC0", cadjust = FALSE, cluster = ~ msa)[2, 2])
 ```
 
-The default behaviour of `vcovCL` is to set `cadjust` to `TRUE` and `type` to `"HC1"`, so that the adjustment is done for the number of observations and for the number of groups.
+The default behaviour of `vcovCL` is to set `cadjust` to `TRUE` and
+`type` to `"HC1"`, so that the adjustment is done for the number of
+observations and for the number of groups.
 
 ```{r}
 #| collapse: true
@@ -936,6 +845,13 @@ za %>% vcov %>% diag %>% sqrt
 za %>% vcovCL(~ group) %>% diag %>% sqrt
 ```
 
+```{r}
+#| include: false
+growth <- micsr.data::growth
+```
+
+
+
 ## Generalized least square estimator
 
 The **OLS** estimator is now longer **BLUE** with non-spherical
@@ -1134,7 +1050,7 @@ $$
 \frac{1}{T}\sum_{s \neq t} \epsilon_{ns}
 $$
 
-The sum then contains $\T-1$ terms. The variance is:
+The sum then contains $T-1$ terms. The variance is:
 
 $$
 \mbox{V}\left(\epsilon_{nt} - \bar{\epsilon}_{n.}\right) =
@@ -1153,7 +1069,8 @@ If $\epsilon$ were known, natural estimators of these two variances
 $\sigma_{\iota}^2$ et $\sigma_{nu}^2$ would be:
 
 $$
-\hat{\sigma}_\iota^2 = T \frac{\sum_{n=1}^N\bar{\epsilon}_{n.}^2}{N} = T \frac{\sum_{n=1}^N\sum_{t=1}^T\bar{\epsilon}_{n  .}^2}{NT}=T\frac{\epsilon^{\top}B\epsilon}{NT}=\frac{\epsilon^{\top}B\epsilon}{N}
+\hat{\sigma}_\iota^2 = T \frac{\sum_{n=1}^N\bar{\epsilon}_{n.}^2}{N} =
+T \frac{\sum_{n=1}^N\sum_{t=1}^T\bar{\epsilon}_{n.}^2}{NT}=T\frac{\epsilon^{\top}B\epsilon}{NT}=\frac{\epsilon^{\top}B\epsilon}{N}
 $$ {#eq-varmxt}
 
 $$
@@ -1272,9 +1189,14 @@ $$ where $h'_0$ is the derivative of $h$ for the constrained $\alpha$
 vector, ie zero values except for the first coefficient. The second
 derivative is:
 
+$$ 
+\frac{\partial \ln ^ 2 L}{\partial \alpha \alpha ^ \top} =
+\frac{1}{2}\sum_n\left[ h_n''\left(\frac{e_n ^ 2}{\sigma_n ^ 4}-
+\frac{1}{\sigma_n ^ 2} \right)- h_n^{'2} \left(\frac{2 e_n ^
+2}{\sigma_n ^ 6}- \frac{1}{\sigma_n ^ 4} \right)\right]z_n z_n'
 $$
-\frac{\partial \ln ^ 2 L}{\partial \alpha \alpha ^ \top} = \frac{1}{2}\sum_n\left[ h_n''\left(\frac{e_n ^ 2}{\sigma_n ^ 4}- \frac{1}{\sigma_n ^ 2} \right)- h_n^{'2} \left(\frac{2 e_n ^ 2}{\sigma_n ^ 6}- \frac{1}{\sigma_n ^ 4} \right)\right]z_n z_n'
-$$ To get the information matrix, we take the expectation of the
+
+To get the information matrix, we take the expectation of the
 opposite of this matrix and the first term disappear:
 
 $$
@@ -1347,7 +1269,10 @@ $$
 f(y_n \mid \eta_n) = \left(\frac{1}{2\pi \sigma ^  2 _ \nu}\right) ^ {\frac{T}{2}}
 e ^ {-\frac{1}{2\sigma_\nu ^ 2}\sum_n (y_{nt} - \beta ^ \top x_{nt} - \eta_n) ^ 2}
 $$
-To get the unconditional density, we have to integrate out this conditional density with $\eta$. Assuming that $\eta$ is normal with zero expectation and a variance equal to $\sigma_\eta ^ 2$, we get:
+
+To get the unconditional density, we have to integrate out this
+conditional density with $\eta$. Assuming that $\eta$ is normal with
+zero expectation and a variance equal to $\sigma_\eta ^ 2$, we get:
 
 $$
 f(y_n) = \int_{-\infty} ^ {+ \infty} f(y_n \mid \eta) \frac{1}{\sqrt{2\pi}\sigma_\eta} e ^ {-\frac{1}{2}\left(\frac{\nu}{\sigma_\nu}\right)^ 2} d\nu
@@ -1387,7 +1312,7 @@ g(\beta)=
   \begin{array}{cc}
     -\frac{N(T-1)}{2\sigma_\nu^2}-\frac{N}{2\left(\sigma_\nu^2+T\sigma_\eta^2\right)}+
     \frac{\epsilon^\top W_\eta\epsilon}{2\sigma_\nu^4}+\frac{\epsilon^\top B_\eta\epsilon}{2\left(\sigma_\nu^2+T\sigma_\eta^2\right)^2}\\ 
-    -\frac{NT}{2\left(\sigma_\nu^2+\T\sigma_\eta^2\right)}+\frac{T
+    -\frac{NT}{2\left(\sigma_\nu^2+T\sigma_\eta^2\right)}+\frac{T
     \epsilon^\top B_\eta\epsilon}{2\left(\sigma_\nu^2+T\sigma_\eta^2\right)^2}
   \end{array}
 \right)
@@ -1506,7 +1431,7 @@ hypothesis of no individual and time effects.
 As an example, we consider the growth equation estimated in chapter 3.
 
 ```{r}
-growth <- micsr::growth %>% 
+growth <- growth %>% 
   mutate(growth, v = popgwth + 0.05) %>% 
   rename(i = inv, e = school)
 slw_tot <- lm(log(gdp85) ~ log(i / v) + log(e / v), 
@@ -1521,166 +1446,136 @@ lmtest::bptest(slw_tot)
 
 ### Seemingly unrelated regression
 
-@WOOD:77 use data on manufacturing in Canada from 1947 to 1970.
-
-```{r}
-prod_canada
+```{r }
+#| include: false
+source("clm.R")
+ap <- apples %>% filter(year == 1985) %>%
+    transmute(y = otherprod + apples,
+              ct = capital + labor + materials,
+              sl = labor / ct, sm = materials / ct,
+              pk = log(pc / mean(pc)), pl = log(pl / mean(pl)) - pk,
+              pm = log(pm / mean(pm)) - pk, ct = log(ct / mean(ct)) - pk,
+              y = log(y / mean(y)), y2 = 0.5 * y ^ 2,
+              ct = ct, pl2 = 0.5 * pl ^ 2,
+              pm2 = 0.5 * pm ^ 2, plm = pl * pm
+              )
+eq_ct <- ct ~ y + y2 + pl + pm + pl2 + plm + pm2
+eq_sl <- sl ~ pl + pm
+eq_sm <- sm ~ pl + pm
+library(Formula)
+eq_sys <- Formula(ct + sl + sm ~ y + y2 + pl + pm + pl2 + plm + pm2)
+mf <- model.frame(eq_sys, ap)  ; X_c <- model.matrix(eq_ct, mf) 
+X_l <- model.matrix(eq_sl, mf) ; X_m <- model.matrix(eq_sm, mf)
+nms_cols <- function(x, label)
+    paste(label, c("cst", colnames(x)[-1]), sep = "_")
+nms_c <- nms_cols(X_c, "cost") ; nms_l <- nms_cols(X_l, "sl")
+nms_m <- nms_cols(X_m, "sm")
+Xs <- Matrix::bdiag(X_c, X_l, X_m) %>% as.matrix
+colnames(Xs) <- c(nms_c, nms_l, nms_m)
+Y <- model.part(eq_sys, mf, rhs = 0, lhs = 1)
+Ys <- Y %>% pivot_longer(1:3, cols_vary = "slowest", names_to = "equation",
+                         values_to = "response")
+stack_data <- Ys %>% bind_cols(Xs)
+ols_unconst <- lm(response ~ . - 1 - equation, stack_data)
+R <- matrix(0, nrow = 6, ncol = 14)
+R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
+    R[5, c(7, 13)] <- R[6, c(8, 14)] <- c(1, -1)
+excess <- R %*% coef(ols_unconst)
+XpX <- crossprod(model.matrix(ols_unconst))
+beta_c <- coef(ols_unconst) -
+    drop(solve(XpX) %*% t(R) %*%
+         solve(R %*% solve(XpX) %*% t(R)) %*% excess)
 ```
 
-$p$ stands for price and $q$ for quantity, $o$ is the output, $i$
-materials, $l$ productive labor, $n$ non-productive labor and $k$ for
-capital.
+To illustrate the use of the **SUR** estimator, we go back to the
+estimation of the system of three equations of three equations (one
+cost function and two factor shares equations) for the production of
+apples started in section ??.
 
-The translog cost function is:
+```{r }
+eq_ct <- ct ~ y + y2 + pl + pm + pl2 + plm + pm2
+eq_sl <- sl ~ pl + pm
+eq_sm <- sm ~ pl + pm
+```
+with the following linear constraints:
 
-$$
-\ln C = \beta_0 + \beta_y \ln y + \beta_{yy} \ln y ^ 2 + \sum_i \beta_i \ln p_i + \frac{1}{2} \sum_i \sum_j \beta_{ij} \ln p_i \ln p_j
-$$
-
-with $\beta_{ij} = \beta_{ji}$. For our specific example, it can be
-rewriten:
-
-$$
-\begin{array}{rcl}
-\ln C &=& \beta_0 + \beta_y \ln y + \frac{1}{2} \beta_{yy} \ln^2 y \\
-&+& \beta_m \ln p_m + \beta_l \ln p_l + \beta_n \ln p_n  \\
-&+& \frac{1}{2} \beta_{mm} \ln ^ 2 p_m + \frac{1}{2} \beta_{ll} \ln ^ 2 p_l + 
-\frac{1}{2} \beta_{nn} \ln ^ 2 p_n \\
-&+& \beta_{ml} \ln p_m \ln p_l + \beta_{mn} \ln p_m \ln p_n + \beta_{ln}\ln p_l \ln p_n
-\end{array}
-$$ Homogeneity of degree 1 of the cost function with all the input price
-implies that the cost function can be rewriten as:
-
-$$
-\begin{array}{rcl}
-\ln C^* &=& \beta_0 + \beta_y \ln y + \frac{1}{2} \beta_{yy} \ln^2 y + \beta_l \ln p_l ^ * + \beta_n \ln p_n ^ *  \\
-&+& \frac{1}{2} \beta_{ll} \ln ^ 2 p_l^* + 
-\frac{1}{2} \beta_{nn} \ln ^ 2 p_n^* + \beta_{ln}\ln p_l^* \ln p_n^*
-\end{array}
-$$
-
-wehre $z ^ * = z / p_m$.
-
-Using Shepard lemna, the derivatives of the log cost with log prices
-give the cost shares:
-
-$$
-\left\{
-\begin{array}{rcl}
-\frac{\partial \ln C^*}{\partial \ln p_l ^ *} &=& \beta_l + \beta_{ll} \ln p_l ^ * + \beta_{ln} \ln p_n ^ *\\
-\frac{\partial \ln C^*}{\partial \ln p_n ^ *} &=& \beta_n + \beta_{ln} \ln p_l ^ * + \beta_{nn} \ln p_n ^ * \\
-\end{array}
-\right.
-$$
-
-We therefore have a system of three equations, one cost equation and two
-cost shares.
-
-We first create the relevant covariates:
-
-```{r}
-prod_canada <- prod_canada %>% 
-  mutate(ct = pm * qm + pl * ql + pn * qn,
-         cm = log(ct / pi),    qo = log(qo),
-         sl = pl * ql / ct,    sn = pn * qn / ct,    sm = pm * qm / ct,
-         pl = log(pl / pi),    pn = log(pn / pi),
-         pll = 1 / 2 * pl ^ 2, pnn = 1 / 2 * pn ^ 2, pln = pl * pn)
+```{r }
+R <- matrix(0, nrow = 6, ncol = 14)
+R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
+    R[5, c(7, 13)] <- R[6, c(8, 14)] <- c(1, -1)
 ```
 
-The estimation of each equation separately is consistent. It can be
-performed either by using `lm` for every equation, or using the
-`systemfit` function of the `systemfit` package. Its first argument is a
-(eventually named) list of formulas.
+We then computed a data frame containing the stacked data for
+the whole system:
 
-We first write the formula of the three equations, and underlines them
-as a comment by a line containing the positions of every parameter in
-the whole system of equation:
+```{r }
+stack_data %>% print(n = 2)
+```
+and we were able to estimate the unconstrained and the
+constrained least squares estimator:
 
-```{r}
-cost   <- cm ~ pl + pn + pll + pln + pnn + k + qo
-#          1    2    3     4     5     6   7    8
-plabor <- sl ~ pl + pn
-#          9   10   11
-nlabor <- sn ~ pl + pn
-#         12   13   14
+```{r }
+ols_unconst <- lm(response ~ . - 1 - equation, stack_data)
+ols_const <- clm(ols_unconst, R)
+```
+and to extract matrices of covariates for the three equations (`X_c`, `X_l` and `X_m`).
+
+
+```{r }
+X_c <- model.matrix(eq_ct, ap) ;
+X_l <- model.matrix(eq_sl, ap) ;
+X_m <- model.matrix(eq_sm, ap)
 ```
 
-```{r}
-library("systemfit")
-ols <- systemfit(list(cost = cost, prod.labor = plabor, nprod.labor = nlabor),
-                 data = prod_canada)
-ols
+To implement the **SUR** estimator, we first estimate the matrix of
+covariance of the errors for the three equations of the system, using
+the **OLS** residuals:
+
+```{r }
+N <- nobs(ols_const) / 3
+EPS <- ols_const %>% resid %>% matrix(ncol = 3)
+Sigma <- crossprod(EPS) / N
+Sigma
 ```
 
-The print method returns the stacked vector of coefficients, with names
-obtained by pasting the name of the equation and the name of the
-covariate. The `resid` method returns a data. frame of residuals with
-one column for every equation:
+We then compute the estimated standard deviation of the errors for the
+two equations and we compute the Breusch Pagan test:
 
-```{r}
-ols %>% resid %>% head
-```
-
-The matrix of covariance of the error $\Sigma$ can be estimated by using
-the cross-product of the three vectors of residuals, the standard
-deviations for each equation being the square root of the diagonal
-elements:
-
-```{r}
-Sigma <- crossprod(as.matrix(resid(ols))) / 25
+```{r }
 sig <- Sigma %>% diag %>% sqrt
-```
-
-We then compute the elements of the test statistic and compute it:
-
-```{r}
 d <- Sigma / outer(sig, sig)
 bp_stat <- sum( d[upper.tri(d)] ^ 2) * 25
 pchisq(bp_stat, df = 3, lower.tail = FALSE)
 ```
 
-The hypothesis of diagonality of $\Sigma$ is rejected at the 5% level
-(but not at the 1% level).
+The hypothesis of diagonality of $\Sigma$ is rejected at the 1% level
+(but not at the 0.1% level).
 
-The **OLS** is inefficient for two reasons:
+We then compute the Cholesky decomposition matrix of this covariance
+matrix and construct the matrix of transformed covariates and
+response for the whole system:
 
--   it doesn't take into account the fact that the same structural
-    parameters appear in different equations,
--   it doesn't take into account the fact that the errors of the
-    different equations are correlated.
-
-We first construct the matrix of restrictions, with a number of columns
-equal to the number of coefficients of the system (14) and a number of
-lines equal to the number of restrictions (7).
-
-```{r}
-R <- matrix(0, 6, 14)
-R[1, 2] <- R[2,  3] <- R[3,  4] <- R[4,  5] <- R[5,  5] <- R[6,  6] <-   1
-R[1, 9] <- R[2, 12] <- R[3, 10] <- R[4, 11] <- R[5, 13] <- R[6, 14] <- - 1
+```{r }
+V <- chol(solve(Sigma))
+Xs <- rbind(cbind(V[1, 1] * X_c, V[1, 2] * X_l, V[1, 3] * X_m),
+            cbind(V[2, 1] * X_c, V[2, 2] * X_l, V[2, 3] * X_m),
+            cbind(V[3, 1] * X_c, V[3, 2] * X_l, V[3, 3] * X_m))
+ys <- as.matrix(Y) %*% t(V) %>% as.numeric
 ```
 
-For example, the first line of `R` contains a one for the second
-coefficient ($\beta_l$ in the cost equation) and minus one for the 9^th^
-coefficient ($\beta_l$ in the productive labor share), so that the
-difference between the two should be 0 (or equivalently that the two
-estimates should be equal).
+Then the **SUR** estimator is computed, using `lm` on the transformed
+data and the using `¢lm` in order to impose the linear restrictions.
 
-We use again the `systemfit` function using two more arguments:
+```{r }
+sur <- lm(ys ~ Xs - 1) %>% clm(R = R)
+```
 
--   `restrict.matrix` to indicate the matrix of
-    restrictions.[^non_spherical-5],
--   `method` to specify the method of estimation: the default value is
-    `"OLS"`, we set it here to `"SUR"` to use the seemingly unrelated
-    regression method.
 
-[^non_spherical-5]: There is also a `restrict.rhs` argument which is a
-    vector of right hand side values, its default value is a vector of
-    0, which is the relevant value in our case.
 
-```{r}
-sur <- systemfit(list(cost = cost, prod.labor = plabor, nprod.labor = nlabor),
-                 restrict.matrix = R, data = prod_canada, method = "SUR")
-sur
+```{r }
+sur <- systemfit::systemfit(list(cost = eq_ct, labor = eq_sl, materials = eq_sm),
+                            data = ap, restrict.matrix = R, method = "SUR",
+                            methodResidCov = "noDfCor")
 ```
 
 The coefficients can be used to compute the Allen elasticity of
@@ -1694,16 +1589,22 @@ $$
 \sigma_{ii} = \frac{\beta_{ij} - s_i(1 - s_i)}{s_i ^ 2}
 $$
 
-```{r}
+
+
+
+```{r }
 Sigma <- matrix(coef(sur)[- (1:8)], ncol = 2)[-1, ]
 add <- - apply(Sigma, 1, sum)
 Sigma <- cbind(rbind(Sigma, add), c(add, - sum(add)))
-shares <- prod_canada %>% filter(year == 1961) %>% select(sl, sn, sm) %>% as.numeric
+shares <- ap %>% summarise(sl = mean(sl),
+                           sm = mean(sm), sk = 1 - sl - sm) %>%
+    as.numeric
 elast <- Sigma /outer(shares, shares) + 1
 diag(elast) <- diag(elast) - 1 / shares
-dimnames(elast) <- list(c("l", "n", "m"), c("l", "n", "m"))
+dimnames(elast) <- list(c("l", "m", "k"), c("l", "m", "k"))
 elast
 ```
+
 
 The three factors are substitutes all the Allen elasticities of
 substitution being positive. In particular, there seems to be a strong
@@ -1711,16 +1612,16 @@ substituability between productive and non-productive labor.
 
 The price elasticities are given by: $\epsilon_{ij} = s_j \sigma_{ij}$.
 
-```{r}
+
+```{r }
 elast * rbind(shares, shares, shares)
 ```
 
-Note that this matrix is not symmetric: for example $0.1574$ is the
-elasticity of the demand materials with the price of productive labor as
-$0.7405086$ is the elasticity of the demand of productive labor with the
-price of materials. The price elasticities of both types of labor are
-close to -1, as the demand for materials is very inelastic, with a
-direct price elasticity of $-0.21$.
-
+Note that this matrix is not symmetric: for example $0.1675$ is the
+elasticity of the demand materials with the price of labor as $0.1039$
+is the elasticity of the demand of labor with the price of
+materials. The price elasticities indicates that the demand for the
+three inputs is inelastic, and it is particularly the case for labor
+and materials..
 
 

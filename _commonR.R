@@ -11,3 +11,7 @@ options(
     tibble.print_max = 5,
     tibble.print_min = 5
 )
+
+library(tidyverse)
+library(micsr)
+library(micsr.data)
