@@ -1,9 +1,11 @@
 ```{r }
+#| label: coefficients
 #| include: false
 source("../_commonR.R")
+prtcoef <- function(x, id, digits = 3) unname(round(coef(x)[id], digits))
 ```
 
-# Interpretation of the Coefficients
+# Interpretation of the Coefficients {#sec-interpretation_chapter}
 
 In the simplest case, a regression with real numerical response and covariate: $y_n = \alpha + \beta x_n + \epsilon_n$, the interpretation of the slope $\beta$ is simply the constant marginal effect of $x_n$ on $y_n$ or, mathematically, the derivative of $y$ with $x$. However, linear models are much richer than this simple one, as some covariates may be:
 
@@ -12,17 +14,13 @@ In the simplest case, a regression with real numerical response and covariate: $
 - categorical variables (married, single, divorced, widower for example),
 - introduced in the regression after a transformation, for example by taking the logarithm or the square root (this can be also true for the response),
 - introduced as a polynomial, ie for example, not only $x$ is introduced, but also its square,
-- jointly introduced with an interaction, ie not $x_1$ and $x_2$ are introduced, but also their product. 
+- jointly introduced with an interaction, ie not only $x_1$ and $x_2$ are introduced, but also their product. 
 
-In all these cases, $\beta$ is no longer the derivative of $y$ with $x$ and special care is required in the interpretation of the estimated slopes.
-
-Througough this chapter, we'll use the data set of @COST:MITT:MCCL:09 (called `wine`) who estimated a hedonic price function for wines.
+In all these cases, $\beta$ is no longer the derivative of $y$ with $x$ and special care is required in the interpretation of the estimated slopes. Throughout this chapter, we'll use the data set of @COST:MITT:MCCL:09 (called `wine`) who estimated a hedonic price function for wines.
 
 ```{r }
-library("tidyverse")
-library("micsr")
-prtcoef <- function(x, id, digits = 3) unname(round(coef(x)[id], digits))
-wine
+#| label: wine
+wine %>% print(n = 3)
 ```
 
 The data set contains 9600 kind of wines, for which one observes:
@@ -37,12 +35,14 @@ The data set contains 9600 kind of wines, for which one observes:
 The response is the price for a bottle. The region variable is a factor with numerous modalities:
 
 ```{r}
+#| label: regions_levels
 wine %>% pull(region) %>% levels
 ```
 
-To simplify, we keep only the two most important regions and merge all the others regions in a `other` cathegory. This operation is easily performed using the `forcats::fct_lump` function:
+To simplify, we keep only the two most important regions (Napa Valley and Sonoma) and merge all the others regions in a `other` cathegory. This operation is easily performed using the `forcats::fct_lump` function:
 
 ```{r}
+#| label: region_freq
 wine <- wine %>% mutate(reg = fct_lump(region, 2))
 wine %>% count(reg)
 ```
@@ -50,6 +50,7 @@ wine %>% count(reg)
 We also divide the score by 100 so that the maximum attainable score is 1:
 
 ```{r}
+#| label: mutate_score
 wine <- wine %>% mutate(score = score / 100)
 ```
 
@@ -58,15 +59,15 @@ wine <- wine %>% mutate(score = score / 100)
 
 We first consider the production as the unique covariate. High quality wines are often produced in small areas, with a low yield, we therefore expect a negative relationship between price and production. We consider two measures of production and price:
 
-- production is measured in cases ($x$) and in m^3^ ($w$). A case contains 12 bottles of 75 cl, they also contain a volume of 9 litters, which is also $9/1000$ m^3^. Therefore, the number of cases must be multiplied by $0.009$ in order to get the production in m^3^ ($w = 0.009x$),
-- price ($y$) is measured in $ of 2000 per bottle. The price index in the United States was equal to 172 in 2000 and to 258 in 2020. Therefore, to get the price in 2020$ ($q$), we have to multiply the 2000$ price by $258/172 = 1.5$ ($q = 1.5 y$).
+- production is measured in cases ($x$) and in m^3^ ($w$). A case contains 12 bottles of 75 cl, or 9 litters, which is also $9/1000$ m^3^. Therefore, the number of cases must be multiplied by $0.009$ in order to get the production in m^3^ ($w = 0.009x$),
+- price ($y$) is measured in 2000$ of per bottle. The price index in the United States was equal to 172 in 2000 and to 258 in 2020. Therefore, to get the price in 2020$ ($q$), we have to multiply the 2000$ price by $258/172 = 1.5$ ($q = 1.5 y$).
 
 We perform these transformations, and we select only the relevant variables:
 
 ```{r }
+#| label: mutate_select_wine
 wine2 <- wine %>% select(x = cases, y = price) %>% 
   mutate(w = x * 0.009,  q = y * 1.5)
-wine2
 ```
 
 ### Response and covariate in level
@@ -75,22 +76,18 @@ We start by a set of simple linear regressions of $y$
 / $q$ on $x$ / $w$ :
 
 ```{r }
+#| label: linear_models_production_price
 nn_yx <- lm(y ~ x, wine2)
 nn_yw <- lm(y ~ w, wine2)
 nn_qx <- lm(q ~ x, wine2)
 nn_qw <- lm(q ~ w, wine2)
 nn_yx %>% coef
 ```
-The initial model, with $y$ and $x$ is:
-
-$$
-y_n = \alpha + \beta x_n + \epsilon_n
-$$
-
-$y$ being measured in $2000, so are $\alpha$, $\beta x_n$ and
-$\epsilon_n$. The intercept indicates the expected value of a bottle of wine when the production is 0, which of course make no sense. However, we can consider the intercept as the expected value of a bottle for a wine with a very low production. We get here: `r prtcoef(nn_yx, 1, 1)`. $\beta_x x$ being measured in $2000 and $x$ in cases, $\beta_x$ is measured in $2000 per case. Therefore, when the production increase of one case, the price of a bottle decrease by  `r prtcoef(nn_yx, 2, 5)` $2000, ie 0.03 cent. The residuals and the fitted values are also measured in $2000 :
+The initial model, with $y$ and $x$ is: $y_n = \alpha + \beta_x x_n + \epsilon_n$. $y$ being measured in $2000, so are $\alpha$, $\beta x_n$ and
+$\epsilon_n$. The intercept indicates the expected value of a bottle of wine when the production is 0, which of course makes no sense. However, we can consider the intercept as the expected value of a bottle for a wine with a very low production. We get here: `r prtcoef(nn_yx, 1, 1)`. $\beta_x x$ being measured in $2000 and $x$ in cases, $\beta_x$ is measured in $2000 per case. Therefore, when the production increases of one case, the price of a bottle decreases by  `r prtcoef(nn_yx, 2, 5)` $2000, ie 0.03 cent. The residuals and the fitted values are also measured in $2000 :
 
 ```{r }
+#| label: response_fitted_residuals
 cbind(y = wine2$y, heps = resid(nn_yx), hy = fitted(nn_yx)) %>% head(3)
 ```
 For example, for the first wine in the sample, the observed price is `r round(wine2$y[1], 2)` and is the sum of:
@@ -102,12 +99,13 @@ We now measure the price in  $2020. This means that the unit of measurement of t
 
 ```{r }
 #| collapse: true
+#| label: change_unit_response
 coef(nn_qx)
 coef(nn_qx) / coef(nn_yx)
 head(resid(nn_qx), 2)
 head(resid(nn_qx), 2) / head(resid(nn_yx), 2)
 ```
-For example the price of the first bottle is lower than the estimated expected value for this given of production by an amount of 
+For example the price of the first bottle is lower than the estimated expected value for this given level of production by an amount of 
 `r round(resid(nn_qx)[1], 2)` $2020, which is 1.5 times the residual of the initial regression (
 `r round(resid(nn_yx)[1], 2)`).
 
@@ -117,45 +115,39 @@ $$
 y_n = \alpha + \beta_x (w_n / 0.009) + \epsilon_n = \alpha + (\beta_x / 0.009) w_n + \epsilon_n =
 \alpha + \beta_w w_n + \epsilon_n
 $$
-Compared to the reference model, the three elements of the model are still measured in $2000 and it is particularly the case for $\beta_w w_n$. As the production is now measured in m^3^, it as been multiplied by 0.009 and therefore, the slope is divided by the same amount. The intercept, the predictions and the residauls still have the same unit of measurment ($2000) and therefore the same value.
+Compared to the reference model, the three elements of the model are still measured in $2000 and it is particularly the case for $\beta_w w_n$. As the production is now measured in m^3^, it as been multiplied by 0.009 and therefore, the slope is divided by the same amount. The intercept, the predictions and the residauls still have the same unit of measurment ($2000) and therefore the same values.
 
 ```{r }
+#| label: change_unit_covariate
+#| collapse: true
 nn_yw <- lm(y ~ w, wine2)
 coef(nn_yw)
 coef(nn_yx) / coef(nn_yw)
 ```
 
 The price of a bottle of very rare wine is still
-`r prtcoef(nn_yw, 1, 1)` $2000, and the slope now indicates that when the production increase by  $1m^3$, the price of a bottle increases by `r prtcoef(nn_yw, 2, 3)`, which is approximatively  4 cents.
+`r prtcoef(nn_yw, 1, 1)` $2000, and the slope now indicates that when the production increase by  1m^3^, the price of a bottle decreases by `r prtcoef(nn_yw, 2, 3)`, which is approximatively  4 cents.
 
-### Covariate in log
+### Covariate in logarithm
 
-We now consider that the covariate is the logarithm of the production:
-
-$$
-y_n = \alpha + \beta_x \ln x_n + \epsilon_n
-$$
-
-The response is still measured in $2000, and therefore so are $\beta_0$,
+We now consider that the covariate is the logarithm of the production: $y_n = \alpha + \beta_x \ln x_n + \epsilon_n$. The response is still measured in $2000, and therefore so are $\alpha$,
 $\beta_x \ln x_n$, $\epsilon_n$, $\hat{y}_n$ and $\hat{\epsilon}_n$.
 
 ```{r }
+#| label: lm_log_covariate
 nl_yx <- lm(y ~ log(x), wine2)
 coef(nl_yx)
 ```
-The intercept is now the expected value of the price of a bottle for $x=1$ (and not 0 as previously) and we can therefore still interpret it as the exepcted value of the price of a very rare wine. It is much higher than in the previous specification: (`r prtcoef(nl_yx, 1, 2)` vs `r prtcoef(nn_yx, 1, 2)`)
-
-The slope is now the derivative of $y$ with $\ln x$, which is $\beta_x = \frac{dy}{d\ln x}= \frac{dy}{dx /x}$. Therefore, the slope is the ratio of an absolute variation of $y$ and a relative variation of $x$. For $dx/x=1$, which means that the production is multiplied by two, 
+The intercept is now the expected value of the price of a bottle for $x=1$ (and not 0 as previously) and is therefore not particularly meaningfull. The slope is now the derivative of $y$ with $\ln x$, which is $\beta_x = \frac{dy}{d\ln x}= \frac{dy}{dx /x}$. Therefore, the slope is the ratio of an absolute variation of $y$ and a relative variation of $x$. For $dx/x=1$, which means that the production is multiplied by two, 
 $dy = `r prtcoef(nl_yx, 2, 2)`$, which means that the price of the bottle decreases by
 `r prtcoef(nl_yx, 2, 2)` $2000. 
 
 ```{r }
+#| label: price_wine_decomp
 head(cbind(y = wine2$y, heps = resid(nl_yx), hy = fitted(nl_yx)), 3)
 ```
 
-With this new specification, for the first bottle, the price is lower than the expected value of the price by an amount of  `r round(resid(nl_yx)[1], 2)`. 
-
-If the production is measured in m^3^, we get, replacing $x_n$
+With this new specification, for the first bottle, the price is lower than the expected value of the price by an amount of  `r round(resid(nl_yx)[1], 2)`. If the production is measured in m^3^, we get, replacing $x_n$
 by $w_n / 0.009$ :
 
 $$
@@ -164,15 +156,18 @@ y_n = (\alpha - \beta_x \ln 0.009) + \beta_x \ln w_n + \epsilon_n
 $$
 
 ```{r }
+#| label: log_covariate_new_unit
+#| collapse: true
 nl_yw <- lm(y ~ log(w), wine2)
 coef(nl_yw)
 ```
 
 Therefore, the slope is unchanged because it measures the effect of doubling the production on the price, which obviously doesn't depend on the unit of measurment of the production. 
-The intercept is modified by an amount equal to $-\beta_x\ln 0.007$:
+The intercept is modified by an amount equal to $-\beta_x\ln 0.009$:
 
 ```{r }
 #| collapse: true
+#| label: log_covariate_new_unit_intercept
 coef(nl_yw)[1] - coef(nl_yx)[1]
 - coef(nl_yw)[2] * log(0.009)
 ```
@@ -180,13 +175,14 @@ coef(nl_yw)[1] - coef(nl_yx)[1]
 Consider now that the price is measured in $2020:
 
 $$
-\frac{q_n}{1.5} = \alpha + \beta_x \ln x_n + \epsilon_n
+y_n = \frac{q_n}{1.5} = \alpha + \beta_x \ln x_n + \epsilon_n
 $$
 
-All the elements of the initial model are therefore multiplied by 1.5:
+and the elements of the initial model are therefore multiplied by 1.5:
 
 ```{r }
 #| collapse: true
+#| label: log_covariate_response_new_unit
 nl_qx <- lm(q ~ log(x), wine2)
 coef(nl_qx)
 coef(nl_qx) / coef(nl_yx)
@@ -196,7 +192,7 @@ resid(nl_qx)[1:3] / resid(nl_yx)[1:3]
 
 ### Response in logarithm
 
-Consider now the case when the response is in logarithms. In term of the response, we then start from a multiplicative model:
+Consider now the case when the response is in logarithm. In term of the response, we then start from a multiplicative model:
 
 $$
 y_n = e^{\alpha + \beta_x x} (1 + \eta_n)
@@ -213,6 +209,8 @@ The error term is now $\epsilon = \ln(1 + \eta_n)$. But, if $\eta_n$ is "small":
 $\ln(1 - 0.10) = `r round(log(1-0.10), 3)`$. Therefore, $\epsilon$ can be interpreted as a percentage of variation between the actual price and the expected value for the given level of production.
 
 ```{r }
+#| label: response_log
+#| collapse: true
 ln_yx = lm(log(y) ~ x, wine2)
 coef(ln_yx)
 ```
@@ -221,13 +219,13 @@ The intercept is now the expected value of $\ln y$ when $x = 0$.
 Taking the exponential of the intercept, we get:
 
 ```{r }
+#| label: exponential_intercept
+#| collapse: true
 exp(coef(ln_yx)[1])
 ```
 
 which is quite close to the value obtained in the reference model 
-(`r prtcoef(nn_yx, 1, 2)`).
-
-The slope $\beta_x$ is now the derivative of $\ln y$ with $x$:
+(`r prtcoef(nn_yx, 1, 2)`). The slope $\beta_x$ is now the derivative of $\ln y$ with $x$:
 
 $$
 \frac{d \ln y}{d x} = \frac{dy / y}{d x}
@@ -245,6 +243,8 @@ $$
 The only effect of this change of measurment for the covariate is that, as the covariate is multiplied by $0.009$, the slope is divided by the same amount:
 
 ```{r }
+#| label: response_log_change_covariate_unit
+#| collapse: true
 ln_yw = lm(log(y) ~ w, wine2)
 coef(ln_yw)
 coef(ln_yx) / coef(ln_yw)
@@ -252,10 +252,10 @@ coef(ln_yx) / coef(ln_yw)
 
 the intercept, the fitted values and the residuals being unchanged.
 
-If the response is measured in $2020 :
+If the response is measured in $2020, starting from the initial model, we have:
 
 $$
-\ln \frac{q_n}{1.5} = \alpha + \beta_x x_n + \epsilon_n
+\ln y_n = \ln \frac{q_n}{1.5} = \alpha + \beta_x x_n + \epsilon_n
 $$
 
 which leads to:
@@ -268,17 +268,18 @@ Therefore, the only effect is that the intercept increases by $\ln 1.5$ :
 
 ```{r }
 #| collapse: true
+#| label: response_log_change_unit
 ln_qw <- lm(log(q) ~ w, wine2)
 coef(ln_qw)
 coef(ln_qw) - coef(ln_yw)
 log(1.5)
 ```
 
-The slope, the predictions and the residuabls being unchanged.
+the slope, the predictions and the residuabls being unchanged.
 
 ### Response and covariate in log
 
-Consider finally the case when both the response and the covariate are in logs:
+Consider finally the case where both the response and the covariate are in logs:
 
 $$
 \ln y_n = \beta_0 +\beta_x \ln x_n + \epsilon_n
@@ -290,17 +291,20 @@ $$
 \beta_x = \frac{d\ln y}{d\ln x}=\frac{dx / x}{dy / y}
 $$
 
-and is therefore a ratio of relative variations.
+and is therefore a ratio of two relative variations.
 
 ```{r }
+#| label: elasticity
+#| collapse: true
 ll_yx <- lm(log(y) ~ log(x), wine2)
 coef(ll_yx)
 ```
 
-When $dx / x = 1$, which means that the production is doubling, the relative variation of the price is `r prtcoef(ll_yx, 2, 3)` or `r 100 * prtcoef(ll_yx, 2, 3)`%. Equivalently, when the production increases by 1%, the price decreases by 
-`r prtcoef(ll_yx, 2, 3)`%; such a slope is called an elasticity and is a number without unity. Therefore, it is therefore invariant to any linear tranformation of the covariate or of the response.
+When $dx / x = 1$, which means that the production is doubling, the relative variation of the price is `r prtcoef(ll_yx, 2, 3)` or `r 100 * prtcoef(ll_yx, 2, 3)`%. Equivalently, when the production increases by 1%, the price decreases by  `r prtcoef(ll_yx, 2, 3)`%; such a slope is called an elasticity and is a number without unity. Therefore, it is invariant to any linear transformation of the covariate or of the response.
 
 ```{r }
+#| label: elasticity_invariant_units
+#| collapse: true
 ll_yw <- lm(log(y) ~ log(w), wine2)
 ll_qx <- lm(log(q) ~ log(x), wine2)
 ll_qw <- lm(log(q) ~ log(w), wine2)
@@ -313,23 +317,26 @@ rbind(ll_yx = coef(ll_yx), ll_yw = coef(ll_yw),
 Consider the same model: $y_n = \alpha + \beta_x x_n + \epsilon_n$, but $x_n$ is now an integer. In the `wine` data set, `age` is the age of the wine in years, from 1 to 6. 
 
 ```{r}
-# echo: false
+#| echo: false
+#| label: integer_covariate_hide
 cov_count <- lm(price ~ age, wine)
 ```
 
 ```{r}
+#| label: integer_covariate
+#| collapse: true
 lm(price ~ age, wine) %>% coef
 ```
 
-$\beta$ is still the derivative of $y$ with $x$, but the computation of the derivative makes little sense when $x$ is an integer as infinitessimal variations are not relevant in this case. Therefore, instead of a marginal effect, one is interested in a discrete variation of $x_n$ (for example from 3 to 4). If we compute the variation of $y_n$ when $x$ increases from $x_n$ to $x_n + 1$, we get:
+$\beta$ is still the derivative of $y$ with $x$, but the computation of the derivative makes little sense when $x$ is an integer as infinitessimal variations are not relevant in this case. Therefore, instead of a marginal effect, one is interested in a discrete variation of $x_n$ (for example from 3 to 4). If we compute the variation of $\mbox{E}(y \mid x = x_n)$ when $x$ increases from $x_n$ to $x_n + 1$, we get:
 
 $$\left(\alpha + \beta_x (x_n + 1)\right) - \left(\alpha + \beta_x x_n\right) = \beta_x$$
 
-Therefore, $\beta_x$ is the variation of $y$ caused by an increase of one unit of $x$. In our example, when the age of the wine increases by one year, its expected price increases by `r prtcoef(cov_count, 2, 1)`
+Therefore, $\beta_x$ is the variation of $y$ caused by an increase of one unit of $x$. In our example, when the age of the wine increases by one year, its expected price increases by `r prtcoef(cov_count, 2, 1)`.
 
 ## Categorical covariate
 
-A categorical variable is a variable that defines a set of modalities, each observations belonging to one modality and only one. The prefered way to deal with categorical variables with **R** is to use a variable type that is called **factor**, the modalities being called **levels**. Factors typically have two levels or more than two. In the first case, the variable is **dichotomic** and the factor can be replaced by a dummy variable (a numerical variable for which the two only values are 0 and 1). For example, sex can be stored as a factor with levels male and female, or as a dummy variable with for example 1 for females and 0 for males. When the number of levels is greater than 2, the variable is **polytomic** and it is advisable to store the variable as a factor.
+A categorical variable is a variable that defines a set of modalities, each observations belonging to one modality and only one. The preferred way to deal with categorical variables with **R** is to use a variable type that is called **factor**, the modalities being called **levels**. Factors have two at least to levels. A cathegorical variable with two levels is a **dichotomic** variable and the factor can be replaced by a dummy variable (a numerical variable for which the only two values are 0 and 1). For example, sex can be stored as a factor with levels male and female, or as a dummy variable with for example 1 for females and 0 for males. When the number of levels is greater than 2, the variable is **polytomic** and it is advisable to store the variable as a factor.
 
 ### Dichotomic variable
 
@@ -337,28 +344,23 @@ We consider here the `"vineyard"` variable which has two modalities (`"yes"` and
 `"no"`) and we create a variant of this variable by creating a dummy variable equal to $1$ if `vineyard` is equal to `"yes"` and 0 otherwise:
 
 ```{r }
+#| label: create_dummy
 wine <- wine %>% mutate(vyd = ifelse(vineyard == "yes", 1L, 0L))
-
 ```
 
 #### Response in level
 
-We start with computing the average price for the two cathegories:
+We start with computing the average price for the two categories:
 
 ```{r }
+#| label: average_price_modalities
+#| collapse: true
 Mwine <- wine %>% group_by(vineyard) %>% summarise(price = mean(price))
 Mwine
 ```
 
-The average price difference between the two cathegories is substantial  `r round(Mwine$price[2] - Mwine$price[1], 2)` $.
-
-We now consider the estimation of the linear model, with $x_n$ a dummy variable equal to 1 if the wine have vineyard indications:
-
-$$
-y_n = \alpha + \beta_x x_n + \epsilon_n
-$$
-
-Consider two wines with the same value of $\epsilon$. Then the effect of $x_n$ on the price is:
+The average price difference between the two categories is substantial  (`r round(Mwine$price[2] - Mwine$price[1], 2)` $).
+We now consider the estimation of the linear model, with $x_n$ a dummy variable equal to 1 if the wine have vineyard indications. The effect of $x_n$ varying from 0 to 1 on the conditional expectation of the price is:
 
 $$
 (\alpha + \beta_x \times 1 + \epsilon) - (\alpha + \beta_x \times 0 + \epsilon) = \beta_x
@@ -366,52 +368,56 @@ $$
 We then estimate the linear model, using `vineyard` and `vyd`:
 
 ```{r }
-lin_bin <- lm(price ~ vyd, wine)
-lin_bin2 <- lm(price ~ vineyard, wine)
-lin_bin %>% coef
-lin_bin2 %>% coef
+#| level: ols_dichotomic
+lm(price ~ vyd, wine) %>% coef
+lm(price ~ vineyard, wine) %>% coef
 ```
 
-The intercept is therefore the average price for wines with no vineyard indication and $\beta_x$ is the price increase caused by vineyard indication. Note also that $\alpha + \beta_x$ is the average price for wines with a vineyard indication. Identical results are obtained using either `vyd` and `vineyard`. The difference is that in the first case, `vyd` is directly used in the regression. In the second case, the factor `vineyard` is replaced, in the regression by a dummy variable called `vineyardyes` equal to 1 when `vineyard` equals `"yes"`. 
+The intercept is the average price for wines with no vineyard indication and $\beta_x$ is the price increase caused by vineyard indication. Note also that $\alpha + \beta_x$ is the average price for wines with a vineyard indication. Identical results are obtained using either `vyd` and `vineyard`. The difference is that in the first case, `vyd` is directly used in the regression. In the second case, the factor `vineyard` is replaced, in the regression by a dummy variable called `vineyardyes` equal to 1 when `vineyard` equals `"yes"`. 
+
+Removing the intercept, we get:
+
+```{r }
+#| level: ols_dichotomic
+lm(price ~ vineyard - 1, wine) %>% coef
+lm(price ~ vyd - 1, wine) %>% coef
+```
+
+When the covariate is a factor, two dummies are created, one for `vineyard = "yes"` as previously but also one for `vineyard = "no"`. The two coefficients are now average prices for the two categories. Removing the intercept from the model where the covariate `vyd`, a dummy for `vineyard = "yes"`, leads to a complete different and hardly relevant model, as the value of a wine with no vineyard indication is set to 0.
 
 #### Response in log
 
-Consider now a regression with the response in log and a dummy covariate:
-
-$$
-\ln y_n = \alpha + \beta_x  x_n + \epsilon_n
-$$
-
-For two wines with the same value of $\epsilon$, but with $y ^ 1$ such that $x = 1$ and $y^0$ such that $x = 0$, the difference in log price is:
+Consider now a regression with the response in log and a dummy covariate: $\ln y_n = \alpha + \beta_x  x_n + \epsilon_n$.  Consider two wines with the same value of $\epsilon$, but one with $x = 1$ and the other with $x = 0$, and call $y^1$ and $y^0$ the respective prices. The difference in log price is:
 
 $$
 \ln y^1 - \ln y^0 = \beta_x
 $$
 
-Denoting $\tau_x = \frac{y^1_n - y^0_n}{y^0_n}$ the variation rate of the price for a wine with vineyard indications compared to a wine without vineyard indication, we get:
+Denoting $\tau_x = \frac{y^1 - y^0}{y^0}$ the variation rate of the price for a wine with vineyard indication compared to a wine without vineyard indication, we get:
 
 $$
-\ln y^1 - \ln y^0 = \ln (1 + \tau) = \beta_x
+\ln y^1 - \ln y^0 = \ln (1 + \tau_x) = \beta_x
 $$
-$\beta_x$ is therefore equal to $\ln (1 + \tau)$ and, as seen previously, for 
-$\tau$ "small",  $\ln (1 + \tau) \approx \tau$. Therefore, $\beta_x$ is approximatively the relative price difference for a wine with and without vineyard indications.
+
+$\beta_x$ is therefore equal to $\ln (1 + \tau)$ and, as seen previously, for a "small"
+$\tau_x$,  $\ln (1 + \tau_x) \approx \tau_x$. Therefore, $\beta_x$ is approximatively the relative price difference for a wine with and without vineyard indications.
 
 ```{r }
+#| label: log_covariate_dichotomic
 log_bin <- lm(log(price) ~ vineyard, wine)
 coef(log_bin)
 ```
-$\hat{\beta}_x=`r prtcoef(log_bin, 2, 2)`$ is the approximation of the relative difference, as the true relative difference is given by the formula: $\tau = e^{\beta_x}-1$, which is 
-`r round(exp(coef(log_bin)[2]) - 1, 2)`. Therefore, $\hat{\beta}_x$ gives a quite good approximation of the relative difference.
-<!-- La constante estimée est la prédiction de la moyenne de $\ln y$ pour -->
-<!-- $x = 0$. En prenant l'exponentielle de la constante, on obtient  -->
-<!-- `r round(exp(coef(log_bin)[1]), 2)`$. -->
 
+$\hat{\beta}_x=`r prtcoef(log_bin, 2, 2)`$ is the approximation of the relative difference, as the true relative difference is given by the formula: $\tau = e^{\beta_x}-1$, which is 
+`r round(exp(coef(log_bin)[2]) - 1, 2)`. Therefore, $\hat{\beta}_x$ gives quite a good approximation of the relative difference.
 
 ### Polytomic covariate
 
 Consider now the case of a polytomich covariate. The `reg` variable has three modalities:
 
 ```{r}
+#| label: polytomic_levels
+#| collapse: true
 wine %>% pull(reg) %>% levels
 ```
 
@@ -420,12 +426,15 @@ wine %>% pull(reg) %>% levels
 We first compute the average price for these three modalities:
 
 ```{r}
+#| level: count_modalities_polytomic
+#| collapse: true
 Mwine <- wine %>% group_by(reg) %>% summarise(price = mean(price))
 Mwine
 ```
 Let's consider a linear model, without and with an intercept:
 
 ```{r }
+#| level: polytomic_with_without_intercept
 #| collapse: true
 lin_3 <- lm(price ~ reg - 1, wine)
 lin_2 <- lm(price ~ reg, wine)
@@ -434,26 +443,31 @@ lin_2 %>% coef
 ```
 Without an intercept, three dummy variables are created and introduced in the regression. With an intercept, only two dummy variables are introduced. We have noted previously that the three levels are `napavalley`, `sonoma` and `Other`. The name of the dummy variables are obtained by merging the name of the variable `reg` and the name of the modality. Note that when an intercept is introduced, the dummy variable corresponding to the first modality (here `napavalley`) is omitted. 
 
-Without an intercept, the three estimated coefficients are simply the average prices for the three regions. With an intercept, the intercept is the average price for the first level of the variable (the Nappa Valley region)  and the two other coefficients are the difference between the average price for the two regions and the average price for the reference region (Nappa Valley). For example, using the second regression (`lin_2`), the average price for the Sonomma can be computed as the sum of the first two coefficients:
+Without an intercept, the three estimated coefficients are simply the average prices for the three regions. With an intercept, the intercept is the average price for the first level of the variable (the Nappa Valley region)  and the two other coefficients are the difference between the average price for the two regions and the average price for the reference region (Napa Valley). For example, using the second regression (`lin_2`), the average price for the Sonoma can be computed as the sum of the first two coefficients:
 
 ```{r }
+#| collapse: true
+#| label: sonoma_price
 unname(coef(lin_2)[1] + coef(lin_2)[2])
 ```
 
 The reference modality can be changed by modifying the order of the levels of the factor. This task can easily be performed using the `forcats::fct_relevel` function and indicating, for example, that `"Other"` should be the first level:
 
 ```{r }
+#| label: fct_relevel
 wine <- mutate(wine, reg = fct_relevel(reg, "Other"))
 ```
 
 ```{r }
+#| label: change_reference_level
 #| collapse: true
 lin_2b <- lm(price ~ reg, wine)
 coef(lin_2b)
 ```
-The average price for Sonoma is now equal to the sum of the first coefficient (the intercept which is the average price for "other regions") and the third coefficient (the difference between the average price in Sonoma and "other regions):
+The average price for Sonoma is now equal to the sum of the first coefficient (the intercept which is the average price for "other regions") and the third coefficient (the difference between the average price in Sonoma and "other regions"):
 
 ```{r }
+# label: sonoma_price_2
 unname(coef(lin_2b)[1] + coef(lin_2b)[3])
 ```
 
@@ -462,6 +476,8 @@ unname(coef(lin_2b)[1] + coef(lin_2b)[3])
 We first compute the average of the *log* prices for the three regions:
 
 ```{r }
+#| label: average_log_prices
+#| collapse: true
 Mwine <- wine %>% group_by(reg) %>%
     summarise(mprice = mean(price), 
               lprice = mean(log(price)),
@@ -469,34 +485,31 @@ Mwine <- wine %>% group_by(reg) %>%
 Mwine
 ```
 
-By definition, taking the exponential of the mean of the logs, we get the geometric mean of prices, which is always lower than the arithmetic mean:
-
-Estimating the model without intercept:
+By definition, taking the exponential of the mean of the logs, we get the geometric mean of prices, which is always lower than the arithmetic mean. Estimating the model without intercept:
 
 ```{r }
+#| label: log_response_polytomic_no_intercept
+#| collapse: true
 log_3 <- lm(log(price) ~ reg - 1, wine)
 coef(log_3)
 ```
 
-we get a model with a coefficient for the three regions. Taking the exponential of these coefficients, we get the geometric means of price previously computed for the three regions:
+we get a model with a coefficient for the three regions. Taking the exponential of these coefficients, we get the geometric means of price previously computed for the three regions. Adding an intercept, only two dummies are introduced in the regression:
 
 ```{r }
-exp(coef(log_3))
-```
-
-Adding an intercept, only two dummies are introduced in the regression:
-
-```{r }
+#| label: log_response_polytomic_intercept
+#| collapse: true
 log_2 <- lm(log(price) ~ reg, wine)
 coef(log_2)
 ```
+
 The intercept is the mean of the logarithms of the prices for the reference region. The coefficient for the Sonoma region is the difference of mean log prices for Sonoma and "other regions". 
 
 $$
  \beta^s = \ln y^s_n - \ln y^o_n = \ln \frac{y^s_n}{y^o_n} = \ln (1 +
-\tau_{so}) \approx \tau_{so}
+\tau_{s}) \approx \tau_{s}
 $$
-where $\tau_{so}$ is the relative price difference between Sonomma and "other regions". $\beta^s$ is an approximation of $\tau_{so}$. The coefficient is 
+where $\tau_{s}$ is the relative price difference between Sonomma and "other regions". $\beta^s$ is an approximation of $\tau_{s}$. The coefficient is 
 `r prtcoef(log_2, 2, 2)` 
 (or `r 100 * prtcoef(log_2, 2, 2)`%) as the exact formula for $\tau$ gives
 `r round(exp(coef(log_2)[2]), 2) -1` 
@@ -504,13 +517,14 @@ where $\tau_{so}$ is the relative price difference between Sonomma and "other re
 
 ## Several covariates
 
-Most of the time, the model of interest includes several numerical and/or cathegorical covariates. A first step is to introduce these covariates separatly, so that their linear effect is analysed. But it is also sometimes interesting to introduce the product of two covariates in the regression. This unables to analyse the interaction effect of two covariates, ie the fact that the effect of $x_1$ on $y$ depends on the value of $x_2$.
+Most of the time, the model of interest includes several numerical and/or cathegorical covariates. A first step is to introduce these covariates separatly, so that their linear effect is analysed. But it is also sometimes interesting to introduce the product of two covariates in the regression. This enables to analyse the interaction effect of two covariates, ie the fact that the effect of $x_1$ on $y$ depends on the value of $x_2$.
 
 ### Separate effects
 
 Consider the log-log model with the numerical `cases` covariate and add the `reg` cathegorical variable. We use the `+` operator in the formula to separate these two covariates:
 
 ```{r }
+#| label: numerical_factor_separate
 di_us <- lm(log(price) ~ log(cases) + reg, wine)
 di_us %>% coef
 ```
@@ -520,7 +534,7 @@ From previous subsections, we are able to interpret the results:
 - a 1% increase of the production leads to a decrease of `r prtcoef(di_us, 2, 2)`% of the price,
 - wines produced in Nappa Valley and Sonoma are more expensive than wine produced in other regions (by an amount approximatively equal to `r prtcoef(di_us, 3, 3) * 100`% and `r prtcoef(di_us, 4, 3) * 100`%).
 
-This model is represented in @fig-additive_effects. The slope is the same for the three regions, but the intercept is different. Therefore, the fitted model is a set of three parallel lines. Note that the sample mean for each region, depicted by a large point, is part of the corresponding regression line. 
+This model is represented in @fig-additive_effects. The slope is the same for the three regions, but the intercept is different. Therefore, the fitted model is represented by three parallel lines. Note that the sample mean for each region, depicted by a large point, is part of the corresponding regression line. 
 
 ```{r } 
 #| echo: false
@@ -547,73 +561,71 @@ gwine + geom_abline(data = Mwine,
 
 ### Multiplicative effects
 
-A multiplicative effect is obtain by introducing in the regression the product of two covariates. Consider first the case where the two covariates are numeric, we'll consider as an example `cases` and `score`. The product can be computed before the estimation:
+A multiplicative effect is obtain by introducing in the regression the product of two covariates. Consider first the case where the two covariates are numeric, we'll consider as an example the production in m^3^ (`prodcubm`) and `score`. The product can be computed before the estimation:
 
 ```{r}
-wine <- wine %>% mutate(prodsqm = cases * 0.009, 
-                        prod_score = prodsqm * score)
+#| label: prodcubm_score
+wine <- wine %>% mutate(prodcubm = cases * 0.009, 
+                        prod_score = prodcubm * score)
 ```
 
 and introduced in the regression:
 
 ```{r}
+#| label: only_mult_effect
 lm(price ~ prod_score, wine) %>% coef
 ```
 
 The same result can be obtained by computing "on the fly" the product in the formula:
 
 ```{r}
-#| results: hide
-lm(price ~ I(prodsqm * score), wine) %>% coef
+#| results: false
+#| label: only_mult_effect_I
+lm(price ~ I(prodcubm * score), wine) %>% coef
 ```
 
 Note the use of the `I` function in the formula; arithmetic operators (`+`, `-`, `*`, `:` and `/`) have a special meaning in formulas and therefore they should be "protected" in order to perform the usual arithmetic operation.
-
-The last (and best solution) is to use the formula syntax: the `x_1:x_2` introduce the interaction effect between `x_1` and `x_2`, ie their product:
+The last (and best solution) is to use the formula syntax: the `x_1:x_2` term introduces the interaction effect between `x_1` and `x_2`, ie their product:
 
 ```{r}
 #| results: hide
-lm(price ~ prodsqm : score, wine) %>% coef
+#| label: only_mult_effect_formula
+lm(price ~ prodcubm : score, wine) %>% coef
 ```
 
-This model is of the form:
-
-$$
-y_n = \alpha + \beta x_1 x_2 + \epsilon_n
-$$
-
+This model is of the form: $y_n = \alpha + \beta x_1 x_2 + \epsilon_n$.
 Therfore, the marginal effect of $x_1$ is $\beta x_2$ and the one of $x_2$ is $\beta x_1$, which is difficult to justify. When one wants to introduce interaction effects, it's recommended to introduce them along the additive effects. This can be performed using any of the following commands:
 
 ```{r}
-#| results: hide
-lm(price ~ prodsqm + score + I(prodsqm * score), wine)
-lm(price ~ prodsqm + score + prod_score, wine)
-lm(price ~ prodsqm + score + prodsqm : score, wine)
+#| results: false
+#| label: add_and_mult_effects
+lm(price ~ prodcubm + score + I(prodcubm * score), wine)
+lm(price ~ prodcubm + score + prod_score, wine)
+lm(price ~ prodcubm + score + prodcubm : score, wine)
 ```
 
-the last expression using the formula syntax, ie the use of the `+` and the `:`. However, introducing the additive and the interacting effect is a very common task, so that an operator `*` is devoted to this task:
+the last expression use the formula syntax, ie the use `+` and `:`. However, introducing the additive and the interacting effect is a very common task, so that the `*` operator is devoted to this task:
 
 ```{r}
-z <- lm(price ~ prodsqm * score, wine)
+#| label: star_operator_formula
+z <- lm(price ~ prodcubm * score, wine)
 z %>% coef
 ```
 
-This model is now of the form:
-
-$$
-y_n = \alpha + \beta_1 x_1 + \beta_2 x_2 + \beta_{12} x_1x_2\epsilon_n
-$$
-and the marginal effect for $x_1$ is now $\beta_1 + \beta_12 x_2$. This model has as special case the additive model ($\beta_{12} = 0$) and this hypothesis can be tested, which was not the case for the model with only the interaction between the two covariates. The marginal effect of one more m^3^ of production is (denoting $x_2$ the score): $`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` x_2$ and is therefore a decreasing function of the score. Note that the coefficient of `prosqm` ($`r prtcoef(z, 2, 3)`$) can be misleading. It indicates that, for a wine with a score equal to 0, the price increase with the production. But actually, such low scores are not observed, the lowest in the sample being `r round(min(wine$score), 2)` and for this value, the marginal effect of production is 
-$`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` \times `r round(min(wine$score), 2)` = `r round(prtcoef(z, 2, 9) + prtcoef(z, 4, 9) * min(wine$score), 2)`$ and is therefore negative if $x_2 > `r prtcoef(z, 2, 3)` / `r abs(prtcoef(z, 4, 3))` = `r -round(prtcoef(z, 2, 9) / prtcoef(z, 4, 9), 3)`$, which is the case for 9560 wines out of 9580. Therefore, the model predicts a negative marginal effect of the production on the price of a bottle for almost the sample, and this negative effect increases with the score obtained by the wine. We can easily test the hypothesis that the additive model is relevant using the value of the Student statistic for the interaction term:
+This model is now of the form: $y_n = \alpha + \beta_1 x_1 + \beta_2 x_2 + \beta_{12} x_1x_2\epsilon_n
+$ and the marginal effect for $x_1$ is now $\beta_1 + \beta_{12} x_2$. This model has as special case the additive model ($\beta_{12} = 0$) and this hypothesis can be tested, which was not the case for the model with only the interaction between the two covariates. The marginal effect of one more m^3^ of production is (denoting $x_2$ the score): $`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` x_2$ and is therefore a decreasing function of the score. Note that the coefficient of `prodcubm` ($`r prtcoef(z, 2, 3)`$) can be misleading. It indicates that, for a wine with a score equal to 0, the price increase with the production. But actually, such low scores are not observed, the lowest in the sample being `r round(min(wine$score), 2)` and for this value, the marginal effect of production is 
+$`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` \times `r round(min(wine$score), 2)` = `r round(prtcoef(z, 2, 9) + prtcoef(z, 4, 9) * min(wine$score), 2)`$. The marginal effect of production has the expected negative sign for $x_2 > `r prtcoef(z, 2, 3)` / `r abs(prtcoef(z, 4, 3))` = `r -round(prtcoef(z, 2, 9) / prtcoef(z, 4, 9), 3)`$, which is the case for 9560 wines out of 9580 in the sample. Therefore, the model predicts a negative marginal effect of the production on the price of a bottle for almost the sample, and this negative effect increases with the score obtained by the wine. We can easily test the hypothesis that the additive model is relevant using the value of the Student statistic for the interaction term:
 
 ```{r}
+#| label: wald_test_mult_effect
 coef(summary(z))[4, ]
 ```
 
 which indicates that the interaction term is highly significant. Conversely, for a model with the production and the age as covariates, we have:
 
 ```{r}
-z <- lm(price ~ prodsqm * age, wine)
+#| label: wald_test_mult_effect_age
+z <- lm(price ~ prodcubm * age, wine)
 coef(summary(z))[4, ]
 ```
 
@@ -626,29 +638,25 @@ $$
 \mu = (1 - x) \mu_r + x \mu_u = \mu_r + x (\mu_u - \mu_r)
 $$ {\#eq-mean_logincome}
 
-As $\mu_u > \mu_r$, mean log-income increases during the process of development. To get the variance of log-income for the whole economy, which is an measure of inequality, we apply the rule of the variance:
-
+As $\mu_u > \mu_r$, mean log-income increases during the process of development. To get the variance of log-income for the whole economy, which is a measure of inequality, we apply the rule of the variance:
+<!-- !!! rule of the variance ? -->
 $$
 \sigma^2 = (1 - x) \sigma_r ^ 2 + x \sigma_u ^ 2 + (1-x)(\mu_r - \mu) ^ 2 + x(\mu_u - \mu) ^ 2
 $$ {\#eq-var_logincome}
 
-Replacing $\mu$ by its expression in @eq-mean_logincome and denoting $\Delta_\mu = \mu_u  - \mu_r$ and $\Delta_{\sigma^2} = \sigma_u ^ 2 - \sigma_r ^ 2$, @eq-var_logincome can be rewriten as:
+Replacing $\mu$ by its expression in @eq-mean_logincome and denoting $\Delta_\mu = \mu_u  - \mu_r$ and $\Delta_{\sigma^2} = \sigma_u ^ 2 - \sigma_r ^ 2$, @eq-var_logincome can be rewritten as:
 
 $$
 \sigma^2 = \sigma_r ^ 2 +  (\Delta_{\sigma^2} + \Delta_\mu^2) x - \Delta_\mu ^ 2 x ^ 2
 $$
-Therefore, the overall variance of log-income is the equation of a parabol with a positive first order term and a negative second order term. Graphically, the relation between the share of the modern sector and the overall variance of log-income is inverted U-shaped. As, from @eq-mean_logincome, $x = (\mu - \mu_r) / \Delta_{\mu}$, the relation between the variance and the mean of log-income should be also U-shaped, and is called in the economic litterature the **Kuznets curve**. We use a data set provided by @ANAN:KANB:93:
+Therefore, the overall variance of log-income is the equation of a parabola with a positive first order term and a negative second order term. Graphically, the relation between the share of the modern sector and the overall variance of log-income is inverted U-shaped. As, from @eq-mean_logincome, $x = (\mu - \mu_r) / \Delta_{\mu}$, the relation between the variance and the mean of log-income should be also inverted U-shaped, and is called in the economic literature the **Kuznets curve**. We use a data set provided by @ANAN:KANB:93:
 
 ```{r}
-#|echo: false
-load("~/YvesPro2/Ecdat2/out/data/kuznets.rda")
-```
-
-```{r}
+#| label: kuznets
 kuznets
 ```
 
-It contains data of the sixties for 60 countries; `group` cathegorize these countries as developing, developed and socialist countries, `gnp` is the per capita gross national product in 1970 US$, `gini` is the Gini index of inequality and `varlog` is the variance of the log-income. @fig-kuznets_curve presents the relationship between log income and inequality, the fitting line being a second order polynomial:
+It contains data of the sixties for 60 countries; `group` categorize these countries as developing, developed and socialist countries, `gnp` is the per capita gross national product in 1970 US$, `gini` is the Gini index of inequality and `varlog` is the variance of the log-income. @fig-kuznets_curve presents the relationship between log income and inequality, the fitting line being a second order polynomial:
 
 ```{r}
 #| echo: false
@@ -664,6 +672,7 @@ kuznets %>%
 To perform the regression, `log(gnp)` and its square can be computed before the estimation or "on the fly" in the formula:
 
 ```{r}
+#| label: kuznets_est_different
 #| results: hide
 kuznets <- kuznets %>% 
   mutate(lgnp = log(gnp),
@@ -673,9 +682,10 @@ lm(varlog ~ lgnp + I(lgnp ^ 2), kuznets)
 lm(varlog ~ lgnp + lgnp2, kuznets)
 ```
 
-or more simply (especially if the order of the polynomial is high), using the `poly` function, which a matrix with a number of columns equal to the order of the polynomial:
+or more simply (especially if the order of the polynomial is high), using the `poly` function, which returns a matrix with a number of columns equal to the order of the polynomial:
 
 ```{r}
+#| label: poly_function
 #| collapse: true
 lgnp3 <- poly(kuznets$lgnp, 3)
 lgnp3 %>% head(3)
@@ -683,26 +693,25 @@ crossprod(lgnp3)
 apply(lgnp3, 2, mean)
 ```
 
-By default, orthogonal polynomials are computed, ie polynomials for which all the inner products of the different terms are 0. Moreover, all the terms have a zero mean and a unit variance. "Raw" polynomials can be computed by setting the `raw` argument to `TRUE`. Using raw or orthogonal polynomials of course give different coefficients, but the same fitted values and residuals. The `poly` function can be used inside a formula, so that the Kuznets model can be estimated using:
+By default, orthogonal polynomials are computed, ie polynomials for which all the inner products of the different terms are 0. Moreover, all the terms have a zero mean and a unit variance. "Raw" polynomials can be computed by setting the `raw` argument to `TRUE`. Using raw or orthogonal polynomials of course gives different coefficients, but the same fitted values and residuals. The `poly` function can be used inside a formula, so that the Kuznets model can be estimated using:
 
 ```{r}
+#| label: poly_kuznets
 kc <- lm(varlog ~ poly(lgnp, 2, raw = TRUE), kuznets)
 kc %>% coef %>% unname
 ```
 
-The results validate the Kuznets hypothesis, ie per capital income have first a positive, and then a negative effect on inequality. Denoting $\beta_1$ and $\beta_2$ the coefficients of log-income and its square, the summit of the curve is given by $\ln \mbox{gnp} = -\beta_1 / (2 \beta_2) = `r round(-coef(kc)[2] / coef(kc)[3] / 2, 2)`$, which corresponds to a per capita gnp equal to `r round(exp(-coef(kc)[2] / coef(kc)[3] / 2))` which corresponds approximatively to Peru and Brazil and is very close to the median per capita income in the sample.
-
+The results validate the Kuznets hypothesis, ie per capital income have first a positive, and then a negative effect on inequality. Denoting $\beta_1$ and $\beta_2$ the coefficients of log-income and its square, the summit of the curve is given by $\ln \mbox{gnp} = -\beta_1 / (2 \beta_2) = `r round(-coef(kc)[2] / coef(kc)[3] / 2, 2)`$, that corresponds to a per capita gnp equal to `r round(exp(-coef(kc)[2] / coef(kc)[3] / 2))` which is very close to the median per capita income in the sample.
 
 ## Marginal effects
 
-Until now, we have interpreted the coefficients in a linear model. However, except in the case where the covariate is in level, this coefficient is different from the marginal effect. For example, in a model with:
+Until now, we have interpreted the coefficients in a linear model. However, except in the case where the covariate is in level, the coefficients are different from the marginal effects. For example, in a model with:
 
 - the covariate in log: $y_n = \alpha + \beta \ln x + \epsilon_n$, the marginal effect is $d y_n / d x_n = \beta / x_n$,
-- the covariate is introduced as a second degree polynomial: $y_n = \alpha + \beta_1 x + \beta_2 x ^ 2$, the marginal effect is $d y_n / dx_n = \beta_1 + 2 \beta_2 x$.
+- the covariate introduced as a second degree polynomial: $y_n = \alpha + \beta_1 x + \beta_2 x ^ 2$, the marginal effect is $d y_n / dx_n = \beta_1 + 2 \beta_2 x$.
 
 Therefore the marginal effect of $x$ on $y$ depends on the value of $x$ and is therefore different from one observation to another. Moreover, the standard deviation of the marginal effect will also depends on the value of $x$. 
-
-There are several **R** packages which enables the automatic computation of marginal effects. We'll present in this section the **marginaleffects** package [see @AREL:23] which provides a very rich set of analytical and graphical tools to compute and analyse marginal effects.
+There are several **R** packages which enables the automatic computation of marginal effects. We'll present in this section the **marginaleffects** package [see @AREL:23] which provides a very rich set of analytical and graphical tools to compute and analyze marginal effects.
 
 ### Computation of the marginal effects with one covariate
 
@@ -712,7 +721,7 @@ $$
 y_n = \alpha + \sum_{k=1}^K \beta_kf_k(x_n)
 $$
 
-The marginal effect of a given covariate $l$ is then: $m_l(\beta, x_n) = \sum_k \beta_k \frac{\partial f_k}{\partial x_l}(x_n)$ and the fitted marginal effect is $\sum_k \hat{\beta}_k \frac{\partial f_k}{\partial x_l}(x_n)$. Its variance is then a function of the matrix of covariance of the coefficients and the partial derivatives of $f_k$ with $x_n$. Consider as an example the Kuznets curve: $y_n = \alpha + \beta_1 \ln x_n + \beta_2 \ln^2 x_n$. The estimated marginal effect of the unique covariate is $\hat{\beta}_1 / x_n + 2\hat{\beta}_2 \ln x_n / x_n$. It is therefore of the form $a \hat{\beta}_1 + b \hat{\beta}_2$, for which the variance is :$a^2\hat{\sigma}_{\hat{\beta}_1}^2 + b^2\hat{\sigma}_{\hat{\beta}_1}^2 + 2 ab\hat{\sigma}_{\hat{\beta}_1\hat{\beta}_2}$. Therefore, wfor the Kuznets model, the variance of the marginal effect of per capita gnp is:
+The marginal effect of a given covariate $l$ is then: $m_l(\beta, x_n) = \sum_k \beta_k \frac{\partial f_k}{\partial x_{nl}}(x_n)$ and the fitted marginal effect is $\sum_k \hat{\beta}_k \frac{\partial f_k}{\partial x_{nl}}(x_n)$. Its variance is then a function of the matrix of covariance of the coefficients and the partial derivatives of $f_k$ with $x_{nl}$. Consider as an example the Kuznets curve: $y_n = \alpha + \beta_1 \ln x_n + \beta_2 \ln^2 x_n$. The estimated marginal effect of the unique covariate is $\hat{\beta}_1 / x_n + 2\hat{\beta}_2 \ln x_n / x_n$. It is therefore of the form $a \hat{\beta}_1 + b \hat{\beta}_2$, for which the variance is :$a^2\sigma_{\hat{\beta}_1}^2 + b^2\sigma_{\hat{\beta}_1}^2 + 2 ab\sigma_{\hat{\beta}_1\hat{\beta}_2}$. Therefore, for the Kuznets model, the variance of the marginal effect of per capita gnp is:
 
 $$
 \left(1 / x_n\right)^2 \sigma_{\beta_1} ^ 2 +  \left(2\ln(x_n)/x_n\right) ^ 2 \sigma_{\beta_2}^2+ 2 \times \left(1 / x_n\right)\left(2\ln(x_n)/x_n\right) \sigma_{\beta_1\beta_2}
@@ -720,13 +729,15 @@ $$
 We first fit the Kuznets curve equation, and note that we use `log(gnp)` and not `gnp` in the formula:
 
 ```{r}
+#| label: kuznets_with_gnp
 kc <- lm(varlog ~ poly(log(gnp), 2, raw = TRUE), kuznets)
 kc %>% coef %>% unname
 ```
 
-Applying the preeceding formulas, we compute the marginal effects and their standard deviations:
+Applying the preceding formulas, we compute the marginal effect and its standard deviation for each observation:
 
 ```{r}
+#| label: kuznets_with_gnp_me
 mekc <- kuznets %>% 
   transmute(me = coef(kc)[2] / gnp + 2 * coef(kc)[3] * log(gnp) / gnp,
             sd = sqrt((1 / gnp) ^ 2 * vcov(kc)[2, 2] + 
@@ -736,43 +747,45 @@ mekc <- kuznets %>%
 mekc %>% head(3)
 ```
 
-The **marginaleffects** package provides the `slopes` function to computes the marginal effects and their standard deviation for all the observations in the sample. It as a `variables` argument that is a character vector containing the variables for which the marginal effect has to be computed. It is unnecessary here as we have only one covariate:
+The **marginaleffects** package provides the `slopes` function to compute the marginal effects and their standard deviation for all the observations in the sample. It as a `variables` argument that is a character vector containing the variables for which the marginal effect has to be computed. It is unnecessary here as we have only one covariate:
 
 ```{r}
+#| label: kuznets_marginal_effects
 library(marginaleffects)
 kc_slps <- kc %>% slopes
-kc_slps %>% as_tibble
+kc_slps %>% as_tibble %>% print(n = 3)
 ```
 
-We can check that we get "almost" the same results as previously, the tiny difference is due to the fact that we use analytical derivatives as `slopes` use numerical derivatives. 
-
+We can check that we get "almost" the same results as previously, the tiny difference is due to the fact that we used analytical derivatives as `slopes` use numerical derivatives. 
 We have seen previously that the same regression could have been performed by computing prior the estimation the log of the per capita gnp:
 
 ```{r}
+#| label: kc2
 kc2 <- lm(varlog ~ poly(lgnp, 2, raw = TRUE), kuznets)
-kc2 %>% coef %>% unname
 ```
 
 although the coefficients are the same as previously, using `slopes` with this model returns completely different results:
 
 ```{r}
+#| label: kc2_slopes
 kc2 %>% slopes %>% as_tibble %>% select(1:4) %>% head(3)
 ```
 
 The covariate is now `lgnp` and the marginal effect is no longer the effect of an increase of 1$ of per capita on inequality, but the effect of a doubling of income.
 
-The computation of the individual marginal effects results in a very big output, that is as such difficult to interpret. It is therefore custommary to provide a unique value that summarise the marginal effect of the covariate on the response for the whole sample. The preferred statistic is the **average marginal effects**. It is simply the arithmetic mean of the individual effects. It can be obtained either using the `avg_slopes` function or applying the `summary` method to the object returned by `slope`:
+The computation of the individual marginal effects results in a very large output, that is as such difficult to interpret. It is therefore customary to provide a unique value that summarize the marginal effect of the covariate on the response for the whole sample. The preferred statistic is the **average marginal effects** (**AME** in short). It is simply the arithmetic mean of the individual effects. It can be obtained either using the `avg_slopes` function or applying the `summary` method to the object returned by `slope`:
 
 ```{r}
+#| label: kuznets_avg_slopes
 z <- kc %>% slopes %>% summary
 kc %>% avg_slopes %>% tidy
 ```
 
-Note that the effect of `gnp` on inequality is not significant an average. This is highly surprising as the effect is positive for about half the sample and negative for the other half.
-
-The other current choice to summarise marginal effects is the **marginal effect at the mean**. It consists on computing the marginal effect for a virtual observation for which all the covariates are set to their average in the sample. We get for our Kuznets curve:
+Note that the effect of `gnp` on inequality is not significant on average. This is highly surprising as the effect is positive for about half of the sample and negative for the other half.
+The other current choice to summarize marginal effects is the **marginal effect at the mean**. It consists on computing the marginal effect for a virtual observation for which all the covariates are set to their average in the sample. We get for our Kuznets curve:
 
 ```{r}
+#| label: mem_manual
 tibble(gnp = mean(kuznets$gnp)) %>% 
   transmute(me = coef(kc)[2] / gnp + 2 * coef(kc)[3] * log(gnp) / gnp,
             sd = sqrt((1 / gnp) ^ 2 * vcov(kc)[2, 2] + 
@@ -780,29 +793,28 @@ tibble(gnp = mean(kuznets$gnp)) %>%
                         2 * (1 / gnp) * (2 * log(gnp) / gnp) * 
                         vcov(kc)[2, 3]),
             z = me / sd)
-mekc %>% head(3)
 ```
 
-The effect is now negative and almost significant at the 5% level. This can be explained by the fact that the distribution of per capita income is highly asymetric in our sample, so that the mean of `gnp` (`r round(mean(kuznets$gnp))`) is much higher than the median (`r round(median(kuznets$gnp))`)
-
+The effect is now negative and almost significant at the 5% level. This can be explained by the fact that the distribution of per capita income is highly asymmetric in our sample, so that the mean of `gnp` (`r round(mean(kuznets$gnp))`) is much higher than the median (`r round(median(kuznets$gnp))`).
 
 ### General computation of marginal effects
 
-Consider now the case of model with several covariates, some being numerical, other cathegorical and with interactions. Using the `wine` data set, we fit the following model:
+Consider now a model with several covariates, some being numerical, other categorical and with interactions. Using the `wine` data set, we fit the following model:
 
 ```{r}
-wine <- wine %>% mutate(lprodsqm = log(prodsqm))
-u <- lm(log(price) ~ reg + log(score) * lprodsqm + 
+#| label: general_wine_model
+wine <- wine %>% mutate(lprodcubm = log(prodcubm))
+u <- lm(log(price) ~ reg + log(score) * lprodcubm + 
           reg : log(score) + vyd, wine)
 u %>% summary %>% coef
 ```
 
-The response is in log, so that every marginal effect measures a relative variation of the response. Two numerical variables are introduced in logs, but not that for the production, the log is computed before computing the regression, so that the covariate is `lprodsqm` and not `prodsqm` and therefore . On the contrary, for the score variable, the log is computed inside the formula. Therefore, while computing marginal effects, one has to keep in mind that what is measured is an increase of 100% of the production and of 1 point of the score. Note the use of the `*` operator between `log(score)` and `lprodsqm` so that the multiplicative effect of these two covariates is added to their separate additive effects. We also cathegorical variable `reg` (the region with three modalities) and a dummy variable for vineyard indication `vyd`. Moreover, the term in `reg : log(score)` indicates that the effect of score on price will be different from one region to another. With such a complex linear regression, the coefficients are difficult to interpret and the computation of marginal effects is particularly usefull. 
-
+The response is in log, so that every marginal effect measures a relative variation of the response. Two numerical variables are introduced in logs, but not that for the production, the log is computed before computing the regression, so that the covariate is `lprodcubm` and not `prodcubm`. On the contrary, for the score variable, the log is computed inside the formula. Therefore, while computing marginal effects, one has to keep in mind that what is measured is an increase of 100% of the production and of 1 point of the score. Note the use of the `*` operator between `log(score)` and `lprodcubm` so that the multiplicative effect of these two covariates is added to their separate additive effects. We also use the categorical variable `reg` (the region with three modalities) and a dummy variable for vineyard indication `vyd`. Moreover, the term in `reg : log(score)` indicates that the effect of score on price will be different from one region to another. With such a complex linear regression, the coefficients are difficult to interpret and the computation of marginal effects is particularly useful. 
 Using slopes without any further arguments, we get:
 
 ```{r}
 #| collapse: true
+#| label: meffects_general_model
 u_slps <- u %>% slopes
 u %>% nobs
 u_slps %>% nrow
@@ -811,48 +823,56 @@ u_slps %>% nrow
 The model is fitted on a sample of `r nobs(u)` observations, but `slopes` return a data frame of $`r nobs(u)` \times 5 = `r nrow(u_slps)`$ because there is one line for each observation and each covariate. The lines are sorted by covariate first and then by observation, the index of the observation being stored in a column called `rowid`. To get the marginal effects for the second observation, we can use:
 
 ```{r}
+#| label: general_msummary_oneobs
 u_slps %>% filter(rowid == 2) %>% tidy
 ```
 
+<!-- !!! expliquer tidy -->
 The term of marginal effects is actually relevant only for numerical variables. Then the `Contrast` is denoted `dY / dX` and is actually a derivative. For factors, the term is a contrast, ie the difference between one modality (`sonomma` and `nappavaley` for `reg`) and the reference modality (`Other`). This is also the case for the dummy variable `vid`, for which the effect is the difference of prediction for `vid` equal to 1 and 0^[Actually in a linear model, this difference is equal to the derivative.].
 
 The `variables` argument can be used to compute the marginal effects only for a subset of covariate:
 
 ```{r}
 #| results: hide
+#| label: slopes_subset_covariates
 u %>% slopes(variables = c("score", "reg")) %>% tidy
 ```
 
-As previoulsy, we can compute the average marginal effect using `avg_slopes`:
+As previously, we can compute the average marginal effect using `avg_slopes`:
 
 ```{r}
+#| label: avg_slopes_subset
 u %>% avg_slopes %>% tidy
 ```
 
 Moreover, the **AME** can be computed for the different modalities of a factor, using the `by` argument:
 
 ```{r}
-u %>% avg_slopes(variables = c("score", "lprodsqm"), by = "reg") %>% tidy
+#| label: avg_slopes_by
+u %>% avg_slopes(variables = c("score", "lprodcubm"), by = "reg") %>% tidy
 ```
 
-The marginal effects can also be computed for hypothetical observations, using the `newdata` argument, which should be a data frame containing one or several hypothetical observations. Such data frames can be easily computed using the `datagrid` function; it has a `model` argument an by default returns a one line data frame containing the mean of the numerical variables and the mode of cathegorical variables:
+The marginal effects can also be computed for hypothetical observations, using the `newdata` argument, which should be a data frame containing one or several hypothetical observations. Such data frames can be easily computed using the `datagrid` function; it has a `model` argument an by default returns a one line data frame containing the mean for the numerical variables and the mode for categorical variables:
 
 ```{r}
+#| label: datagrid
 datagrid(model = u)
 ```
 
 and can be used to compute the **MAE**:
 
 ```{r}
+#| label: datagrid_mae
 u %>% slopes(newdata = datagrid()) %>% tidy
 ```
 
 `datagrid` can also include arguments which names are the names of some covariates and their values some values of the covariate. If for example two values are provided for one covariate and three values for the second one, 6 observations are generated, obtained by taking all the combinations of the two covariates:
 
 ```{r}
+#| label: datagrid_manual
 datagrid(model = u, score = c(20, 50, 100), vyd = c(0, 1))
 ```
 
-Not that for unspecified covariates the mean / mode are introduced for numerical / cathegorical variables. 
+Not that for unspecified covariates the mean / mode are introduced for numerical / categorical variables. 
 
 We've just presented a few features of the **marginaleffects** package. Detailed documentation can be found at [https://marginaleffects.com/](https://marginaleffects.com/).

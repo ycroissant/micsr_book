@@ -1,67 +1,55 @@
 ```{r }
 #| include: false
 source("../_commonR.R")
+library(sandwich)
 ```
 
 # Non-spherical disturbances
 
+In the first part of the book, we considered a model of the form: $y_n = \alpha + \beta x_n + \epsilon_n$
+with two fundamental hypothesis:
 
-```{r}
-#| echo: false
-library("tidyverse")
-library("micsr")
-library("lmtest")
-library("sandwich")
-price_time <- price_time %>%
-    set_names(c("town", "region", "qf", "qa", "pf", "pa", "tf", "ta"))
-price_time <- mutate(price_time, sf = qf / (qf + qa))
-price_time <- mutate(price_time,  h = (pa - pf) / ( (tf - ta) / 60) )
-price_time <- filter(price_time, sf < 0.75)
-pxt <- lm(sf ~ h, price_time)
-heps <- residuals(pxt)
-```
+$$
+\left\{
+\begin{array}{rcl}
+\mbox{E}(y_n \mid x  = x_n) &=& \alpha + \beta x_n  + \mbox{E}(\epsilon_n \mid x = x_n) = \alpha + \beta x_n\\
+\mbox{V}(y_n \mid x  = x_n) &=& \mbox{E}\left((y_n - \alpha - \beta x_n) ^ 2\right) = \mbox{E}(\epsilon_n^2) = \mbox{V}(\epsilon_n) = \sigma_\epsilon ^ 2
+\end{array}
+\right.
+$$
 
-In the first part of the book, we assumed that
-$\mbox{V}(\epsilon) = \sigma_\epsilon ^ 2 I$, which implies that:
+The first hypothesis, that implies that the error are uncorrelated with the covariates will be maintained in this chapter and ensures that the OLS estimator is still unbiased and consistent. The second hypothesis is the hypothesis of constant conditional variance of the response (or constant variance of the errors). Along with the hypothesis are uncorrelated ($\mbox{vcov}(\epsilon_n, \epsilon_m) = 0 \; \forall n\neq m$). These hypothesis of **homoskedastic** and **uncorrelated** errors implies that the covariance matrix of the errors $\Omega$ is, up to a multiplicative constant $\sigma_\epsilon^2$, the identity matrix:
 
--   the errors are **homoskedastic**, (they all have the same variance
-    $\sigma^2_\epsilon$), so that all the elements of the covariance
-    matrix are the same,
--   the errors are **uncorrelated**, so that all the elements of the
-    covariance matrix except on the diagonal are zero and therefore the covariance matrix of the errors is diagonal.
+$$
+\Omega = \mbox{V}(\epsilon) = \mbox{E}(\epsilon\epsilon^\top) = \sigma_\epsilon ^ 2 I
+$$
 
-In this chapter, we analyze cases where this hypothesis is not
-verified. This has the following consequences concerning the results of
-the first part:
+In this chapter, we analyze cases where this hypothesis is violated. This has the following consequences concerning the results establieshed in the first part of the book:
 
--   the **OLS** estimator is still consistent: this means that
+-   the OLS estimator is still consistent: this means that
     $\hat{\beta}$ estimates consistently $\beta$ and $\hat{\epsilon}$
-    estimates also $\epsilon$; this is an important result as the
-    residuals of the **OLS** estimator can therefore be used to test whether the errors are
+    estimates also consistently $\epsilon$; this is an important result as the
+    residuals of the OLS estimator can therefore be used to test whether the errors are
     spherical or not,
--   the **OLS** estimator is no longer **BLUE**, ie it is no longer
-    possible to prove that the **OLS** estimator is the best linear
+-   the OLS estimator is no longer BLUE, ie it is no longer the best linear
     unbiased estimator,
--   the simple formula for the variance of the **OLS** estimator,
-    $\mbox{V}(\hat{\beta}) = \sigma_\epsilon ^ 2 \left(X^\top X\right)^{-1}$
-    is no longer an unbiased estimator of the true covariance matrix of the **OLS** estimator. However, as we'll see in this
+-   there is another linear unbiased estimator (the **generalized least squares**, abbreviated as **GLS**) which is more efficient (which means that it has a smaller variance) than the OLS estimator and which is the BLUE estimator when the errors are non-spherical.
+-   the simple formula for the variance of the OLS estimator,
+    $\mbox{V}(\hat{\beta}) = \sigma_\epsilon ^ 2 \left(\tilde{X}^\top \tilde{X}\right)^{-1}$
+    is no longer an unbiased estimator of the true covariance matrix of the OLS estimator. However, as we'll see in this
     chapter, more complex formula, called **sandwich** estimators can be used to obtain an unbiased estimator,
--   there is another linear unbiased estimator (the generalized least
-    squares, abbreviated as **GLS**) which is more efficient (which has
-    a smaller variance) than the **OLS** estimator and which is the
-    **BLUE** estimator when the errors are non-spherical.
 
-Section 1 reviews some important cases where the errors are
-non-spherical. Section 2 presents robust estimators of the variance
-of the **OLS** estimators. Section 3 is devoted to the **GLS**
-estimator. Finally section 4 presents tests that enables to detect
+@sec-situations_non_spher reviews some important cases where the errors are
+non-spherical. @sec-sandwich presents robust estimators of the variance
+of the OLS estimators. Section @sec-gls is devoted to the GLS
+estimator. Finally section @sec-test_non_spher presents tests that enables to detect
 whether the errors are spherical or not.
 
-## Situations where the errors are non-spherical
+## Situations where the errors are non-spherical {#sec-situations_non_spher}
 
 As stated previously, the hypothesis of spherical disturbances implies
-**homoscedasticity** and **uncorrelation**. We'll describe these two
-situations in the next three subsections and we'll establish the features of the matrix of covariance of the errors $\mbox{V}(\epsilon) = \mbox{E}(\epsilon \epsilon^\top) = \Omega$.
+homoscedasticity and uncorrelation. We'll describe these two
+situations in the next three subsections and we'll establish the features of the matrix of covariance of the errors $\Omega$. Moreover, for a reason that will be clear in the subsequent sections, we'll compute the inverse of this matrix.
 
 ### Heteroskedasticity
 
@@ -71,25 +59,17 @@ $$
 y_n = \alpha + \beta x_n + \epsilon_n
 $$
 
-heteroskedasticity often occurs when the response $y$ is scaled.
-Consider for example a production function, $y$ being the production and
-$x$ being the labor force. In this case, $y$ and $x$ integrate the size
-of the firm and it is also probably the case for $\epsilon$ which
-includes the effects of unobserved variables (the capital stock for
-example). Because of this size effect, $\sigma_{\epsilon n} ^ 2$ is no
-longer a constant and must be an increasing function of $x$. The matrix
-of covariance of the disturbances is therefore a diagonal matrix with
+heteroskedasticity often occurs when the response $y$ is scaled. Consider for example the case where the response is the average consumption of a good in a different geographical entities (cities for example). Then, denote $c_i$ the individual consumption, then the response is $y_n = \frac{1}{I_n} \sum_i c_{ni}$, where $n$ is a city and $I_n$ the number of consumer units in this city. Then, if the standard deviation of the individual consumption is $\sigma_c$ (the same in every city), the variance of $y_n$ is $\sigma_c ^ 2 / I_n$ and therefore depends on the number of consumer unit of the city, even if the variance of the individual consumption is the same in every city. Even if covariates are taken into account, it is doubtful that the conditional variance of $y$ will be the same for every city and a more reasonable hypothesis is that, as its unconditional variance, it is inversely proportional to the number of consumer units. The matrix of covariance of the disturbances is therefore a diagonal matrix with
 non-constant diagonal terms:
 
 $$
 \Omega= 
 \left(
-\begin{array}{ccccc}
-\sigma_{1} ^ 2 & 0 & 0 & \ldots & 0 \\
-0 & \sigma_{2} ^ 2 & 0 & \ldots & 0 \\
-0 & 0 & \sigma_{3} ^ 2 & \ldots & 0 \\
-0 & 0 & 0 & \ddots & 0 \\
-0 & 0 & 0 & \ldots & \sigma_N ^ 2
+\begin{array}{cccc}
+\sigma_{1} ^ 2 & 0 & \ldots & 0 \\
+0 & \sigma_{2} ^ 2 & \ldots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \ldots & \sigma_N ^ 2
 \end{array}
 \right)
 $$ {#eq-matheterosc}
@@ -99,23 +79,24 @@ The inverse of $\Omega$ is easily obtained:
 $$
 \Omega ^ {-1}= 
 \left(
-\begin{array}{ccccc}
-1 / \sigma_{1} ^ 2 & 0 & 0 & \ldots & 0 \\
-0 & 1 / \sigma_{2} ^ 2 & 0 & \ldots & 0 \\
-0 & 0 & 1 / \sigma_{3} ^ 2 & \ldots & 0 \\
-0 & 0 & 0 & \ddots & 0 \\
-0 & 0 & 0 & \ldots & 1 / \sigma_N ^ 2
+\begin{array}{cccc}
+1 / \sigma_{1} ^ 2 & 0 & \ldots & 0 \\
+0 & 1 / \sigma_{2} ^ 2 & \ldots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \ldots & 1/ \sigma_N ^ 2
 \end{array}
 \right)
-$$ and, more generally, $\Omega^{r}$ is a diagonal matrix with typical
+$$
+
+and, more generally, $\Omega^{r}$ is a diagonal matrix with typical
 element $\left(\sigma_n^2\right)^r$.
 
 ### Correlation of the errors
 
 Correlation between disturbances often occurs in economics, because of
 common features of some observations in the sample. For example,
-@bonjour2003 studied the return of education with a sample of twins.
-Therefore, the sample contains 214 observations (107 couple of twins).
+@BONJ:CHERK:KASK:03 studied the return to education with a sample of twins.
+Therefore, the sample contains 214 observations (107 couples of twins).
 It is reasonable to assume that, for a given pair of twins, the two
 errors are correlated as they partly contains unobserved characteristics
 that are common to both twins. It is convenient in this case to use two
@@ -127,7 +108,7 @@ $$
 y_{nt} = \alpha + \beta x_{nt} + \epsilon_{nt}
 $$
 
-The error of the model can be writen as the sum of two components:
+The error of the model can be written as the sum of two components:
 
 -   $\eta_n$ is the common component of the error for both twins for the
     $n$ family,
@@ -143,13 +124,13 @@ The error component model can be easily analysed with the following
 hypothesis:
 
 -   the two components are homoskedastic and uncorrelated:
-    $V(\eta_n) = \sigma_{\eta} ^ 2$ and
-    $V(\nu_{nt}) = \sigma_{\nu} ^ 2$,
+    $\mbox{V}(\eta_n) = \sigma_{\eta} ^ 2$,
+    $\mbox{V}(\nu_{nt}) = \sigma_{\nu} ^ 2$ and $\mbox{cov}(\eta_n, \nu_{nt}) = 0$,
 -   the idiosyncractic terms for the same entity are uncorrelated:
     $\mbox{E}(\nu_{nt}\nu_{ns})=0\; \forall \; t \neq s$
 -   the two components of the errors are uncorrelated for two
     observations of different entities
-    $\mbox{E}(\nu_{nt}\nu_{ms})=\mbox{E}(\eta_n\eta_m)=0\; \forall \; m \neq n$
+    $\mbox{cov}(\nu_{nt}, \nu_{ms})=\mbox{cov}(\eta_n, \eta_m)=0\; \forall \; m \neq n$
 
 With these hypothesis, we have:
 
@@ -179,16 +160,19 @@ $$
 \right)
 $$ 
 
-The block diagonal matrix can be writen as,
-denoting $j$ a vector of ones and $J=jj^\top$ a square matrix of 1:
+The blocks of this matrix can be writen as, denoting $j$ a vector of ones and $J=jj^\top$ a square matrix of 1:
 
 $$
 \sigma^2_\nu I_T + \sigma ^ 2_\eta J_T
-$$ and, using Kronecker product, $\Omega$ is:
+$$ 
+
+and, using Kronecker product, $\Omega$ is:
 
 $$
 \Omega = I_N \otimes \left(\sigma^2_\nu I_T + \sigma ^ 2_\eta J_T\right) = \sigma ^ 2_\nu I_N + \sigma_\eta ^ 2 I_N \otimes J_T
-$$ Another equivalent expression which will prove to be particularly
+$$ 
+
+Another equivalent expression which will prove to be particularly
 useful is:
 
 $$
@@ -231,19 +215,18 @@ $$
 The first matrix is called the **within** matrix. Pre-multiplying a
 vector by $W$ transforms it as deviations from the individual means. The
 second one is called the **between** matrix and pre-multiplying a vector
-by $B$ transforms it as a vector of individual means. This two matrix
+by $B$ transforms it as a vector of individual means. These two symetric matrices
 have interesting properties:
 
 -   they are **idempotent**, which means that $B B = B$ and $W W =W$.
     For example $W (Wz) = Wz$ as taking the deviations from the
-    individual means of vector of deviations from the individual means
-    leave this vector unchanged
+    individual means of a vector of deviations from the individual means
+    leave this vector unchanged,
 -   they are **orthogonal**, which means that $W B = B W = 0$. For
     example $W (Bz) = 0$ because the deviations form the individual
     means of a vector of individual means are zero,
 -   they sum to the **identity matrix**, $W + B = I$. $Wz + Bz=z$
-    because the sum of the individual means of a vector and the
-    deviation from the individual means of this vector is the vector itself.
+    because the sum of the deviation from the individual means of a vector and its individual means is the vector itself.
 
 $W$ and $B$ therefore perform an **orthogonal decomposition** of a
 vector. One advantage of this decomposition is that it is very easy to
@@ -257,7 +240,7 @@ and, more generally, for any power $r$ (either an integer or a
 rational):
 
 $$
-\Omega ^ {r} = \sigma_\nu ^ {2r} W + \sigma_\iota ^ {2r}B
+\Omega ^ {r} = {\sigma_\nu ^ 2} ^ r W + {\sigma_\iota ^ 2} ^ rB
 $$ {#eq-poweromegaec}
 
 ### System of equations
@@ -311,7 +294,7 @@ equations:
     coefficients of the system, for example the equality of two
     coefficients in two different equations of the system. In this case,
     these restrictions can be taken into account using the method of
-    constrained least squares.
+    constrained least squares.^[See @sec-system_equation.]
 
 The covariance matrix of the errors of the system is:
 
@@ -335,7 +318,7 @@ $\sigma_{lm}$, is constant. With this hypothesis, the covariance matrix
 is:
 
 $$
-\Lambda=
+\Omega=
 \left(
 \begin{array}{cccc}
   \sigma_{11} I & \sigma_{12} I & \ldots &\sigma_{1L} I \\
@@ -364,27 +347,21 @@ $$
 \Omega=\Sigma \otimes I
 $$
 
-## Robust inference
+The inverse of the covariance matrix of the error is easily obtained as it requires only to compute the inverse of $\Sigma$:
+
+$$
+\Omega ^ {-1} = \Sigma ^ {-1} \otimes I
+$$
+
+## Robust inference {#sec-sandwich}
 
 If the errors are not spherical, the simple estimator of the
-covariance of the **OLS** estimates is biased. More general estimators
-can then be used instead. They rely on the idea that:
-
--   if the errors were observed, a natural estimator of the unknown
-    expected values of the squares or the cross-product of the errors
-    (which are respectively $\sigma^2_{\epsilon_n}$ and
-    $\sigma_{\epsilon_n\epsilon_m}$) would be the square
-    ($\epsilon_n ^ 2$) and the cross-products ($\epsilon_n \epsilon_m$)
-    of the errors,
--   as the errors are not observed, we can use the residuals instead
-    $\hat{\epsilon}$ as they are unbiased estimators of the errors.
-
-We present the robust estimator first in the context of the simple
-linear model and then for the multiple linear model.
+covariance of the OLS estimates is biased. More general estimators
+can then be used instead. These estimators use the residual of the OLS estimator which, in the context of this chapter, is a inefficient but consistent estimator. We'll present the robust estimator first in the context of the simple linear model and then for the multiple linear model.
 
 ### Simple linear model
 
-The covariance matrix of the **OLS** estimates is:
+The variance of the slope estimated by OLS is:
 
 $$
 \mbox{V}(\hat{\beta} \mid x) = \frac{\mbox{E}\left(\left[\sum_n (x_n - \bar{x})\epsilon_n\right]^2\mid x\right)}{\left(\sum_n (x_n - \bar{x}) ^ 2\right) ^ 2}
@@ -416,29 +393,30 @@ cat("\\end{array}\n\\right)$$")
 ```
 
 The robust estimator is obtained by taking the sum of *some* of this
-terms. Note
-first that the sum of all these terms is
-$\left(\sum_{n = 1} ^ N (x_n - \bar{x})\epsilon_{n}\right)^2$, which is
-equal to zero as: $\sum_{n = 1} ^ N (x_n - \bar{x})\epsilon_{n}=0$.
+terms. Note first that the sum of all these terms is
+$\left(\sum_{n = 1} ^ N (x_n - \bar{x})\hat{\epsilon}_{n}\right)^2$, which is
+equal to zero as: $\sum_{n = 1} ^ N (x_n - \bar{x})\hat{\epsilon}_n=0$.
 Therefore, it is not relevant to sum *all* the terms of this matrix to
 get an estimator of the variance of $\hat{\beta}$.
 
 The first possibility is to take only the diagonal terms of this matrix,
-which is relevant if we hypothese that the errors are *uncorrelated*. In
-this case, we get the so-called *heterosckedastic-consistent* (or HC)
-estimator of $\sigma_{\hat{\beta}}$ first proposed by @white1980:
+which is relevant if we maintain the hypothese that the errors are uncorrelated. In
+this case, we get the so-called **heterosckedastic-consistent** (or **HC**)
+estimator of $\sigma_{\hat{\beta}}$ first proposed by @WHIT:80:
 
-$$ \hat{\sigma}_{HC\hat{\beta}} ^ 2 = \frac{1}{S_{xx} ^ 2}\sum_{n = 1}
-^ N (x_n - \bar{x}) ^ 2 \hat{\epsilon}_n ^ 2 $$
+$$
+\hat{\sigma}_{HC\hat{\beta}} ^ 2 = \frac{1}{S_{xx} ^ 2}\sum_{n = 1}
+^ N (x_n - \bar{x}) ^ 2 \hat{\epsilon}_n ^ 2 
+$$ {#eq-vcovHC}
 
 Consider now the case where some errors are correlated This often happens when some
 observations share some common unobserved characteristics which are
 included in their (therefore correlated) errors. For example, if
 observations belong to different regions, there errors may share some
-common unobserved features of the region. As an example, in our 4
+common unobserved features of the regions. As an example, in our 4
 observations case, suppose that the first two observations belong to one
 group, and the two other to an other group. Then, a cluster-consistent
-estimator is obtained by summing the following subset of the preceding
+estimator is obtained by summing the following subset of elements of the preceding
 matrix:
 
 ```{r }
@@ -469,16 +447,16 @@ which leads to the clustered estimated variance. More generally, for
 $N$ observations belonging to $G$ groups, this estimator is:
 
 $$
-\hat{\sigma}_{CL\hat{\beta}} = \frac{1}{S_{xx}^2}\sum_{g = 1} ^ G \left(\sum_{n \in g} (x_n -
+\hat{\sigma}_{CL\hat{\beta}} ^2= \frac{1}{S_{xx}^2}\sum_{g = 1} ^ G \left(\sum_{n \in g} (x_n -
 \bar{x})\hat{\epsilon}_n \right) ^ 2
-$$
+$$ {#eq-vcovCL}
 
 which is consistent with the hypothesis that errors are correlated
 *within* a group, but uncorrelated *between* group.
 
 To illustrate the computation of robust covariance estimators, we use
 the data set `urban_gradient` of @DURA:PUGA:20. It contains, the
-population, the area and the distance to the **CBD** for 2315 block
+population, the area and the distance to the central business district for 2315 block
 groups for Alabama.
 
 ```{r}
@@ -501,13 +479,13 @@ We first compute the `density` variable and then estimate the urban gradient mod
 ```{r}
 urban_gradient <- urban_gradient %>% mutate(density = population / area)
 ug_ols <- lm(log(density) ~ distance, urban_gradient)
-coeftest(ug_ols)
+ug_ols %>% summary %>% coef %>% print(digits = 3)
 ```
 
 The estimated standard deviation of the slope is `r
 round(vcov(ug_ols)[2, 2], 4)` but it may be seriously biased if the
 errors are heteroskedastic and/or correlating. We first plot the data
-and the regression line on @fig-dataug.
+and the regression line on @fig-dataug, the color of the points depending of the metropolitan statistical area (there are 12 of them in the sample).
 
 ```{r}
 #| label: fig-dataug
@@ -530,6 +508,7 @@ sd_hc <- urban_gradient %>%
   summarise( sqrt(sum( (distance - dist_mean) ^ 2 * 
                          resid(ug_ols) ^ 2) / Sxx ^ 2)) %>% 
   pull
+sd_hc
 ```
 
 `sandwich::vcovHC` computes easily this robust estimator; it's first argument is a fitted model and a `type` argument can also be supplied:
@@ -543,7 +522,7 @@ have previously computed "by hand". Other flavors of this
 heteroskedasciticy-robust estimator can be obtained by setting the
 `type` to `"HC1"`, $\ldots$, `"HC5"` to perform some kind of degrees
 of freedom correction. For example, when `type = "HC1"`, the
-covariance matrix is multiplied by $N / (N - K)$:^[See ZEIL:06 for
+covariance matrix is multiplied by $N / (N - K)$:^[See @ZEIL:06 for
 more details concerning the other values of the `type` argument.]
 
 ```{r }
@@ -555,15 +534,15 @@ sd_hc * sqrt(N / (N - 2))
 
 In this example, the difference between the simple and the
 heteroskedastic-robust estimation of the standard deviation of the
-slope is small. However, we also have to invistigate the potential
+slope is small. However, we also have to investigate the potential correlation
 between the errors of some observations.
 
-There are 12 **msa** in Alabama and 22 counties. It is possible that
+There are 12 msa in Alabama and 22 counties. It is possible that
 the errors for the different block groups of the same county or the
 same msa are correlated (because of some unobserved common features of
 block groups in the same county or msa). In this case the covariance
-matrix of the **OLS** estimates are biased. We compute the estimation
-of the clustered standard deviation of the slope at the **msa** level.
+matrix of the OLS estimates are biased. We first compute the estimation
+of the clustered standard deviation of the slope at the msa level using @eq-vcovHC:
 
 ```{r }
 G <- urban_gradient %>% pull(msa) %>% unique %>% length
@@ -579,8 +558,8 @@ sd_CL_base
 
 This time, we get a much higher estimate of the standard deviation
 (about three time larger than the one obtained with the simple
-formula). The `sandwich` package provides a `vcovCL` function for the
-computation of clustered covariance matrix. The clustering variable is
+formula). The `sandwich::vcovCL` function 
+computes the clustered covariance matrix. The clustering variable is
 defined using the `cluster` argument that can be set to a one-sided
 formula. The `type` argument is similar to the one of `vcovHC` and
 there is also a `cadjust` argument which, if `TRUE`, multiplies the
@@ -603,26 +582,22 @@ sd_CL_base * sqrt(G / (G - 1)) * sqrt((N - 1) / (N - 2))
 
 ### Multiple linear model 
 
-Consider now the multiple linear model. 
-
-
-The vector of slopes can be writen as a linear combination of the vector
-of response, and then of the vector of error:
+Consider now the multiple regression model. The vector of slopes can be written as a linear combination of the vector of response, and then of the vector of error ($\tilde{X}$ means that each covariate is measured as deviation from the sample mean):
 
 $$
 \begin{array}{rcl}
-\hat{\beta}&=&(X'\bar{I}X)^{-1}X'\bar{I}y \\
-&=&(X'\bar{I}X)^{-1}X'\bar{I}(X\beta+\epsilon)\\
-&=&\beta+(X'\bar{I}X)^{-1}X'\bar{I}\epsilon \\
+\hat{\beta}&=&(\tilde{X} ^ \top \tilde{X})^{-1}\tilde{X} ^ \top y \\
+&=&(\tilde{X} ^ \top \tilde{X})^{-1}\tilde{X} ^ \top(\tilde{X}\beta+\epsilon)\\
+&=&\beta+(\tilde{X} ^ \top \tilde{X})^{-1}\tilde{X} ^ \top\epsilon \\
 \end{array}
 $$ {#eq-hbeta}
 
-$X'\bar{I}\epsilon$ is a $K$-length vector containing the product of
+$\tilde{X} ^ \top\epsilon$ is a $K$-length vector containing the product of
 every covariates (the column of $X$) in deviation from the sample mean
 and the vector of errors:
 
 $$
-X'\bar{I}\epsilon =
+\tilde{X} ^ \top\epsilon =
 \left(
 \begin{array}{c}
 \sum_{n=1} ^ N (x_{1n} - \bar{x}_1) \epsilon_n \\
@@ -633,55 +608,16 @@ X'\bar{I}\epsilon =
 \right) 
 = \sum_{n = 1} ^ N \psi_n
 $$
-
-with
-$\psi_n ^ \top = \left( (x_{1n} - \bar{x}_1) \epsilon_n, (x_{2n} - \bar{x}_2) \epsilon_n, \ldots, (x_{Kn} - \bar{x}_K) \epsilon_n\right)$.
-$\sum_{n = 1} ^ N \psi_n$, evaluated for $\hat{\beta}$ the vector of
-slopes estimates is a K-length vector of 0 (ie the vector of the
-first-order conditions for minimizing the sum of squares residuals, also
-called the vector of scores).
-
-The expected value of $\hat{\beta}$ conditional on $X$ is:
+$\psi_n$ is called the vector of score, as it is proportional to the vector of first derivatives of the sum of squares residuals and is therefore equal to 0 when evaluated for $\hat{\beta}$, the OLS estimator. The general form of the covariance of the OLS estimates was given in @eq-general_variance:
 
 $$
-\mbox{E}(\hat{\beta}\mid X) = \beta +
-(X'\bar{I}X)^{-1}X'\bar{I}\mbox{E}(\epsilon \mid X)
-$$
-
-The unbiasness condition is therefore that
-$\mbox{E}(\epsilon \mid X) = 0$, which a direct generalization of the
-result obtained for the linear regression model, namely $\epsilon$ has a
-zero mean whatever the value of the covariates.
-
-The variance is:
-
-$$\hat{\sigma}^2_{\hat{\beta}} = 
-\mbox{E}\left((\hat{\beta}- \beta)(\hat{\beta}- \beta)^\top\right)
-$$
-
-Using equation @eq-hbeta:
-
-$$\hat{\sigma}^2_{\hat{\beta}} = 
-\mbox{E}\left((X'\bar{I}X)^{-1}X'\bar{I}\epsilon \epsilon ^ \top
-\bar{I} X (X'\bar{I}X)^{-1} \mid X\right)
-$$
-
-$$
-\hat{\sigma}^2_{\hat{\beta}} = 
+\hat{V}(\hat{\beta}) = 
 \left(\frac{1}{N}
-X'\bar{I}X\right)^{-1}\frac{1}{N}\mbox{E}(X'\bar{I} \epsilon \epsilon ^
-\top \bar{I} X \mid X) \left(\frac{1}{N}X'\bar{I}X)^{-1}\right) ^ {-1}
+\tilde{X} ^ \top \tilde{X}\right)^{-1}\frac{1}{N}\mbox{E}(\tilde{X} ^ \top \epsilon \epsilon ^
+\top \tilde{X} \mid X) \left(\frac{1}{N}\tilde{X} ^ \top \tilde{X})^{-1}\right) ^ {-1}
 $$
 
-This is a "sandwich" formula, the "meat":
-$\mbox{E}\left(\frac{1}{N} X'\bar{I}\epsilon \epsilon ^ \top \bar{I} X \mid X\right)$
-being surrounded by two slice of bread:
-$\left(\frac{1}{N} X'\bar{I}X\right)^{-1}$. Note the two matrices are
-squares and of dimension $K$. The "bread" is just the inverse of the
-matrix of variance of the covariates.
-
-The "meat" is the variance of the score vector, ie the vector of the
-first order conditions. Taking the case of $K = 2$, this is:
+This is a sandwich formula, the meat being surrounded by two slices of bread which are the inverse of the covariance matrix of the covariates. Remind from @sec-variance_ols that the meat is the variance of the vector of score, and can be written, for $K = 2$, as the expected value of:
 
 $$
 {
@@ -699,20 +635,8 @@ $$
 }
 $$
 
-which is a generalization of the single regression case where the "meat"
-reduce to the scalar
-$\left(\sum_{n=1} ^ N (x_{kn} - \bar{x}_k) \epsilon_n)\right) ^ 2$.
-
-First consider the case where the expected value of
-$\mbox{E}(\epsilon_n ^ 2 \mid x) = \sigma ^ 2$ and
-$\mbox{E}(\epsilon_n \epsilon_m \mid x) = 0 \; \forall \; m \neq n$.
-
-In this case, the "meat" matrix reduce to
-$\sigma ^ 2 \frac{1}{N} X ^ \top \bar{I} X$, ie up to a scalar the
-matrix of variance-covariances of the covariates.
-
-If the errors are uncorrelated, but potentially heterosckedastic, we use
-the following approximation:
+If the errors are uncorrelated, but potentially heteroscedastic, we use
+the following estimation:
 
 $$
 \frac{1}{N}
@@ -731,111 +655,13 @@ $$
 which generalize the scalar case of the heteroskedastic covariance
 matrix computed for the single regression case.
 
-Finally, to get the clustered estimator of the variance, we define for
+To get the clustered estimator of the variance, we define for
 each cluster $\psi_g = \sum_{n \in g} \psi_n$, and the clustered is
 obtained by taking the sum of the outer products of $\psi_g$:
 
 $$
 \frac{1}{N} \sum_{g=1} ^ G \hat{\psi}_g \hat{\psi}_g ^ \top
 $$
-
-
-
-<!-- ```{r } -->
-<!-- x <- pull(price_time, h) -->
-<!-- N <- length(x) -->
-<!-- bx <- mean(x) -->
-<!-- sx <- sqrt(mean((x - bx) ^ 2)) -->
-<!-- ``` -->
-
-<!-- The HC-robust estimator consist on replacing $\sigma_\epsilon ^ 2$ -->
-<!-- (which is unweighted mean of the square of the residuals) by a weighted -->
-<!-- mean with weights. The small sample bias correction is obtained by -->
-<!-- multiplying by $\sqrt{\frac{N}{N - 2}}$: -->
-
-<!-- ```{r } -->
-<!-- wHC <- (x - bx) ^ 2 / (N * sx ^ 2) -->
-<!-- sum(wHC) -->
-<!-- shepsHC <- sqrt(sum(wHC * heps ^ 2)) -->
-<!-- sbeta_HC <- shepsHC / (sqrt(N) * sx) -->
-<!-- sbeta_HC -->
-<!-- sbeta_HC_DFC <- sbeta_HC * sqrt(N / (N - 2)) -->
-<!-- ``` -->
-
-<!-- The `vcovHC` function from the `sandwich` package compute these -->
-<!-- heteroskedastic-robust standard deviations. The `type` argument indicate -->
-<!-- what kind of small sample bias correction should be used; in particular, -->
-<!-- `HC0` means no correction and `HC1` means multiply by -->
-<!-- $\sqrt{\frac{N}{N - 2}}$. `vcovHC`, as `vcov` return a square matrix. As -->
-<!-- it is quite cumbersome to take the square root to extract the second -->
-<!-- element of the diagonal of this matrix, we define a convenient function -->
-<!-- called `sdslope` to do this: -->
-
-<!-- ```{r } -->
-<!-- #| collapse: true -->
-<!-- library("sandwich") -->
-<!-- sdslope <- function(x) sqrt(x[2, 2]) -->
-<!-- sdslope(vcovHC(pxt, type = "HC0")) -->
-<!-- sdslope(vcovHC(pxt, type = "HC1")) -->
-<!-- ``` -->
-
-<!-- For the cluster robust estimator, we need to compute -->
-<!-- $S_{x\epsilon} ^ 2 = \left(\sum_n (x_n - \bar{x}) \hat{\epsilon}_n\right) ^ 2$ -->
-<!-- for each group. We first add the residuals as a column of `price_time` -->
-<!-- and then we use the `group_by` / `summarise` couple of functions to -->
-<!-- compute $S_{x\epsilon} ^ 2$ for each group: -->
-
-<!-- ```{r } -->
-<!-- price_time %>% mutate(heps = residuals(pxt)) %>% -->
-<!--     select(town, region, heps, h) %>% -->
-<!--     group_by(region) %>% -->
-<!--     summarise(Sxxg = sum( (h - mean(h)) * heps) ^ 2) -->
-<!-- ``` -->
-
-<!-- we then use a second summarise to take the square root of the sum of the -->
-<!-- $S_{x\epsilon} ^ 2$ and we divide by $N \hat{\sigma}_x^2$: -->
-
-<!-- ```{r } -->
-<!-- price_time %>% mutate(heps = residuals(pxt)) %>% -->
-<!--     select(town, region, heps, h) %>% -->
-<!--     group_by(region) %>% -->
-<!--     summarise(Sxxg = sum( (h - mean(h)) * heps) ^ 2) %>% -->
-<!--     summarise(sbeta_CL = sqrt(sum(Sxxg)) / (N * sx ^ 2)) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-
-<!-- We construct two small sample corrections for this estimator; the first -->
-<!-- one is a correction for the number of groups $\sqrt{\frac{G}{G - 1}}$ -->
-<!-- (which is very important here has we have only two groups), the second -->
-<!-- one add the ordinary degrees of freedom correction -->
-<!-- $\sqrt{\frac{N}{N-2}}$: -->
-
-<!-- ```{r } -->
-<!-- G <- length(unique(price_time$region)) -->
-<!-- price_time %>% mutate(heps = residuals(pxt)) %>% -->
-<!--     select(town, region, heps, h) %>% -->
-<!--     group_by(region) %>% -->
-<!--     summarise(Sxxg = sum( (h - bx) * heps) ^ 2) %>% -->
-<!--     summarise(sbeta_CL = sqrt(sum(Sxxg)) / (N * sx ^ 2), -->
-<!--               sbeta_CL_GC = sqrt(G / (G - 1)) * sbeta_CL, -->
-<!--               sbeta_CL_GNC = sqrt((N - 1) / (N - 2)) * sbeta_CL_GC) -->
-<!-- ``` -->
-
-<!-- The `vcovCL` function from the `sandwich` package compute these cluster -->
-<!-- robust standard deviations. The `type` argument indicate what kind of -->
-<!-- small sample bias correction should be used; if `type = "HC0"` only the -->
-<!-- number of groups correction is performed, if `type = "HC1"` the -->
-<!-- correction is made for the number of groups and for the sample size: -->
-
-<!-- ```{r } -->
-<!-- #| collapse: true -->
-<!-- sdslope(vcovCL(pxt, cluster = ~ region, type = "HC0")) -->
-<!-- sdslope(vcovCL(pxt, cluster = ~ region, type = "HC1")) -->
-<!-- ``` -->
 
 ```{r}
 growth <- mutate(growth, v = popgwth + 0.05) %>% rename(i = inv, e = school)
@@ -850,76 +676,73 @@ za %>% vcovCL(~ group) %>% diag %>% sqrt
 growth <- micsr.data::growth
 ```
 
+## Generalized least square estimator {#sec-gls}
 
-
-## Generalized least square estimator
-
-The **OLS** estimator is now longer **BLUE** with non-spherical
-disturbances. A more efficient called the generalized least square can
-then be used instead.
+For a linear model $y_n = \alpha + \beta^\top x_n + \epsilon_n = \gamma ^ \top z_n + \epsilon_n$ with non-spherical
+disturbances ($\Omega \neq \sigma_\epsilon ^ 2 I$), the OLS estimator is now longer BLUE. A more efficient estimator called the generalized least square can then be used instead.
 
 ### General formulation of the GLS estimator
 
-The **GLS** estimator is defined as:
+The GLS estimator is:
 
 $$
-\hat{\beta} = (X^\top\Omega^{-1}X) ^ {-1} X^\top \Omega ^ {-1} y
+\hat{\gamma} = (Z^\top\Omega^{-1}X) ^ {-1} Z^\top \Omega ^ {-1} y
 $$ {#eq-glsmatrix}
 
 where $\Omega = \mbox{E}(\epsilon\epsilon ^ \top)$. Replacing $y$ by
-$X\beta+\epsilon$, we get:
+$Z\gamma+\epsilon$, we get:
 
 $$
-\hat{\beta}=(X^\top\Omega^{-1}X) ^ {-1} X^\top \Omega ^ {-1} (X\beta + \epsilon) = \beta + (X^\top\Omega^{-1}X) ^ {-1} X^\top \Omega ^ {-1} \epsilon
-$$ As for the **OLS** estimator, the estimator is unbiased if
-$\mbox{E}\left(\epsilon\mid X\right)=0$. The variance is:
+\hat{\gamma}=(Z^\top\Omega^{-1}Z) ^ {-1} Z^\top \Omega ^ {-1} (Z\gamma + \epsilon) = \gamma + (Z^\top\Omega^{-1}Z) ^ {-1} Z^\top \Omega ^ {-1} \epsilon
+$$ 
+As for the OLS estimator, the estimator is unbiased if
+$\mbox{E}\left(\epsilon\mid Z\right)=0$. The variance is:
 
 $$
-\mbox{V}(\hat{\beta}) = \mbox{E}\left[(X^\top\Omega^{-1}X) ^ {-1} X^\top \Omega ^ {-1} \epsilon\epsilon^\top \Omega^{-1}X(X^\top \Omega ^ {-1} X)^{-1}\right]=(X^\top\Omega^{-1}X)^{-1}
+\mbox{V}(\hat{\gamma}) = \mbox{E}\left[(Z^\top\Omega^{-1}Z) ^ {-1} Z^\top \Omega ^ {-1} \epsilon\epsilon^\top \Omega^{-1}Z(Z^\top \Omega ^ {-1} Z)^{-1}\right]=(Z^\top\Omega^{-1}Z)^{-1}
 $$
 
-Written this way, the estimation of the **GLS** estimator is unfeasible
-for two reasons:
+Written this way, the GLS estimator is unfeasible for two reasons:
 
 -   the $\Omega$ matrix is a square matrix of dimension $N\times N$, and
     it is computationally difficult (or impossible) to store it and to
-    invert it using a computer.
--   it uses a matrix $\Omega$ which contains unknown parameters; a
-    feasible **GLS** estimator is obtained by replacing these unknown
-    parameters by estimates,
--   some structure should be imposed to the matrix so that the number of
-    parameters to be estimated is much less than the $N ^ 2$ elements of
-    the matrix.
+    invert it using a computer for a large sample,
+-   it uses a matrix $\Omega$ which contains $N(N+1) / 2$ unknown parameters.
 
-Actually, in practise, the **GLS** estimator is obtained by performing
-**OLS** on transformed data. More precisely, consider the matrix $C$
+A feasible GLS estimator is obtained by imposing some structure on $\Omega$ so that the number of unknown parameters became much less than $N(N+1)/2$ and by estimating these unknown parameters using residuals of a first step consistent estimation.
+Actually, in practice, the GLS estimator is obtained by performing
+OLS on transformed data. More precisely, consider the matrix $C$
 such that $C ^ \top C = \Omega ^ {-1}$. Then, @eq-glsmatrix can be
 rewriten, denoting $z^*=Cz$:
 
 $$
-\hat{\beta} = (X^\top C^\top CX) ^ {-1} X^\top C^\top C y = \left(X^{*\top}X^*\right)^{-1} X^{*\top}y{*^\top}
+\hat{\gamma} = (Z^\top C^\top CX) ^ {-1} Z^\top C^\top C y = \left(Z^{*\top}Z^*\right)^{-1} Z^{*\top}y^*
 $$ {#eq-glstrans}
 
-which is the **OLS** estimator of the linear model:
-$y^* = X^*\beta + \epsilon^*$, with $\epsilon^* = C\epsilon$. Replacing
+which is the OLS estimator of the linear model:
+$y^* = Z^*\gamma + \epsilon^*$, with $\epsilon^* = C\epsilon$. Replacing
 $y^*$ in @eq-glstrans, we get:
 
 $$
-\hat{\beta} = \beta + \left(X^{*\top}X^*\right)^{-1} X^{*\top}C\epsilon
-$$ And the variance of the estimator is:
+\hat{\gamma} = \gamma + \left(Z^{*\top}Z^*\right)^{-1} Z^{*\top}C\epsilon
+$$ 
+
+And the variance of the estimator is:
 
 $$
-\mbox{V}(\hat{\beta}) = \left(X^{*\top}X^*\right)^{-1} X^{*\top}C\Omega^{-1}C^\top X^*\left(X^{*\top}X^*\right)^{-1}
+\mbox{V}(\hat{\gamma}) = \left(Z^{*\top}Z^*\right)^{-1} Z^{*\top}C\Omega^{-1}C^\top Z^*\left(Z^{*\top}Z^*\right)^{-1}
 $$ {#eq-glsvar}
-$C\Omega^{-1}C^\top = C (C^\top C)^{-1} C^\top = C C ^ {-1} C^{\top-1}C^\top=I$[^non_spherical-2],
+
+But $C\Omega^{-1}C^\top = C (C^\top C)^{-1} C^\top = C C ^ {-1} C^{\top-1}C^\top=I$[^non_spherical-2],
 and therefore, @eq-glsvar simplifies to:
 
 [^non_spherical-2]: $(AB) ^ {-1} = B^{-1} A^{-1}$ if the inverse of the
-    two matrix exists, see GREENE p 1031.
+    two matrix exists, see GREE:18, online appendix p 1074.
 
 $$
-\mbox{V}(\hat{\beta}) = \left(X^{*\top}X^*\right)^{-1}
-$$ which is very similar to the formula used for **OLS**. Note that
+\mbox{V}(\hat{\gamma}) = \left(Z^{*\top}Z^*\right)^{-1}
+$$ 
+which is very similar to the formula used for OLS. Note that
 $\sigma_\epsilon^2$ doesn't appear in this formula because the variance
 of the transformed errors is 1.
 
@@ -936,22 +759,23 @@ C=
 \begin{array}{ccccc}
 1 / \sigma_{1} & 0 & 0 & \ldots & 0 \\
 0 & 1 / \sigma_{2} & 0 & \ldots & 0 \\
-0 & 0 & 1 / \sigma_{3} & \ldots & 0 \\
-0 & 0 & 0 & \ddots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & 0 & \ldots & 1 / \sigma_N
 \end{array}
 \right)
-$$ and therefore, pre-multiplying any vector by $C$ leads to a transform
+$$ 
+
+and therefore, pre-multiplying any vector by $C$ leads to a transformed
 vector where each value is divided by the standard deviation of the
 corresponding error:
 $z^{*\top} = (z_1 / \sigma_1, z_2 / \sigma_2, \ldots, z_N / \sigma_N)$.
-This is the weighted-least square estimator **WLS**, which is a linear
+This is the **weighted-least square** estimator (**WLS**), which is a linear
 regression where each observation has a weight equal to the inverse of
 the standard deviation of the deviance. The estimator can be obtained by
 minimizing $\sum_n \epsilon_n ^ 2 / \sigma_n ^ 2$, ie by minimizing not
 the sum of squares residuals, but a linear combination of squares
 residuals. An observation $n$ for which $\sigma_n$ is high will receive
-a much smaller weight in **WLS** compared to **OLS**. The weights
+a smaller weight in WLS compared to OLS. The weights
 $\sigma_n$ are unknown. The simplest solution is to assume that they are
 proportional to an observed variable (which may be or not a covariate of
 the regression). A more general solution is to assume a functional form
@@ -965,16 +789,16 @@ vector can be consistently estimated using the following regression:
 
 $$
 \ln \hat{\epsilon}_n ^ 2 = \gamma ^ \top z_n + \nu_n
-$$ {#eq-skedeq} where $\hat{\epsilon}$ are the **OLS** residuals which
-are consistent estimates of the errors. The **WLS** estimator is then
+$$ {#eq-skedeq} where $\hat{\epsilon}$ are the OLS residuals which
+are consistent estimates of the errors. The WLS estimator is then
 performed in three steps:
 
--   estimate the model by **OLS** and retrieve the vector of residuals
+-   estimate the model by OLS and retrieve the vector of residuals
     $\hat{\epsilon}$,
--   estimate $\hat{\gamma}$ by using **OLS** on @eq-skedeq and compute
+-   estimate $\hat{\gamma}$ by using OLS on @eq-skedeq and compute
     $\hat{\sigma}_n ^ 2 = e^{\hat{\gamma} z_n}$,
 -   divide every variable (the response and the covariates) by
-    $\hat{\sigma}_n$ and perform **OLS** on the transformed variables.
+    $\hat{\sigma}_n$ and perform OLS on the transformed variables.
 
 Note that there is no intercept in the third estimation as the
 "covariate" associated to the intercept (a vector of 1) becomes a vector
@@ -983,7 +807,7 @@ with typical element $1/\hat{\sigma}_n$.
 ### Error component model
 
 Remind that for the error component model, @eq-poweromegaec is a general
-formula to compute any power of $\Omega$ and $C$ is in this context
+formula that can be used to compute any power of $\Omega$ and $C$ is in this context
 obtained by taking $r=-0.5$:
 
 $$
@@ -1002,7 +826,7 @@ further writen as:
 $$
 \theta = 1 - \frac{\sigma_\nu}{T \sigma_\eta^2 + \sigma_\nu ^ 2} = 1 - \frac{1}{1 + T \sigma_\eta ^ 2 / \sigma_\nu^2}
 $$ Therefore $0\leq \theta \leq 1$, so that the $C$ matrix performs, in
-this context, is a quasi-difference from the individual mean:
+this context, a quasi-difference from the individual mean:
 
 $$
 z_n ^ * = z_{nt} - \theta \bar{z}_{n.}
@@ -1019,14 +843,14 @@ The share of the individual mean that is substracted depends on:
 -   the number of observations for each entity (the number of
     observations for each individuals for panel data),
     $\theta \rightarrow 1$ when $T\rightarrow + \infty$, therefore the
-    transformation is close to a difference for the individual mean for
+    transformation is close to a difference from the individual mean for
     large $T$.
 
-$\sigma_\nu$ and $\sigma_\eta$ are unknown parameters and has to be
+$\sigma_\nu$ and $\sigma_\eta$ are unknown parameters and have to be
 estimated.
 
 Consider the errors of the model $\epsilon_{nt}$, their individual mean
-$\bar{\epsilon}_{n.}$ and their deviations from these individual means
+$\bar{\epsilon}_{n.}$ and the deviations from these individual means
 $\epsilon_{nt} - \bar{\epsilon}_{n.}$. By hypothesis, we have:
 $\mbox{V}\left(\epsilon_{nt}\right)=\sigma_\nu^2+\sigma_\eta^2$. For the
 individual means, we get:
@@ -1035,6 +859,8 @@ $$
 \bar{\epsilon}_{n.}=\frac{1}{T}\sum_{t=1}^T \epsilon_{nt} = \eta_n +
 \frac{1}{T}\sum_{t=1}^T \nu_{nt}
 $$
+
+for which the variance is:
 
 $$
 \mbox{V}\left(\bar{\epsilon}_{n.}\right)=\sigma_{\eta}^2 + \frac{1}{T}
@@ -1066,7 +892,7 @@ $$
 $$
 
 If $\epsilon$ were known, natural estimators of these two variances
-$\sigma_{\iota}^2$ et $\sigma_{nu}^2$ would be:
+$\sigma_{\iota}^2$ et $\sigma_{\nu}^2$ would be:
 
 $$
 \hat{\sigma}_\iota^2 = T \frac{\sum_{n=1}^N\bar{\epsilon}_{n.}^2}{N} =
@@ -1081,22 +907,22 @@ $$
 $$ {#eq-varidios}
 
 Several estimators of the two components of the variance have been
-proposed in the literature. They are all consist on replacing
+proposed in the literature. They all consist on replacing
 $\epsilon_{nt}$ in the previous two equations by consistent estimates
-(and for some on them by applying some degrees of freedom correction).
+(and for some of them by applying some degrees of freedom correction).
 The estimator proposed by @WALL:HUSS:69 is particularly simple because
-it uses the residuals of an **OLS** estimation.[^non_spherical-3]
+it uses the residuals of an OLS estimation.[^non_spherical-3]
 
 [^non_spherical-3]: See also @SWAM:AROR:72, @AMEM:71 and @NERL:71
 
 ### Seemingly unrelated regression
 
 Because of the inter-equations correlations, the efficient estimator is
-the **GLS**s estimator:
-$\hat{\beta}=(X^\top\Omega^{-1}X)^{-1}X^\top\Omega^{-1}y$. This
+the GLS estimator:
+$\hat{\gamma}=(Z^\top\Omega^{-1}Z)^{-1}Z^\top\Omega^{-1}y$. This
 estimator, first proposed by @ZELL:62, is known by the acronym **SUR**
-for seemingly unrelated regression. It can be obtained by applying
-**OLS** on transformed data, each variable being pre-multiplied by
+for **seemingly unrelated regression**. It can be obtained by applying
+OLS on transformed data, each variable being pre-multiplied by
 $\Omega^{-0.5}$. This matrix is simply
 $\Omega^{-0.5}=\Sigma^{-0.5}\otimes I$. Denoting $\delta_{lm}$ the
 elements of $\Sigma^{-0.5}$, the transformed response and covariates
@@ -1126,37 +952,36 @@ $$
 
 $\Sigma$ is a matrix that contains unknown parameters, which can be
 estimated using residuals of a consistent but inefficient preliminary
-estimator, like **OLS**. The efficient estimator is then obtained the
+estimator, like OLS. The efficient estimator is then obtained the
 following way:
 
--   first, each equation is estimated separately by **OLS** and we note
+-   first, estimate each equation separately by OLS and denote
     $\hat{\epsilon} = (\hat{\epsilon}_1, \hat{\epsilon}_2, \ldots,\hat{\epsilon}_L)$
     the $N\times L$ matrix for which every column is the residual vector
     of one of the equations in the system,
 -   then, estimate the covariance matrix of the errors:
-    $\hat{\sigma}=\hat{\epsilon}^\top\hat{\epsilon} / N$,
+    $\hat{\Sigma}=\hat{\epsilon}^\top\hat{\epsilon} / N$,
 -   compute the matrix $\hat{\Sigma}^{-0.5}$ and use it to transform the
     response and the covariates of the model,
--   finally, estimate the model by applying **OLS** on transformed data.
+-   finally, estimate the model by applying OLS on transformed data.
 
 $\Sigma^{-0.5}$ can conveniently be computed using the Cholesky
-decomposition, ie computing the lower-triangular matrix $C$ which is
-such that $CC^\top=\Sigma^{-1}$.
+decomposition, ie computing the upper-triangular matrix $C$ which is
+such that $C^\top C=\Sigma^{-1}$.
 
-
-## Testing for non-spherical disturbances
+## Testing for non-spherical disturbances {#sec-test_non_spher}
 
 Numerous tests have been proposed to investigate whether, in different
 contexts, the disturbances are spherical or note. Among them, we'll
-present a family of tests that are based on **OLS** residuals. These
+present a family of tests that are based on OLS residuals. These
 tests are relevant because even if the disturbances are non-spherical,
-**OLS** is a consistent estimator and therefore **OLS**'s residuals are
+OLS is a consistent estimator and therefore OLS's residuals are
 a consistent estimate of the errors of the model. Therefore one can use
 these residuals to analyse the unknown features of the errors.
 
 ### Testing for heteroskedasticity
 
-[@breusch1979] consider the following heteroskedastic model:
+[@BREU:PAGA:79] consider the following heteroskedastic model:
 
 $$
 y_n = \beta ^ \top x_n + \epsilon_n
@@ -1242,18 +1067,18 @@ $$
 N R^2 = \frac{f^\top Z (Z^\top Z)^{-1} Z f}{f'f / N}
 $$
 
-@white1980 proposed a test that is directly linked to its proposition of
+@WHIT:80 proposed a test that is directly linked to its proposition of
 an heteroskedasticity-robust matrix of covariance of the **OLS**
 estimates. This matrix depends on the the squares and on the
 crossproduct of the covariates. Therefore, he proposes to run a
 regression of the squares of the first-step residuals on the covariates,
 their squares and their cross-product. $N R^2$ of this regression is
-asymptotically distributed as a $\chi ^ 2$. Therefore, @white1980's test
-can be considered as a specialized case of @breusch1979's test.
+asymptotically distributed as a $\chi ^ 2$. Therefore, @WHIT:80's test
+can be considered as a specialized case of @BREU:PAGA:79's test.
 
 ### Testing for individual effects
 
-@breusch1980 extend their Lagrange multiplier test for detecting
+@BREU:PAGA:80 extend their Lagrange multiplier test for detecting
 heteroskedasticity for the problem of individual effects in a panel (or
 in a pseudo-panel) setting.
 
@@ -1448,7 +1273,6 @@ lmtest::bptest(slw_tot)
 
 ```{r }
 #| include: false
-source("clm.R")
 ap <- apples %>% filter(year == 1985) %>%
     transmute(y = otherprod + apples,
               ct = capital + labor + materials,
@@ -1490,7 +1314,7 @@ beta_c <- coef(ols_unconst) -
 To illustrate the use of the **SUR** estimator, we go back to the
 estimation of the system of three equations of three equations (one
 cost function and two factor shares equations) for the production of
-apples started in section ??.
+apples started in @sec-system_equation.
 
 ```{r }
 eq_ct <- ct ~ y + y2 + pl + pm + pl2 + plm + pm2

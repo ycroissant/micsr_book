@@ -1,33 +1,14 @@
 ```{r }
+#| label: maximum_likelihood
 #| include: false
 source("../_commonR.R")
-```
-
-```{r }
-#| echo: false
-#| message: false
-library("tidyverse")
-library("micsr")
-knitr::opts_chunk$set(message = FALSE,
-                      warning = FALSE,
-                      out.width = "60%",
-                      fig.align = "center",
-                      cache = FALSE)
-options(
-    htmltools.dir.version = FALSE,
-    formatR.indent = 2,
-    width = 65,
-    digits = 4,
-    tibble.print_max = 5,
-    tibble.print_min = 5
-)
 ```
 
 # Maximum likelihood estimator
 
 The maximum likelihood method is suitable in situation where the GDP
 of the response is perfectly known (or supposed to be), up to some
-unknown parameters.
+unknown parameters. It is particularly useful for models where the response is not continuous but, for example is a count, a binomial or a multinomial variable.^[This models will be presented in details in the third part of the book.]
 
 ## ML estimation of a unique parameter
 
@@ -39,14 +20,14 @@ one-parameter distribution functions:
     integer values,
 -   the exponential distribution, which is often used for responses that
     represent a time span (for example an unemployment spell).
-
+\index{Poisson distribution}
 ### Computing the ML estimator for the Poisson distribution
 
-As an example of count data, we consider the data set from @MILL:09, who
+As an example of count data, we consider the `cartel` data set of @MILL:09, who
 analyzed the role of commitment to the lenient prosecution of early
 confessors on cartel enforcement. The response `ncaugh` is a count, the
 number of cartel discoveries per 6 months period, for the 1985-2005
-period.
+period. \index{R functions!sapply}
 
 ```{r }
 #| echo: false
@@ -54,15 +35,15 @@ period.
 
 A Poisson variable is defined by the following mass probability
 function:
-
+\index{R functions!lm}
 $$
 P(y; \theta) = \frac{e ^ {-\theta} \theta ^ y}{y !}
-$$
+$$ {#eq-poisson_probability}
 
 where $\theta$ is the unique parameter of the distribution. An important
-characteristic is that $\mbox{E}(y)=\mbox{V}(y)=\theta$, which means
-that, for a Poisson variable, the variance equals the expected value. To
-have a first look to the relevance of this hypothesis for the response
+characteristic of this distribution is that $\mbox{E}(y)=\mbox{V}(y)=\theta$, which means
+that, for a Poisson variable, the variance equals the expectation. To
+have a first look at the relevance of this hypothesis for the response
 of our example, we compute the sample mean and variance:
 
 ```{r }
@@ -72,7 +53,7 @@ cartels %>% summarise(m = mean(ncaught), v = var(ncaught))
 The two moments are of the same order of magnitude so that we can
 confidently rely on the Poisson distribution hypothesis. The question is
 now how to use the information from the sample to estimate the unique
-parameter of the distribution ($\theta$). @fig-bars_poisson
+parameter of the distribution. @fig-bars_poisson
 represents the empirical distribution of our response and add several
 lines which represent the Poisson distribution for different values of
 $\theta$.
@@ -86,7 +67,8 @@ R <- 3
 Poisson <- tibble(x = rep(0:12, R), lambda = rep(c(2L, 5L, 8L), each = 13), P = dpois(x, lambda)) %>%
     mutate(lambda = factor(lambda))
 cartels %>% ggplot(aes(ncaught)) + geom_bar(aes(y = after_stat(prop)), color = "black", fill = "white") +
-    geom_line(data = Poisson, aes(x = x, y = P, linetype = lambda))    
+    geom_line(data = Poisson, aes(x = x, y = P, linetype = lambda)) + 
+  geom_point(data = Poisson, aes(x = x, y = P))
 ```
 
 The Poisson distribution is highly asymmetric and has a large mode for
@@ -97,7 +79,7 @@ as 2 or as large as 8. For $\theta = 5$, there is a reasonable
 correspondence between the empirical and the theoretical distribution.
 To get unambiguously a value for our estimator, we need an objective
 function that is a function of $\theta$ which is, in this context, the
-likelihood function. To construct it, it is best to view our sample as a
+**likelihood function**. To construct it, it is best to consider our sample as a
 random sample. For the first observation $1$, given a value of $\theta$,
 the probability of observing $y_1$ is $P(y_1; \theta)$. For the
 second one, with the random sample hypothesis, the probability of
@@ -108,43 +90,40 @@ of observing the values of $y$ for the whole sample is the likelihood
 function for a Poisson variable in a random sample which writes:
 
 $$
-L(\theta; y) = \Pi_{n=1}^N P(y_n;\theta)
+L(\theta, y) = \Pi_{n=1}^N P(y_n;\theta)
 $$
 
-and the ML estimator of $\theta$ is the value of $\theta$ which maximize
+and the **maximum likelihood** estimator (**ML** in short) of $\theta$ is the value of $\theta$ which maximize
 the likelihood function. Note the change of notations:
-$P(y_n;theta)$ is the probability mass function, it is a function of
+$P(y_n; \theta)$ is the probability mass function, it is a function of
 $y$ and computes a probability for a given (known) value of the
-parameter of the distribution. The likelihood function $L(\theta;d y)$
-is writen as a function of the unknown value of the parameter of the
+parameter of the distribution. The likelihood function $L(\theta, y)$
+is written as a function of the unknown value of the parameter of the
 distribution and its value depends on the realization of the response
 vector $y$ on the sample.
 
 There are several good reasons to consider the logarithm of the
 likelihood function instead of the likelihood itself. In particular,
 being a product of $N$ terms, the likelihood will typically takes very
-high or very low values for large samples, values that can be
-difficultly dealt with by computers. Moreover, the logarithm
+high or very low values for large samples. Moreover, the logarithm
 transforms a product in a sum, which is much more convenient. Note
 finally that, as the logarithm is a strictly increasing function,
 maximizing the likelihood or its logarithm leads to the same value of
-$\theta$. Taking the log and replacing $P(y_n;\theta)$ by the relevance
-formula for Poisson probabilities, we get:
+$\theta$. Taking the log and replacing $P(y_n; \theta)$ by the expression given in @eq-poisson_probability,  we get:
 
 $$
-\ln L(\theta; y) = \sum_{n=1} ^ N \ln \frac{e ^ {-\theta} \theta ^ y}{y !}
+\ln L(\theta, y) = \sum_{n=1} ^ N \ln \frac{e ^ {-\theta} \theta ^ y}{y !}
 $$
 
 or, regrouping terms:
 
 $$
-\ln L(\theta; y) = - N \theta + \ln \theta \sum_{n=1} ^ N y_n -
+\ln L(\theta, y) = - N \theta + \ln \theta \sum_{n=1} ^ N y_n -
 \sum_{n = 1} ^ N \ln y_n !
 $$
 
 The log-likelihood is therefore the sum of three terms and note that the
 last one doesn't depend on $\theta$.
-
 In our sample, we have:
 
 ```{r }
@@ -163,14 +142,19 @@ corresponding values of the log likelihood function:
 #| results: 'asis'
 #| echo: false
 #| label: tbl-poisson_probs
-#| tbl-cap: "Poisson probabilities for different values of $\\theta$"
-knitr::kable(tibble(theta = 1:8, lnL = lnl_poisson(theta)), digits = 2, booktabs = TRUE)
+#| tbl-cap: "Poisson probabilities for different values of the parameter"
+knitr::kable(tibble(theta = 1:8, lnL = lnl_poisson(theta)), digits = 2, booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling()
 ```
 
 The log likelihood function seems to have an inverse U-shape, and the
 maximum value for the integer values we've provided is reached for
 $\theta = 5$. @fig-loglik_poisson presents the log likelihood function
-as a smooth line in the neighborhood of $\theta = 5$.
+as a smooth line in the neighborhood of $\theta = 5$, which indicates that the maximum of the log likelihood function occurs
+for a value of $\theta$ between 5.0 and 5.25.
+The first order condition for a maximum is that the first derivative of
+$\ln L$ with respect to $\theta$ is 0.
+
 
 ```{r }
 #| echo: false
@@ -180,12 +164,6 @@ ggplot() + geom_function(fun = lnl_poisson) +
     scale_x_continuous(limits = c(4, 6)) +
     labs(x = "theta", y = "log-likelihood")
 ```
-
-which indicates that the maximum of the log likelihood function occurs
-for a value of $\theta$ between 5.0 and 5.25.
-
-The first condition for a maximum is that the first derivative of
-$\ln L$ with respect to $\theta$ is 0.
 
 $$
 \frac{\partial \ln L}{\partial \theta} = - N + \frac{\sum_{n=1} ^ N y_n}{\theta}=0
@@ -205,14 +183,14 @@ $$
 
 and is negative for all values of $\theta$ which indicates that the
 log-likelihood is globally concave and therefore that the optimum we
-previously get is a global maximum. For our sample, the ML estimator is:
+previously get is the global maximum. For our sample, the ML estimator is:
 
 ```{r }
 hat_theta <- sum_y / N
 hat_theta
 ```
 
-### Computation of the ML estimator for the exponential distribution
+### Computation of the ML estimator for the exponential distribution {#sec-expon_distr_1par}
 
 The second example illustrates the computation of the ML estimator for
 a continuous variable.  The density of a variable which follows an
@@ -226,7 +204,7 @@ The expected value and the variance of $y$ are $\mbox{E}(y) =
 \frac{1}{\theta}$ and $\mbox{V}(y) = \frac{1}{\theta ^ 2}$ so that,
 for a variable which follows an exponential distribution, the mean
 should be equal to the standard deviation.  To illustrate the use of
-the exponential distribution, we use the data set of
+the exponential distribution, we use the `oil` data set of
 @FAVE:PESA:SHAR:94 for which the response `dur` is the time span
 between the discovery of an oil field and the date of the British
 government approval to exploit this field.
@@ -254,7 +232,7 @@ oil %>% ggplot(aes(dur)) +
     geom_function(fun = dexp, args = list(rate = 0.03), linetype = "dashed") +
     scale_y_continuous(limits = c(0, 0.01))    
 ```
-
+<!-- !!! mettre une legende -->
 The adjustment between the empirical and the theoretical distribution is
 quite good with the plain line which corresponds to $\theta = 0.01$.
 
@@ -264,17 +242,16 @@ probability function is replaced by the density function. The
 log-likelihood function therefore writes:
 
 $$
-\ln L(\theta; y) = \sum_{n = 1} ^ N \ln \theta e ^{-\theta y_n}
+\ln L(\theta, y) = \sum_{n = 1} ^ N \ln \theta e ^{-\theta y_n}
 $$
 
 or, regrouping terms:
 
 $$
-\ln L(\theta; y) = N \ln \theta - \theta \sum_{n = 1} ^ N y_n
+\ln L(\theta, y) = N \ln \theta - \theta \sum_{n = 1} ^ N y_n
 $$
-
 The shape of the log-likelihood function is represented on
-@fig-loglik_exponential:
+@fig-loglik_exponential.
 
 ```{r }
 #| echo: false
@@ -293,7 +270,6 @@ ggplot() + geom_function(fun = lnl_exp) +
 As in the Poisson case, the log-likelihood seems to be globally concave,
 with a global maximum corresponding to a value of $\theta$
 approximately equal to $0.015$.
-
 The first order condition for a maximum is:
 
 $$
@@ -309,9 +285,8 @@ $$
 \frac{\partial \ln^2 L}{\partial \theta^2} = -\frac{N}{\theta^2}
 $$
 
-which is negative for all values of $\theta$, which ensures that
+which is negative for all values of $\theta$, so that
 $\hat{\theta}$ is the global maximum of the log-likelihood function.
-
 In our example, we get:
 
 ```{r }
@@ -324,18 +299,17 @@ hat_theta
 We consider a variable $y$ for which we observe $N$ realizations in a
 random sample. We assume that $y$ follows a distribution with a unique
 parameter $\theta$. The density (if $y$ is continuous) or the mass
-probability function (if $y$ is discrete) is denoted $\phi(y,
-\theta)$. We denote $\lambda(y, \theta) = \ln \phi(y, \theta)$ and
-$\gamma(y, \theta)$ and $\psi(y, \theta)$ the first two derivatives of
+probability function (if $y$ is discrete) is denoted $\phi(y;
+\theta)$. We also denote $\lambda(y; \theta) = \ln \phi(y; \theta)$ and
+$\gamma(y; \theta)$ and $\psi(y; \theta)$ the first two derivatives of
 $\lambda$ with $\theta$. The log likelihood function is then:
 
 $$
-\ln L(\theta; y) = \sum_n \lambda(y_n; \theta) = \sum_n \ln \phi(y_n; \theta)
+\ln L(\theta, y) = \sum_n \lambda(y_n; \theta) = \sum_n \ln \phi(y_n; \theta)
 $$
 
 with $y^\top = (y_1, y_2, \ldots, y_N)$ the vector containing all the
 values of the response in our sample. 
-
 The "true value" of $\theta$ is denoted $\theta_0$ and the maximum
 likelihood estimator $\hat{\theta}$. The proof of the consistency of
 the ML estimator is based on Jensen's inequality, which states that
@@ -394,15 +368,12 @@ $$ {\#eq-equality}
 likelihood for $\hat{\theta}$ converges to the average likelihood for
 $\theta_0$. Using a regularity condition, this implies that the
 estimator is consistent, ie that $\mbox{plim} \,\hat{\theta} = \theta_0$.
-
-
 The first two derivatives of the log-likelihood functions, which are
-denoted respectively the **gradient**^[The gradient is also called the
-score.] and the **hessian** of the
+denoted respectively the **gradient** (also called the **score**) and the **hessian** of the
 log-likelihood are:
 
 $$
-g(\theta; y) = \frac{\partial \ln L}{\partial \theta}(\theta; y) =
+g(\theta, y) = \frac{\partial \ln L}{\partial \theta}(\theta, y) =
 \sum_{n=1}^N \frac{\partial \lambda}{\partial \theta}(y_n; \theta) = 
 \sum_{n=1}^N \gamma(y_n; \theta)
 $$ {\#eq-gradient_scalar}
@@ -410,13 +381,12 @@ $$ {\#eq-gradient_scalar}
 and
 
 $$
-h(\theta; y) = \frac{\partial^2 \ln L}{\partial \theta^2}(\theta; y) =
+h(\theta, y) = \frac{\partial^2 \ln L}{\partial \theta^2}(\theta, y) =
 \sum_{n=1}^N \frac{\partial^2 \lambda}{\partial \theta^2}(y_n; \theta) = 
 \sum_{n=1}^N \psi(y_n, \theta)
 $$ {\#eq-hessian_scalar}
 
 As there is only one parameter to estimate, both functions are scalar functions.
-
 For a discrete distribution, the probabilities for every possible $K$ values
 of $y$ (denoted $y_k$) sum to unity:
 
@@ -437,60 +407,51 @@ $\theta$, we get:
 $$
 \left\{
 \begin{array}{rcl}
-\displaystyle  \sum_{k=1} ^ K \phi(y_k; \theta) \gamma(y_k; \theta) &=& 0 \\
-\displaystyle \int \phi(y; \theta) \gamma(y; \theta) &=& 0
+\displaystyle  \sum_{k=1} ^ K \gamma(y_k; \theta) \phi(y_k; \theta)&=& 0 \\
+\displaystyle \int \gamma(y; \theta) \phi(y; \theta) dy&=& 0
 \end{array}
 \right.
-$$
+$$ {#eq-gradient_0_theta0}
 
-which indicates that $\mbox{E}_y(\gamma(y; \theta_0)) = 0$. Therefore,
-evaluated at the true value of $\theta$, $\gamma(y; \theta)$ is a random
-variable with 0 expectation. 
-
+Evaluated for the true value $\theta_0$, @eq-gradient_0_theta0 is the expectation of an individual contribution to the  gradient. Therefore, evaluated at the true value of $\theta$, $\gamma(y; \theta)$ is a random variable with 0 expectation. 
 Taking now the second derivative with respect to $\theta$, we get:
 
 $$
 \left\{
 \begin{array}{rcl}
-\displaystyle \sum_{k=1} ^ K \phi(y_k; \theta) \gamma(y_k; \theta) ^ 2 + 
-\sum_{k=1} ^ K \phi(y_k; \theta) \psi(y_k; \theta) &=& 0 \\
-\displaystyle \int \phi(y; \theta) \gamma(y; \theta) ^ 2 dy +
-\int \phi(y; \theta) \psi(y; \theta) dy&=& 0
+\displaystyle \sum_{k=1} ^ K \gamma(y_k; \theta) ^ 2 \phi(y_k; \theta) + 
+\sum_{k=1} ^ K  \psi(y_k; \theta) \phi(y_k; \theta) &=& 0 \\
+\displaystyle \int \gamma(y; \theta) ^ 2 \phi(y; \theta) dy +
+\int  \psi(y; \theta) \phi(y; \theta)dy&=& 0
 \end{array}
 \right.
-$$
+$$ {#eq-variance_hessian}
 
-The first term is the variance of $\gamma(y; \theta)$, which we'll
-denote $\sigma_\gamma ^ 2$ and the second term is the expectation of
-$\psi(y; \theta)$ that we'll denote $\mu_\psi$. We then have:
-$\sigma_\gamma ^ 2 = - \mu_\psi$.
+We denote $v_\gamma(\theta)$ the first term: evaluated for the true value of the parameter, this is the variance of $\gamma(y; \theta)$, that we'll denote $v_\gamma(\theta_0) = \sigma_\gamma^2$. We denote the second term $m_\psi(\theta)$, which is, evaluated for the true value of the parameter, the expectation of the hessian: $m_\psi(\theta_0) = \mu_\psi$. Therefore, @eq-variance_hessian indicates that $\sigma_\gamma ^ 2 = - \mu_\psi$.
 
-
-The gradient $g(\theta; y)$ (@eq-gradient_scalar) is the sum of $N$
+The gradient $g(\theta, y)$ (@eq-gradient_scalar) is the sum of $N$
 contributions $\gamma(y_n; \theta)$ which have 0
 expectation. Therefore, its expectation is 0. With the random sample
 hypothesis, $\gamma(y_n; \theta)$ and $\gamma(y_m; \theta)$ are
 independent for all $m\neq n$ and the variance of the gradient is
-therefore the sum of the variance of its $N$ contributions, which are
-all equal to $\sigma^2_\gamma$. Therefore, $\mbox{V}(g(\theta; y)) = N
+therefore the sum of the variances of its $N$ contributions, which are
+all equal to $\sigma^2_\gamma$. Therefore, $\mbox{V}(g(\theta_0, y)) = N
 \sigma^2_\gamma$. The variance of the gradient is called the
 **information matrix** in the general case, but is actually in our one
-parameter case a scalar that we'll denote $\iota(\theta)$.
+parameter case a scalar that we'll denote $\iota(\theta_0)$.
 
 The hessian being a sum of $N$ contributions $\psi(y_n; \theta)$,
 which have an expectation equal to $\mu_\psi$, its expected value is
-$\mbox{E}(h(\theta, y)) = N \mu_\psi$.  The result we previously
+$\mbox{E}(h(\theta_0, y)) = N \mu_\psi$.  The result we previously
 established ($\sigma_\gamma ^ 2 = - \mu_\psi$) implies that the
 variance of the gradient (the information) equals the opposite of the
 expectation of the hessian:
 
 $$
-\iota(\theta) = \mbox{V}(g(\theta, y)) = - \mbox{E}(h(\theta, y))
-$$
+\iota(\theta_0) = \mbox{V}(g(\theta_0, y)) = - \mbox{E}(h(\theta_0, y)) = N \sigma^2_\gamma = - N\mu_\psi
+$$ {#eq-information_equality_one_par}
 
 This important result is called the **information equality**.
-
-
 Denoting $\theta_0$ the true (unknown) value of the parameter, and
 omitting for convenience the $y$ vector, a first-order Taylor
 expansion of $g(\hat{\theta})$ around $\theta_0$ is:
@@ -499,74 +460,65 @@ $$
 g(\hat{\theta}) \approx g(\theta_0) + h(\theta_0) (\hat{\theta} -
 \theta_0)
 $$
-
 If we use instead an exact first-order Taylor expansion:
 
 $$
-g(\hat{\theta}) = g(\theta_0) + h(\theta^+) (\hat{\theta} - \theta_0)
-$$
+g(\hat{\theta}) = g(\theta_0) + h(\bar{\theta}) (\hat{\theta} - \theta_0)
+$$ {#eq-exact_taylor_expansion}
 
-where $\theta^+$ lies between $\hat{\theta}$ and $\theta_0$. As
-$g(\hat{\theta}) = 0$, Solving for $\hat{\theta} - \theta$, we get:
+where $\bar{\theta}$ lies between $\hat{\theta}$ and $\theta_0$. As
+$g(\hat{\theta}) = 0$, solving for $\hat{\theta} - \theta_0$, we get:
 
 $$
-(\hat{\theta} - \theta) = -
-h(\theta^+)^{-1} g(\theta_0)
+(\hat{\theta} - \theta_0) = -
+h(\bar{\theta})^{-1} g(\theta_0)
 $$
 
 or, multiplying by $\sqrt{N}$:
 
-
 $$
-\sqrt{N}(\hat{\theta} - \theta) = -
-\left(\frac{h(\theta^+)}{N}\right)^{-1} \frac{g(\theta_0)}{\sqrt{N}}
+\sqrt{N}(\hat{\theta} - \theta_0) = -
+\left(\frac{h(\bar{\theta})}{N}\right)^{-1} \frac{g(\theta_0)}{\sqrt{N}}
 $$
-
 
 Assuming that the estimator is consistent, as $N$ grows,
-$\hat{\theta}$ converges to $\theta_0$ and so does $\theta^+$. As
+$\hat{\theta}$ converges to $\theta_0$ and so does $\bar{\theta}$. As
 $\mbox{E}(h(\theta_0)) = N \mu_\psi$, the expectation of the first
 term is $\mu_\psi$ and it is also its probability limit. The second
 term as a 0 expected value and a variance equal to $\sigma_\gamma ^
-2$. Therefore, $\sqrt{N}(\hat{\theta} - \theta)$ has a zero
+2$. Therefore, $\sqrt{N}(\hat{\theta} - \theta_0)$ has a zero
 expectation and an asymptotic covariance equal to $\mu_\psi ^ {-2}
 \sigma_\gamma^2$. Moreover, applying the central limit theorem, its
 asymptotic distribution is normal. Therefore:
 
 $$
-\sqrt{N}(\hat{\theta}-\theta) \overset{p}{\rightarrow} N(0, \mu_\psi ^ {-2}
-\sigma_\gamma ^ 2)
-$$
-
-Or:
-
-$$
-\hat{\theta} \overset{a}{\sim} N(\theta_0, \mu_\psi ^ {-2}
+\sqrt{N}(\hat{\theta}-\theta_0) \overset{p}{\rightarrow} N(0, \mu_\psi ^ {-2}
+\sigma_\gamma ^ 2) \; \mbox{ and } \;
+\hat{\theta} \overset{a}{\sim} \mathcal{N}(\theta_0, \mu_\psi ^ {-2}
 \sigma_\gamma ^ 2 / N)
 $$ {\#eq-asdist_general}
 
 Applying the information matrix equality, $\iota(\theta_0) = N
-\sigma_\gamma ^ 2 = - N \mu_\psi$
+\sigma_\gamma ^ 2(\theta_0) = - N \mu_\psi(\theta_0)$ and therefore:
 
 $$
-\hat{\theta} \overset{a}{\sim} N(\theta, \iota(\theta_0) ^ {-1})
+\hat{\theta} \overset{a}{\sim} N(\theta_0, \iota(\theta_0) ^ {-1})
 $$ {\#eq-asdist_info_eq}
 
-
-We have seen that the variance of the **ML** estimator is the inverse
+We have seen that the variance of the ML estimator is the inverse
 of the information, which can be either obtained using the
 variance of the gradient or the opposite of the expectation of the
 hessian. If this variance/expectation can be computed, then a natural
 estimator of $\iota(\theta_0)$ is $\iota(\hat{\theta})$. In terms of
-the average information ($\iota(\theta) / N$), this writes:
+the average information ($\iota(\theta) / N$), we have:
 
 $$
 \left\{
 \begin{array}{rcl}
 \frac{\iota(\theta)}{N} &=& \frac{1}{N} \mbox{V}\left(\frac{g(\theta, y)}{\sqrt{N}}\right) = \frac{1}{N}
-\sum_{n= 1} ^ N \mbox{E}(\gamma(\theta, y) ^ 2) = \sigma_\gamma ^ 2 \\
+\sum_{n= 1} ^ N \mbox{E}(\gamma(y; \theta) ^ 2) = v_\gamma (\theta) \\
 \frac{\iota(\theta)}{N} &=& \frac{1}{N} \mbox{E}\left(- \frac{h(\theta, y)}{N}\right) = - \frac{1}{N} \sum_{n = 1} ^ N
-\mbox{E}(\psi(\theta, y_n)) = - \mu_\psi
+\mbox{E}(\psi(y_n; \theta)) = - m_\psi(\theta)
 \end{array}
 \right.
 $$ {\#eq-average_info}
@@ -576,23 +528,23 @@ inverting the information evaluated for the maximum likelihood value
 of $\theta$:
 
 $$
-\hat{\sigma}_{\hat{\theta}} ^ 2 = \iota(\hat{\theta}) ^ {-1}
+\hat{\sigma}_{\hat{\theta}i} ^ 2 = \iota(\hat{\theta}) ^ {-1}
 $$
 
-On the contrary, if this is impossible to compute the expectations,
+On the contrary, if it is impossible to compute the expectations,
 two natural estimators of the information are based on the
 gradient and the hessian and are obtained by evaluating one of the two
 expressions in @eq-average_info without the expectation. Denoting
-$\iota_g$ and $\iota_h$, these two estimation of the information, we
+$\iota_g$ and $\iota_h$, these two estimations of the information, we
 have from @eq-average_info:
 
 $$
 \left\{
 \begin{array}{rcl}
-\frac{\iota_g(\theta)}{N} &=& \frac{1}{N} \mbox{V}\left(\frac{g(\theta, y)}{\sqrt{N}}\right) = \frac{1}{N}
-\sum_{n= 1} ^ N \gamma(\theta, y_n) ^ 2 = \hat{\sigma}_\gamma ^ 2 \\
+\frac{\iota_g(\theta)}{N} &=&  \frac{1}{N}
+\sum_{n= 1} ^ N \gamma(y_n; \theta) ^ 2 = \hat{v}_\gamma(\theta) \\
 \frac{\iota_h(\theta)}{N} &=& - \frac{h(\theta, y)}{N} = - \frac{1}{N} \sum_{n = 1} ^ N
-\psi(\theta, y_n) = - \hat{\mu}_\psi
+\psi(\theta; y_n) = - \hat{m}_\psi(\theta)
 \end{array}
 \right.
 $$
@@ -601,40 +553,33 @@ Evaluated for the maximum likelihood estimator value of $\theta$, we
 then get the **gradient based estimator**:
 
 $$
-\hat{\sigma}_{\hat{\theta g}} ^ 2 = \iota_g(\hat{\theta}) ^ {-1} =
-\left(\sum_{n= 1} ^ N \gamma(\theta, y) ^ 2\right) ^ {-1} = \frac{1}{N
-\hat{\sigma}_\gamma ^ 2}
+\hat{\sigma}_{\hat{\theta} g} ^ 2 = \iota_g(\hat{\theta}) ^ {-1} =
+\left(\sum_{n= 1} ^ N \gamma(y ; \hat{\theta}) ^ 2\right) ^ {-1} = \frac{1}{N
+\hat{v}_\gamma(\hat{\theta})}
 $$ {\#eq-gradient_est}
-
-
 
 and the **hessian based estimator** of the variance of $\theta$:
 
 $$
 \hat{\sigma}_{\hat{\theta} h} ^ 2 = \iota_h(\hat{\theta}) ^ {-1} =
-- h(\theta, y) ^ {-1} = - \frac{1}{N \hat{\mu}_{\psi}} 
+- h(\hat{\theta}, y) ^ {-1} = - \frac{1}{N \hat{m}_{\psi}(\hat{\theta})} 
 $$ {\#eq-hessian_est}
 
 A fourth estimator is based on @eq-asdist_general, which states that,
-before applying the information equality:
+before applying the information equality, 
 
 $$
-\sigma ^ 2_{\hat{\theta}}
-= \mu_{\psi} ^ {-2} \sigma_{\gamma} ^  2 / N
-= \mbox{E}(h(\theta_0, y)) ^ {-2} \mbox{V}(g(\theta_0, y)) = 
-\mbox{E}(h(\theta_0, y)) ^ {-2} \mbox{E}\left(\sum_{n=1} ^ Ng(\theta_0, y_n) ^ 2\right)
-$$ {\#eq-var_general}
+\sigma_{\hat{\theta}} ^ 2 = \frac{1}{N} \frac{v_\gamma(\theta_0)}{m_\psi(\theta_0)^2}
+$$ {#eq-var_general}
 
 Removing the expectation from @eq-var_general and evaluating for the
 maximum likelihood estimator of $\theta$, we get the **sandwich
 estimator** of the variance of $\hat{\theta}$.
 
 $$
-\begin{array}{rcl}
-\hat{\sigma} ^ 2 _{\hat{\theta} s} &=& h(\hat{\theta}, y) ^ 2
-\left(\sum_{n=1} ^ Ng(\hat{\theta}, y_n) ^ {-2} \right)\\
-&=& \frac{\hat{\sigma}_\gamma ^ 2}{N\hat{\mu}_\psi ^ 2}
-\end{array}
+\hat{\sigma} ^ 2 _{\hat{\theta} s} = h(\hat{\theta}, y) ^ 2
+\left(\sum_{n=1} ^ N \gamma(y_n; \hat{\theta}) ^ {-2} \right)
+= \frac{\hat{v}_\gamma (\hat{\theta}) ^ 2}{N \hat{m}_\psi(\hat{\theta}) ^ 2}
 $$ {\#eq-sandwich-est}
 
 @eq-sandwich-est is called a sandwich estimator for a reason that will
@@ -704,28 +649,21 @@ N
 N \frac{\hat{\sigma}_y ^ 2}{\bar{y} ^ 2}
 $$
 
-which is $N \hat{\sigma}_\gamma ^ 2$ with $\hat{\sigma}_\gamma ^ 2 =
-\hat{\sigma}_y ^ 2 / \bar{y} ^ 2$.
-
 For the hessian based estimator of the information, we consider the
 opposite of the hessian $\iota_h(\theta) = - h(\theta)$ evaluated for
-the **ML** estimator:
+the ML estimator:
 
 $$
 \iota_h(\hat{\theta}) = \frac{\sum_n y_n}{\hat{\theta} ^ 2} =
 \frac{N}{\bar{y}}
 $$
 
-which is $N \hat{\mu}_\psi$, with $\hat{\mu}_\psi = - 1 / \bar{y}$.
-
-
 Finally, from @eq-sandwich-est, the sandwich estimator of the variance
 is:
 
 $$
-\hat{\sigma}_{\hat{\theta}s} = \frac{\hat{\sigma}_\gamma ^ 2}{N
-\hat{\mu}_\psi ^ 2} = \frac{\hat{\sigma}_y ^ 2 / \bar{y} ^ 2}{N (1 /
-\bar{y}) ^ 2} = \frac{\hat{y} ^ 2_\gamma}{N}
+\hat{\sigma}_{\hat{\theta}s} = \frac{\hat{\sigma}_y ^ 2 / \bar{y} ^ 2}{N (1 /
+\bar{y}) ^ 2} = \frac{\hat{\sigma} ^ 2_y}{N}
 $$
 
 To summarize, the 4 estimators of the variance of $\hat{\theta}$ are:
@@ -744,14 +682,13 @@ $$
 \right.
 $$
 
-
 Note that in this case, $\iota(\hat{\theta}) =
 \iota_h(\hat{\theta})$ and that, if the Poisson distribution
 hypothesis is correct, $\mbox{plim} \,\bar{y} = \mbox{plim}\,
 \hat{\sigma}_y ^ 2 = \theta_0$ so that the 4 estimators are consistent as
 they all converge to $\theta_0 / N$.
 
-
+Computing this 4 estimations of the variance of $\hat{\theta}$ for the `ncaught` variable, we get:
 
 ```{r }
 N <- nrow(cartels) ; y <- cartels$ncaught
@@ -761,18 +698,19 @@ c(info = mean_y / N, gradient = mean_y ^ 2 / var_y / N,
     sqrt %>% round(3)
 ```
 
-For the exponential distribution, reminds that $\lambda(\theta; y)=
-\ln \theta - \theta y$, $\gamma(\theta; y) = 1 / \theta - y$ and
-$\psi(\theta; y) = - 1 / \theta ^ 2$. As $h(\theta) = \sum_n
-\psi(\theta; y)$ the hessian is obviously $h(\theta) = - N / \theta
+For the exponential distribution, reminds that $\lambda(y; \theta)=
+\ln \theta - \theta y$, $\gamma(y; \theta) = 1 / \theta - y$ and
+$\psi(y; \theta) = - 1 / \theta ^ 2$. As $h(\theta, y) = \sum_n
+\psi(y; \theta)$ the hessian is obviously $h(\theta, y) = - N / \theta
 ^ 2$ and equals its expected value as it doesn't depend on
 $y$. Therefore, $\iota(\theta) = N / \theta ^ 2$. Computing the variance
 of the gradient, we get:
 
 $$
 \begin{array}{rcl}
-\mbox{V}\left(g(\theta)\right) &=& \mbox{E}\left(\sum_n \gamma(\theta, y_n) ^ 2 \right)\\
-&=&\sum_n \mbox{E}(\gamma(\theta, y_n) ^ 2) = \sum_n \mbox{E}\left(y -  1
+\mbox{V}\left(g(\theta)\right) &=& \mbox{E}\left(\sum_n \gamma(y_n; \theta) ^ 2 \right)
+=\sum_n \mbox{E}(\gamma(y_n; \theta) ^ 2)\\
+&=& \sum_n \mbox{E}\left(y -  1
 / \theta)^2\right) = N \mbox{V}(y) = N / \theta ^ 2
 \end{array}
 $$
@@ -795,17 +733,14 @@ $$
 
 as $\hat{\theta} = 1 / \bar{y}$, evaluated for the ML estimator, we
 have $\iota_g(\hat{\theta}, y) = N \hat{\sigma}_y ^ 2$.
-
-The sandwich estimator of the variance of $\hat{\theta}$ is:
-
+Finally, the sandwich estimator of the variance of $\hat{\theta}$ is:
 
 $$
-\hat{\sigma}_{\hat{\theta}s}^2 = \frac{\hat{\sigma}_\gamma ^ 2}{N
-\hat{\mu}_\psi ^ 2} = \frac{\hat{\sigma}_y ^ 2}{N \bar{y} ^ 4}
+\hat{\sigma}_{\hat{\theta}s}^2 =  \frac{\hat{\sigma}_y ^ 2}{N \bar{y} ^ 4}
 $$
 
-Finally, the four estimators of the variance for the exponential
-distribution are:
+The four estimators of the variance for the exponential
+distribution are then:
 
 $$
 \left\{
@@ -821,22 +756,7 @@ $$
 \right.
 $$
 
-
-<!-- $$ -->
-<!-- \begin{flalign} -->
-<!-- a_{11}& =b_{11}& -->
-<!-- a_{12}& =b_{12}\\ -->
-<!-- a_{21}& =b_{21}& -->
-<!-- a_{22}& =b_{22}+c_{22} -->
-<!-- \end{flalign} -->
-<!-- $$ -->
-
-<!-- $$ -->
-<!-- \begin{alignat}{2} -->
-<!-- a_1& =b_1+c_1& &+e_1-f_1\\ -->
-<!-- a_2& =b_2+c_2&{}-d_2&+e_2 -->
-<!-- \end{alignat} -->
-<!-- $$ -->
+Computing this 4 estimations of the variance of $\hat{\theta}$, we get for the `oil` variable:
 
 
 ```{r }
@@ -856,7 +776,7 @@ consider in this section two extensions:
 - the first one is that $\theta$ is now a vector of unknown parameters
   that we seek to estimate, which means that the gradient is a vector
   and the hessian is a matrix,
-- the second one is that the density for observation $n$ don't depend
+- the second one is that the density for observation $n$ doesn't depend
   anymore only on the value of the response $y_n$, but also on the
   value of a vector of covariates $x_n$. 
 
@@ -865,7 +785,7 @@ consider in this section two extensions:
 The density (or the probability mass) for observation $n$ is now:
 $\phi(y_n ; \theta, x_n) = \phi_n(y_n ; \theta)$; therefore, written as
 a function of $y$ and $\theta$ only, the density is now indexed by $n$
-as it is a function of $x_n$. Denoting as previously $\lambda_n(y_n,
+as it is a function of $x_n$. Denoting as previously $\lambda_n(y_n;
 \theta) = \ln \phi_n(y_n; \theta)$, $\gamma_n = \frac{\partial
 \lambda_n}{\partial \theta}$ and $\Psi_n = \frac{\partial ^2
 \lambda_n}{\partial \theta \partial \theta^\top}$^[We now have a
@@ -875,7 +795,7 @@ is:
 
 $$
 \ln L(\theta;y, X) = \sum_{n=1} ^ N \ln \phi_n(y_n; \theta) =
-\lambda_n(y_n; \theta)
+\sum_{n=1} ^ N\lambda_n(y_n; \theta)
 $$
 
 The gradient and the hessian are:
@@ -895,15 +815,13 @@ demonstrated previously in the scalar case, it is equal to the
 opposite of the expected value of the hessian:
 
 $$
-I(\theta; X) = \mbox{V}(g(\theta; y, X)) = - \mbox{E} (H(\theta; y, X))
+I(\theta, X) = \mbox{V}(g(\theta, y, X)) = - \mbox{E} (H(\theta, y, X))
 $$
 
 Note that now, each individual contribution to the gradient and to the
 hessian depends on $x_n$; therefore, their variance (for the gradient)
-and their expectation (for the hessian) are not constant
-($\sigma_\gamma ^ 2$ and $\mu_\psi ^ 2$) as previously. In terms of
-the individual observations, we have:
-
+and their expectation (for the hessian) are not constant as previously. In terms of
+the individual observations, the information matrix equality states that:
 
 $$
 \mbox{I}(\theta; X) = \sum_{n=1} ^ N
@@ -927,18 +845,16 @@ $$
 
 The information matrix equality implies that:
 $\mathbf{\mathcal{I}} = - \mathbf{\mathcal{H}}$.
-
-At the maximum likelihood estimate, the gradient is 0:
+At the ML estimate, the gradient is 0:
 $g(\hat{\theta}; y, X) = 0$. Using a first order Taylor expansion
 around the true value $\theta_0$, we have:
 
 $$
-g(\hat{\theta}; y, X) = g(\theta_0; y, X) + 
-H(\bar{\theta}; y, X) (\hat{\theta} - \theta_0) = 0
+g(\hat{\theta}, y, X) = g(\theta_0, y, X) + 
+H(\bar{\theta}, y, X) (\hat{\theta} - \theta_0) = 0
 $$
 
-The equivalent of $\bar{\theta}$ lying in the $\theta_0-\hat{\theta}$
-interval for the scalar case is that : $\| \bar{\theta} - \theta_0\| \leq
+The equivalent of $\bar{\theta}$ lying in the $\theta_0-\hat{\theta}$ interval for the scalar case (see @eq-exact_taylor_expansion) is that $\| \bar{\theta} - \theta_0\| \leq
 \| \hat{\theta}-\theta_0\|$. Solving this equation for
 $\hat{\theta}-\theta_0$, we get, multiplying by $\sqrt{N}$:
 
@@ -954,21 +870,23 @@ $$
 \sqrt{N}(\hat{\theta}-\theta_0) = \left(- \mathcal{H}\right)^{-1}\frac{g(\theta_0; y, X)}{\sqrt{N}}
 $$ {\#eq-nondeg_theta}
 
+The asymptotic variance of the second term is:
 
 $$
 \mbox{V}\left(\lim_{n \rightarrow \infty}\frac{g(\theta_0; y,
-X}{\sqrt{N}}\right) = \lim_{n\rightarrow \infty} \frac{1}{N}\sum_{n =
+X}{\sqrt{N}}\right) \overset{a}{=} \lim_{n\rightarrow \infty} \frac{1}{N}\sum_{n =
 1} ^ N \gamma_n(y_n; \theta_0)\gamma_n(y_n; \theta_0)^\top = \mathbf{\mathcal{I}}
 $$
 
+where $w\overset{a}{=}z$ means that $w$ is asymptotically equal to $z$, ie that they tend to the same limit in probability [see @DAVI:MACK:04, page 205].
 Therefore, the asymptotic variance of $\sqrt{N}(\hat{\theta}-\theta_0)$ is
 $\mathbf{\mathcal{H}} ^ {-1} \mathbf{\mathcal{I}} \mathbf{\mathcal{H}}
-^ {-1}$, which reduce to, applying the information matrix equality
+^ {-1}$, which reduces to, applying the information matrix equality
 result, $\mathbf{\mathcal{I}} ^ {-1}$. Applying the central-limit
 theorem, we finally get:
 
 $$
-\sqrt{N}(\hat{\theta}-\theta) \overset{p}{\rightarrow} N(0, \mathbf{\mathcal{I}} ^ {-1})
+\sqrt{N}(\hat{\theta}-\theta_0) \overset{p}{\rightarrow} \mathcal{N}(0, \mathcal{I} ^ {-1})
 $$
 
 
@@ -978,8 +896,7 @@ $$
 $$
 
 The asymptotic variance can be estimated using the information
-evaluated at $\hat{\theta}$ if the expectation can be computed:
-
+evaluated at $\hat{\theta}$ if the variance of the gradient or the expectation of the hessian can be computed:
 
 $$
 \hat{\mbox{V}}_I(\hat{\theta}) = \left(\sum_{n=1} ^ N
@@ -987,16 +904,15 @@ $$
 \sum_{n=1} ^ N\mbox{E}\left(\Psi_n(y_n; \hat{\theta})\right)\right) ^ {-1}
 $$
 
-Two other possible estimators are obtained by expression by evaluating
+Two other possible estimators are obtained by evaluating
 the two previous expressions without the expectation. The gradient
-based estimator, also called the **outer product of the gradient**
+based estimator, also called the **outer product of the gradient** or the **BHHH**^[The initials of the authors of @BERN:HALL:HALL:HAUS:74 who first proposed this estimator.]
 estimator is:
 
 $$
 \hat{\mbox{V}}_g(\hat{\theta}) = \left(\sum_{n=1} ^ N
 \left(\gamma_n(y_n; \hat{\theta})\gamma_n(y_n; \hat{\theta})^\top\right)\right) ^ {-1}
 $$
-
 
 and the hessian based estimator is:
 
@@ -1012,40 +928,41 @@ equality theorem. Then:
 
 $$
 \hat{\mbox{V}}_s(\hat{\theta}) = 
-\left(- H(\hat{\theta}; y, X)\right) ^ {-1}
+\left(- H(\hat{\theta}, y, X)\right) ^ {-1}
 \left(\sum_{n=1} ^ N \left(\gamma_n(y_n; \hat{\theta})\gamma_n(y_n; \hat{\theta})^\top\right)\right)
-\left(- H(\hat{\theta}; y, X)\right) ^ {-1}
+\left(- H(\hat{\theta}, y, X)\right) ^ {-1}
 $$
+This estimator actually looks like a sandwich with the "meat" (the estimation of the variance of the gradient) being surrounded by two slices of bread (the inverse of the opposite of the hessian). 
 
 ### Computation of the estimators for the exponential distribution
 
+We have seen in @sec-expon_distr_1par that we can get an explicit solution for the maximization of the likelihood of the one parameter exponential distribution. Once covariates are introduced, there are $K+1$ parameters to estimate and there is no longer an explicit solution. Then, a numerical optimization algorithm should be used. We'll present in this section the simplest algorithm, called the **Newton-Ralphson** algorithm, using the `oil` data set with two covariates:
+
+- `p98` is the adaptive expectations for the real after-tax oil prices formed at the time of the approval,
+- `varp98` is the volatility of the adpative expectations for the real after tax oil prices.
+
 For the exponential model, remind that $\mbox{E}(y) = 1 /
-\theta$. $\theta$ should be therefore positive. The way the parameter
+\theta$. $\theta$ should therefore be positive. The way the parameter
 of the distribution is related to the linear combination of covariates
-$\beta^\top x_n$ is called the **link**. It is customary to define
-$\theta_n = e ^ {- \beta ^ \top x_n}$ (so that $\ln \mbox{E}(y \mid
-x_n) = - \ln \theta_n = \beta ^ \top x_n$).
+$\gamma^\top z_n$ is called the **link**. It is customary to define
+$\theta_n = e ^ {- \gamma ^ \top z_n}$ (so that $\ln \mbox{E}(y \mid
+x_n) = - \ln \theta_n = \gamma ^ \top z_n$).
 
 Then:
 
 $$
 \left\{
 \begin{array}{rcl}
-\ln L &=& - \sum_{n=1} ^ N \beta ^ \top x_n - e ^ {- \beta ^  \top
-x_n} y_n \\
-\frac{\partial \ln L}{\partial \beta} &=& - \sum_{n=1} ^ N\left(1 - e ^ {-\beta ^ \top
-x_n}y_n\right)x_n \\
-\frac{\partial ^ 2 \ln L}{\partial \beta \partial \beta ^ \top} &=&
--\sum_{n=1} ^ N e ^ {-\beta ^ \top
-x_n}y_nx_nx_n^\top
+\ln L &=& - \sum_{n=1} ^ N \gamma ^ \top z_n - e ^ {- \gamma ^  \top
+z_n} y_n \\
+\frac{\partial \ln L}{\partial \gamma} &=& - \sum_{n=1} ^ N\left(1 - e ^ {-\gamma ^ \top
+z_n}y_n\right)z_n \\
+\frac{\partial ^ 2 \ln L}{\partial \gamma \partial \gamma ^ \top} &=&
+-\sum_{n=1} ^ N e ^ {-\gamma ^ \top
+z_n}y_nz_nz_n^\top
 \end{array}
 \right.
 $$ {\#eq-exp_dist_lgh}
-
-There is no analytical solution for
-$\frac{\partial \ln L}{\partial \beta} = 0$, but the estimator can be
-obtained using an iterative method called the **Newton-Ralphson**
-method.
 
 Starting from an initial vector of parameters $\beta_t$, we use a first
 order Taylor expansion of the gradient for $\beta_{t+1}$ "close to"
@@ -1056,7 +973,7 @@ g(\beta_{t+1}) \approx g(\beta_t) + H(\beta_t) (\beta_{t+1} - \beta_t)
 $$
 
 Solving the first order conditions for a maximum, we
-should have $g(\beta_t) + H(\beta_t) (\beta_{t+1} - \beta_t) \approx 0$,
+should have $g(\beta_t) + H(\beta_t) (\beta_{t+1} - \beta_t) = 0$,
 which leads to:
 
 $$
@@ -1075,20 +992,20 @@ vector of response and the matrix of covariates.
 ```{r }
 form <- dur ~ p98 + varp98
 mf <- model.frame(form, oil)
-X <- model.matrix(form, mf)
+Z <- model.matrix(form, mf)
 y <- model.response(mf)
 N <- length(y)
 ```
 
-We then define functions for the log-Likelihood, the vector of score and
-the hessian matrix, as a function of the vector of parameters $\beta$.
+We then define functions for the log-Likelihood, the gradient and
+the hessian, as a function of the vector of parameters $\gamma$.
 
 ```{r }
-theta <- function(beta) theta <- exp(- drop(X %*% beta))
-f <- function(beta) sum(log(theta(beta)) - theta(beta) * y)
-G <- function(beta) - (1 - y * theta(beta)) * X
-g <- function(beta) apply(G(beta), 2, sum)
-H <- function(beta) - crossprod(sqrt(theta(beta) * y) * X)
+theta <- function(gamma) theta <- exp(- drop(Z %*% gamma))
+f <- function(gamma) sum(log(theta(gamma)) - theta(gamma) * y)
+G <- function(gamma) - (1 - y * theta(gamma)) * Z
+g <- function(gamma) apply(G(gamma), 2, sum)
+H <- function(gamma) - crossprod(sqrt(theta(gamma) * y) * Z)
 ```
 
 Starting from an initial vector of coefficient, we use the preceding
@@ -1101,24 +1018,23 @@ as the response:
 
 ```{r }
 #| collapse: true
-beta_1 <- coef(lm(log(dur) ~ p98 + varp98, oil))
-beta_1
-g(beta_1)
+gamma_0 <- coef(lm(log(dur) ~ p98 + varp98, oil))
+gamma_0
+g(gamma_0)
 ```
 
-We then update $\beta$ using @eq-updating_rule:
+We then update $\gamma$ using @eq-updating_rule:
 
 ```{r }
 #| collapse: true
-beta_2 <- beta_1 - solve(H(beta_1), g(beta_1))
-beta_2
-g(beta_2)
+gamma_1 <- gamma_0 - solve(H(gamma_0), g(gamma_0))
+gamma_1
+g(gamma_1)
 ```
 
-We can see that we got with $\beta_2$ an updated vector of coefficients
+We can see that we got with $\gamma_1$ an updated vector of coefficients
 which seems closer to the maximum than the initial one as the elements
 of the gradient are much smaller than previously.
-
 The gradient being still quite different from 0, it is worth iterating
 again. We'll stop the iterations when a scalar value obtained from the
 gradient is less than an arbitrary small real value. As a simple
@@ -1127,14 +1043,14 @@ score, and we iterate as long as this scalar is greater than
 $10^{-07}$:
 
 ```{r }
-beta_init <- coef(lm(log(dur) ~ p98 + varp98, oil))
+gamma_0 <- coef(lm(log(dur) ~ p98 + varp98, oil))
 i <- 0
-beta <- beta_init
+gamma <- gamma_0
 crit <- 1
 while (crit > 1E-07){
     i <- i + 1
-    beta <- beta - solve(H(beta), g(beta))
-    crit <- mean(g(beta) ^ 2)
+    gamma <- gamma - solve(H(gamma), g(gamma))
+    crit <- mean(g(gamma) ^ 2)
     cat(paste("iteration", i, "crit = ", crit, "\n"))
 }
 ```
@@ -1142,11 +1058,10 @@ while (crit > 1E-07){
 Only 3 iterations were necessary to reach the maximum (as defined by
 our criteria). 
 
-
 ```{r }
 #| collapse: true
-beta
-g(beta)
+gamma
+g(gamma)
 ```
 
 We then use @eq-exp_dist_lgh and the functions `H` and `G` defined
@@ -1154,106 +1069,184 @@ previously to compute the three estimation of the information matrix
 and the four estimators of the covariance matrix of the estimator:
 
 ```{r }
-Info_g <- crossprod(G(beta))
-Info_H <- - H(beta)
-Info <- crossprod(X)
+Info_g <- crossprod(G(gamma))
+Info_H <- - H(gamma)
+Info <- crossprod(Z)
 V_g <- solve(Info_g)
 V_i <- solve(Info)
 V_h <- solve(Info_H)
 V_sand <- solve(Info_H) %*% Info_g %*% solve(Info_H)
 ```
 
-We then compare the resulting estimated standard errors of the estimator:
+We then compare the resulting estimated standard errors of the estimator. To obtain a compact output, we use the `sapply` function, which is a specialized version of `lapply`. `lapply` takes as argument a list and a function and the result is the list containing the result of applying the function to each element of the list. `sapply`, when possible, returns a 
                                                                    
 ```{r }
 sapply(list(V_i, V_h, V_g, V_sand), function(x) sqrt(diag(x)))
 ```
 Not that the gradient based estimate gives fairly different results,
 compared to the other estimators. This is often the case, this
-estimator being knowned to perform poorly in small samples.
+estimator being known to perform poorly in small samples.
 
 ### Transformation of the response
 
-Consider now the case where a parametric transformation of the response
-is supposed to follow a given distribution (for example the normal
-distribution):
+The ML estimator is based on the density (or probability mass) function of the response,  given a set of covariates. Sometimes, it is more interesting to consider the density of a parametric transformation of the response. To illustrate this kind of models, we'll consider the estimation of production functions, using the `apples` data set, already described in @sec-system_equation.
+
+We consider models of the form:
 
 $$
-w_n = d(y_n, \gamma) \sim \mathcal{N}(\beta ^ \top x_n, \sigma)
+w_n = v(y_n, \lambda) \sim \mathcal{N}(\mu_n, \sigma) \mbox{ with } \mu_n = \alpha + \beta ^ \top x_n
 $$
-
-As the density of $d(y_n, \gamma)$ is normal, the one for $y_n$
+The parametric transformation of $y_n$ may depends on a set of unknown parameters $\lambda$ and it follows a normal distribution with an expectation that is a linear function of some covariates and a constant variance.
+As the density of $v(y_n, \gamma)$ is normal, the one for $y_n$
 can be obtained using the following formula:
 
 $$
-f(y_n) = \phi(d(y_n, \gamma)) \times \left|\frac{\partial d}{\partial y} \right|
+f(y_n) = \phi(v(y_n, \gamma)) \times \left|\frac{d v}{d y} \right|
 $$
 
 where the last term is called the Jacobian of the transformation of
-$w$ on $y$. Consider for example $d(y_n) = \ln y_n$, then the Jacobian
-is $1/y$ and:
+$w$ on $y$. Consider the simple case where  $v(y_n) = \ln y_n$. Then, $v$ doesn't contain any unknown parameter, the Jacobian of the transformation is $1/y$ and the density of $y_n$:
 
 $$
 f(y_n) = \frac{1}{y}\frac{1}{\sigma}\phi\left(\frac{\ln y - \mu_n}{\sigma}\right)
 $$
-
-is the log-normal density.
-
-@ZELL:REVA:69 proposed a generalized production function of the form:
+is simply the log-normal density, which implies the following log-likelihood function:
 
 $$
-\ln y + \gamma y \sim \mathcal{N}(\mu, \sigma)
-$$
+\ln L(\gamma) = -\frac{N}{2} \ln 2\pi - N \ln \sigma - \sum_{n=1} ^ N \ln y_n + \frac{1}{2\sigma ^ 2}\sum_{n = 1} ^ {+\infty}(\ln y_n - \gamma ^ \top z_n)^ 2
+$$ {#eq-log_lik_lognorm}
 
-where $\mu = \beta_o + \sum_{j=1}^ J \beta_j \ln z_j$ and $z_j$
-is the quantity of factor $j$. If $\gamma = 0$, this function is the
-Cobb-Douglas production function with normal errors.
+Maximizing @eq-log_lik_lognorm is obviously equivalent to minimizing $\sum_{n = 1} ^ {+\infty}(\ln y_n - \gamma ^ \top z_n)^ 2$ which is the residual sum of squares of a regression with $\ln y_n$ as the response. Therefore the ML estimation of $\gamma$ can be performed using OLS. 
+
+We consider only one year (1986) of production for the `apples` data set, we construct a unique output variable (`y`), we rename for convenience the three factors as `k`, `l` and `m` (respectively for capital, labor and materials) and,
+for a reason that we'll be clear latter, we divide all the variables
+by their sample mean:
+
+```{r }
+aps <- apples %>%
+    filter(year == 1986) %>% # au lieu de 86
+    transmute(y = apples + otherprod, y = y / mean(y),
+              k = capital / mean(capital),
+              l = labor / mean(labor),
+              m = materials / mean(materials))
+```
+
+We first consider the Cobb-Douglas production function which is linear in logs. Denoting $j = 1 \ldots J$ the inputs, we get:
+
+$$
+\ln y_n = \alpha + \sum_{j=1}^J \beta_j \ln q_j + \epsilon_n
+$$ {#eq-cobb_douglas_production}
+
+We then fit the @eq-cobb_douglas_production using `lm`:
+
+```{r}
+cobb_douglas <- lm(log(y) ~ log(k) + log(l) + log(m), aps)
+cobb_douglas %>% coef
+``` 
+
+The problem of using `lm` is that, although the estimates are the ML estimates, the response is $\ln y$ and not $y$. Therefore, the log likelihood reported by `lm` is computed using the density of $\ln y$:
+
+```{r}
+#| label: uncorrect_logLik_lognormal
+#| collapse: true
+logLik(cobb_douglas)
+```
+
+and is incorrect as the term $- \sum_{n=1} ^ N \ln y_n$ in @eq-log_lik_lognorm is missing. Adding this term to the log-likelihood returned by the `logLik` function, we get:
+
+```{r}
+#| label: correct_logLik_lognormal
+#| collapse: true
+as.numeric(logLik(cobb_douglas)) - sum(log(aps$y))
+```
+
+The `micsr::loglm` function estimates models for which the response is in logarithm. The estimation of the parameters is performed using `lm`, but the result is a `micsr` object, from which the correct log-likelihood, gradient and hessian can be extracted:
+
+```{r}
+#| label: loglm_logLik_lognormal
+#| collapse: true
+cd_loglm <- loglm(y ~ log(k) + log(l) + log(m), aps)
+logLik(cd_loglm)
+```
+
 The scale elasticity, which measures the relative growth of output for a
-proportional increase of all the inputs is:
+proportional increase of all the inputs is $\sum_{j=1} ^ J \beta_j$ and therefore constant returns to scales imply that $\sum_{j=1} ^ J \beta_j = 1$, or $\beta_J = 1 - \sum_{j=1} ^ {J-1} \beta_j$. Replacing in @eq-cobb_douglas_production, we get:
 
 $$
-\epsilon = \frac{\sum_{j=1} ^ J \beta_j}{1 + \gamma y}
+\ln y_n = \alpha + \sum_{j=1}^{J-1} \beta_j \ln q_j / q_J + 
+\left(\sum_{j=1}^{J-1} \beta_j - 1\right) \ln q_J + 
+\ln q_J + \epsilon_n
+$$ {#eq-cobb_douglas_production_reparam}
+
+Therefore, regressing  $\ln y_n$ on $\ln q_j / q_J, \forall j = 1\ldots J-1$ and $\ln q_J$, the hypothesis of constant returns to scale is $\beta_J^* = \sum_{j=1}^{J-1} \beta_j - 1 = 0$ and the constant returns to scale are imposed if $\ln q_J$ is removed from the regression. Note the presence of a constant $\ln q_J$ on the right side of the equation. This is called an offset and can be introduced in a formula with the `offset(w)` syntax:
+
+```{r}
+#| label: cobb_douglass_reparam
+#| collapse: true
+cd_repar <- loglm(y ~ log(k / m) + log(l / m) + log(m) + 
+                    offset(log(m)), aps)
+coef(cd_repar)
+logLik(cd_repar)
+```
+
+```{r}
+#| label: coef_cd_repar_hide
+#| echo: false
+bm <- unname(coef(cd_repar)["log(m)"])
+```
+
+The log-likelihood is obviously the same as previously and $\beta_J ^ * = `r round(bm, 2)`$, which implies a scale elasticity equal to `r round(1 + bm, 2)`.
+
+@ZELL:REVA:69 proposed a generalization of the Cobb-Douglas production function of the form:
+
+$$
+\ln y + \lambda y \sim \mathcal{N}(\mu, \sigma)
+$$
+
+where $\mu = \alpha + \sum_{j=1}^ J \beta_j \ln q_j$. The scale elasticity is:
+
+$$
+\epsilon = \frac{\sum_{j=1} ^ J \beta_j}{1 + \lambda y}
 $$ {#eq-elast}
 
-which means that, for $\gamma > 0$, the scale elasticity is equal to
-$\sum_{j=1} ^ J \beta_j$ for $y = 0$ and tends to 0 as $y$ tends to $+
+If $\lambda = 0$, this function reduce to the
+Cobb-Douglas production function with normal errors. For $\lambda > 0$, the scale elasticity is equal to $\sum_{j=1} ^ J \beta_j$ for $y = 0$ and tends to 0 as $y$ tends to $+
 \infty$. Therefore, if $\sum_{j=1} ^ J \beta_j > 1$, returns to scale
 are increasing for a low level of production, get constant for a level
-of production equals to $\frac{\sum_{j=1} ^ J \beta_j - 1}{\gamma}$ and
+of production equals to $(\sum_{j=1} ^ J \beta_j - 1) / \lambda$ and
 decreasing above this level of production.
-
-Denoting $\epsilon_n$ the difference between $\ln y + \gamma y$ and
-its conditional expectation, the model can be rewritten:
+Denoting $\epsilon_n$ the difference between $\ln y + \lambda y$ and
+its conditional expectation, the model can be rewritten as:
 
 $$
-\ln y_n + \gamma y_n = \beta_0 + \sum_{j=1} ^ J \beta_j \ln z_{nj} + \epsilon_n
+\ln y_n + \lambda y_n = \alpha + \sum_{j=1} ^ J \beta_j \ln q_{nj} + \epsilon_n
 $$
 
-The hypothesis of constant scale elasticity is simply $\gamma =
+The hypothesis of constant scale elasticity is simply $\lambda =
 0$. The hypothesis of constant return to scale adds the condition:
-$\sum_j \beta_j = 1$. It can be easily tested using a
-reparametrization of the model:
+$\sum_j \beta_j = 1$. It can be easily tested using the same 
+reparametrization of the model as in @eq-cobb_douglas_production_reparam:
 
 $$
-\ln y_n^* + \gamma y_n = \beta_0 + 
-\sum_{j=1} ^ {J-1} \beta_j \ln z_{nj}^* + 
-\beta_J^* \ln z_{nJ} + 
+\ln y_n^* + \lambda y_n = \alpha + 
+\sum_{j=1} ^ {J-1} \beta_j \ln q_{nj}^* + 
+\beta_J^* \ln q_{nJ} + 
 \epsilon_n
 $$
 
-where $z_{nj}^* = z_{nj} / z_{nJ}$, $y_{nj} ^ * = y_{nj} / z_{nJ}$ and
-$\beta_J^* = \sum_{j=1}^J \beta_j - 1$. The hypothesis of constant
-returns to scale is the joint hypothesis that $\gamma = 0$ and that
-the coefficient of $\ln z_{nJ}$ in this repametrized version of the model
+where $q_{nj}^* = q_{nj} / q_{nJ}$, $y_n^* = y_n / q_{nJ}$ and
+$\beta_J^* = \sum_{j=1}^J \beta_j - 1$. Note that we removed $\ln q_{nJ}$ on both sides of the equation as we kept it as an offset on @eq-cobb_douglas_production_reparam. 
+The hypothesis of constant
+returns to scale is the joint hypothesis that $\lambda = 0$ and that
+the coefficient of $\ln q_{nJ}$ in this repametrized version of the model
 is 0.
-
-The Jacobian is $\frac{1}{y} + \gamma = \frac{1 + \gamma y}{y}$, which
-leads to the following density, denoting $\mu_n ^ * = \beta_0 +
-\sum_{j=1}^J \beta_j \ln z_{nj}^* + \beta_J^* \ln z_{nJ}$
+The Jacobian is $\frac{1}{y} + \lambda = \frac{1 + \lambda y}{y}$, which
+leads to the following density, denoting $\mu_n ^ * = \alpha +
+\sum_{j=1}^J \beta_j \ln q_{nj}^* + \beta_J^* \ln q_{nJ}$:
 
 $$
-f(y_n;\theta,\beta) = \frac{1}{\sigma}\frac{1 + \gamma y_n}{y^*_n}
-\phi\left(\frac{\ln y_n + \gamma y_n - \mu_n^*}{\sigma}\right)
+f(y_n;\theta,\beta) = \frac{1}{\sigma}\frac{1 + \lambda y_n}{y^*_n}
+\phi\left(\frac{\ln y_n + \lambda y_n - \mu_n^*}{\sigma}\right)
 $$
 
 Taking the logarithm of this density, we get the individual
@@ -1261,20 +1254,20 @@ contribution of an observation to the log-likelihood function:
 
 $$
 l_n = - \ln \sigma - \frac{1}{2}\ln 2\pi + 
-\ln (1 + \gamma y_n) - \ln y_n^* 
+\ln (1 + \lambda y_n) - \ln y_n^* 
 - \frac{1}{2\sigma ^ 2} 
-\left(\ln y_n ^ * + \gamma y_n - \mu_n^*\right) ^ 2
+\left(\ln y_n ^ * + \lambda y_n - \mu_n^*\right) ^ 2
 $$
 
-The derivatives with the unknown parameters $(\beta, \gamma, \sigma)$
-are:
+Denoting $\gamma^ \top = (\alpha, \beta_1, ...\beta_J^*)$ and $z_n = (1, q_{n1} ^ *, q_{n2} ^ *, \ldots q_{nJ-1}^*, q_{nJ})$, the derivatives with the unknown parameters $(\gamma, \beta, \lambda, \sigma)$ are:
+
 
 $$
 \left\{
 \begin{array}{rcl}
-\frac{\partial l_n}{\partial \beta} &=& \frac{1}{\sigma ^ 2}\mu_n^*z_n
+\frac{\partial l_n}{\partial \gamma} &=& \frac{1}{\sigma ^ 2}\mu_n^*z_n
 \\
-\frac{\partial l_n}{\partial \gamma} &=& \frac{y_n}{1 + \gamma y_n} -
+\frac{\partial l_n}{\partial \lambda} &=& \frac{y_n}{1 + \gamma y_n} -
 \frac{1}{\sigma ^ 2}\left(\ln y_n ^ * + \gamma y_n - \mu_n^*\right) y_n \\
 \frac{\partial l_n}{\partial \sigma} &=& - \frac{1}{\sigma} +
 \frac{1}{\sigma ^ 3} \left(\ln y_n ^ * + \gamma y_n - \mu_n^*\right) ^
@@ -1299,64 +1292,26 @@ y_n & \frac{1}{\sigma^2} - \frac{3}{\sigma^4}\epsilon_n^4
 \right)
 $$
 
-To estimate the generalized production function, we use the data set of
-@IVAL:LADO:OSSA:SIMI:96 who studied the production cost of apple
-producers. Farms in this sample produce apples and other fruits
-(respectively `apples` and `otherprod`). The authors observe the
-sales of apples and other fruits but also the quantity of apple
-produced. Therefore, they are able to compute the unit price of
-apples. Both sales are divided by this unit price, so that `apples` is
-measured in apple quantity and `otherprod` is measured in "equivalent"
-apple quantities. Therefore, they can be summed in order to have a
-unique output variable. Three factors of production are considered,
-capital, labor and materials. The data set is an unbalanced panel of
-173 farms observed for three years (1984, 1985 and 1986). We consider
-only one year (1986), we construct the unique output variable (`y`),
-we rename for convenience the three factors as `k`, `l` and `m` and,
-for a reason that we'll be clear latter, we divide all the variables
-by their sample mean:
-
-
-```{r }
-aps <- apples %>%
-    filter(year == 1986) %>%
-    transmute(y = apples + otherprod, y = y / mean(y),
-              k = capital / mean(capital),
-              l = labor / mean(labor),
-              m = materials / mean(materials))
-```
-
-We then extract the response and the covariates matrix using
-convenient **R** functions:
-
-```{r }
-form <- y ~ log(k) + log(l) + log(m) ;
-mf <- model.frame(form, aps)
-y <- model.response(mf) ;
-X <- model.matrix(form, mf)
-```
-
-To estimate the generalized production function by maximum likelihood,
-we use the **maxLik** package, which is dedicated to the **ML**
+To estimate the generalized production function, we use the **maxLik** package, which is dedicated to the ML
 estimation of models. This package provides different algorithms to
 compute the maximum of the likelihood, the Newton-Ralphson method that
 we used previously being the default. Moreover, it has specific
-methods as `coef` and `summary` which enables to use the result as an
-`lm` object. To use **maxLik**, we need to define a function of the
+methods as `coef` and `summary` which enables to use the result much as 
+`lm` objects. To use **maxLik**, we need to define a function of the
 unknown parameters which returns the value of the log-likelihood
 function. This function can return either a scalar (the
 log-likelihood) or a $N$-length vector that contains the individual
 contribution to the log-likelihood. Moreover, it is advisable to
 provide a function that returns the gradient: it can either return a
-$J$-length vector or a $N \times J$ matrix on which each line is the
+$K+1$-length vector or a $N \times (K + 1)$ matrix on which each line is the
 contribution of an observation to the gradient. The analytical hessian
 matrix can also be provided (otherwise a numerical approximation is
 computed, which is more time consuming and less precise).  Moreover,
 **maxLik** allows to provide a function that returns the
 maximum-likelihood and the gradient and the hessian as attributes. It
-is a good idea to do so as there are often common code to write the
-likelihood, the gradient and the hessian. The following `gen_prod_fun`
-computes by default the log-likelihood (a vector of contributions),
+is a good idea to do so as there are often common code while writing the
+likelihood, the gradient and the hessian. The `micsr::zellner_revankar` function returns the log-likelihood function for the generalized production function. Its mandatory arguments are `theta`, a vector of starting values, `y`, the vector of response and `Z`, a matrix of covariates. By default, the function 
+computes the log-likelihood (a vector of contributions),
 the gradient (a matrix of contributions) and the hessian. The
 `gradient` and `hessian` arguments (by default `TRUE`) are booleans
 which enables to return only the log-likelihood if set to `FALSE`. If
@@ -1365,81 +1320,36 @@ the gradient are returned as a vector and a matrix of individual
 contributions. If set to `TRUE`, a scalar and a vector are returned.
 Finally, the `repar` argument enables to write the likelihood in its
 "raw" form (`repar = FALSE`) or in its reparametrized form (the
-default):
+default). 
+
+We first extract the response and the covariates matrix:
 
 ```{r }
-gen_prod_fun <- function(theta, sum = FALSE, gradient = TRUE,
-                         hessian = TRUE, repar = TRUE){
-    K <- ncol(X) - 1
-    N <- length(y)
-    beta <- theta[1:(K + 1)]
-    gam <- theta[K + 2]
-    sig <- theta[K + 3]
-    if (repar){
-        log_ystar <- log(y) - X[, K + 1]
-        X[, 2:K] <- X[, 2:K] - X[, K + 1]
-    } else log_ystar <- log(y)
-    mu <- drop(X %*% beta)
-    eps <- log_ystar + gam * y - mu
-    l <- - log(sig) + log(1 + gam * y) - log_ystar +
-        dnorm(eps / sig, log = TRUE)
-    if (sum) l <- sum(l)
-    if (gradient){
-        g_beta <- eps / sig ^ 2 * X
-        g_gam <- y / (1 + gam * y) - eps / sig ^ 2 * y
-        g_sigma <- - 1 / sig + eps ^ 2 / sig ^ 3
-        .gradient <- cbind(g_beta, gam = g_gam, sigma = g_sigma)
-        if (sum) .gradient <- apply(.gradient, 2, sum)
-        attr(l, "gradient") <- .gradient
-    }
-    if (hessian){
-        h_bb <- - 1 / sig ^ 2 * crossprod(X)
-        h_bg <- 1 / sig ^ 2 * apply(X * y, 2, sum)
-        h_bs <- - 2 / sig ^ 3 * apply(X * eps, 2, sum)
-        h_gg <- - sum(y ^ 2 / (1 + gam * y) ^ 2 +
-                      y ^ 2 / sig ^ 2)
-        h_gs <- 2 / sig ^ 3 * sum(eps * y)
-        h_ss <- N / sig ^ 2 - 3 / sig ^ 4 * sum(eps ^ 2)
-        H <- rbind(cbind(h_bb, h_bg, h_bs),
-                   c(h_bg, h_gg, h_gs),
-                   c(h_bs, h_gs, h_ss))
-        dimnames(H) <- list(names(theta), names(theta))
-        attr(l, "hessian") <- H
-    }
-    l
-}
+form <- y ~ log(k) + log(l) + log(m) ;
+mf <- model.frame(form, aps)
+y <- model.response(mf) ;
+Z <- model.matrix(form, mf)
 ```
 
-It is important to provide good starting to ensures a fast
-convergence. We use here the Cobb-Douglas coefficients:
+We then use as starting values the coefficients of the Cobb-Douglas previously estimated, and we set the starting value of $\lambda$ to 0.
 
 ```{r }
-cd <- lm(log(y / m) ~ log(k / m) + log(l / m) + log(m), aps)
-st_val <- c(coef(cd), gamma = 0, sigma = sigma(cd))
+st_val <- c(coef(cd_repar)[1:4], lambda = 0, coef(cd_repar)[5])
 ```
 
-It imposes that the scale elasticity is constant and it is in this
-example close to 1: `r round(coef(cd)["log(m)"] + 1,2)`. 
-
-We now proceed to the estimation of the generalized production
-function, using the `maxLik` function, the first being the
-log-likelihood function and `start` being the vector of starting
-values:
+We now proceed to the estimation. The two mandatory arguments of `maxLik::maxLik` are the first argument `logLik` which should be a function returning the log-likelihood and `start` which is a vector of starting values. We use also here `y` and `Z` arguments that are passed to `zellner_revankar`:
 
 ```{r }
-gpf <- maxLik::maxLik(gen_prod_fun, start = st_val)
+gpf <- maxLik::maxLik(zellner_revankar, y = y, Z = Z, start = st_val)
 gpf %>% summary %>% coef
 ```
 
-The probability values are about 5 and 10% for, respectively, the
-hypothesis of $\sum_j \beta_j =1$ and that $\gamma = 0$. The
-hypothesis of constant returns to scale is the the joint hypothesis
-that $\sum_j \beta_j =0$ and $\gamma = 0$ and will be tested in the
+The probability values for the hypothesis that $\sum_j \beta_j =1$ and that $\lambda = 0$  are respectively about 5 and 10%. The hypothesis of constant returns to scale is the joint hypothesis
+that $\sum_j \beta_j =1$ and $\lambda = 0$ and will be tested in the
 next section.
-
 Applying equation @eq-elast, the level of output for which the scale
 elasticity is unity is
-`r round(coef(gpf)["log(m)"] / coef(gpf)["gamma"], 2)`,
+`r round(coef(gpf)["log(m)"] / coef(gpf)["lambda"], 2)`,
 reminding that the average production is 1.  We then compute the
 elasticity for different values of the production:
 
@@ -1447,14 +1357,15 @@ elasticity for different values of the production:
 #| label: tbl-elasty
 #| echo: false
 #| tbl-cap: Scale elasticity
-elast <- function(x) (coef(gpf)["log(m)"] + 1) / (1 + coef(gpf)["gamma"] * x)
+elast <- function(x) (coef(gpf)["log(m)"] + 1) / (1 + coef(gpf)["lambda"] * x)
 tibble(production = c("min", "Q1", "median", "Q3", "max"),
        y = fivenum(y),
        elast = elast(y)) %>% 
-    knitr::kable(digits = c(0, 2, 3), booktabs = TRUE, format = "markdown")
+    knitr::kable(digits = c(0, 2, 3), booktabs = TRUE, linesep = "") %>% 
+  kableExtra::kable_styling()
 ```
 
-Returns to scale are increasing for more than three quarters of the
+Returns to scale are then increasing for more than three quarters of the
 sample.
 
 ## Tests
@@ -1477,35 +1388,24 @@ large model are assumed to be the "true" model,
 
 ### Tests for nested models: the three classical tests
 
-A set of hypothesis defines constrains on the parameters and therefore
+We have seen in @sec-three_tests that a set of hypothesis defines constrains on the parameters and therefore
 leads to two models. The first one, called the unconstrained (or the
 large) model doesn't take these constraints into account, so that the
 log-likelihood is maximized without constraints. The second one (the
 constrained or small model) is obtained by maximizing the
 log-likelihood under the constrained corresponding to the set of
-hypothesis. This leads to three test principles:
-
--   the **likelihood ratio test** which is based on the comparison of
-    both models,
--   the **Wald test** which is based only on the unconstrained model,
--   the **Lagrange multiplier test** which is based only on the
-    constrained model.
-
-We have already described these three tests while presenting the OLS
-estimator. Reminds that, in this case, the three tests returns exactly
+hypothesis. This leads to three test principles: the likelihood ratio test (based onthe comparison of
+both models), the Wald test (based only the unconstrained model) and the Lagrange multiplier test (based on the
+constrained model). Remind that, applying these tests on a model fitted by OLS, the three tests returns exactly
 the same statistic.^[Actually, the Lagrange multiplier test is
 numerically different, only because the estimation of
 $\sigma^2_\epsilon$ is based on the constrained model.] On the
 contrary the three tests give different results for non-linear models
-but, if the hypothesis are true, the three test statitics converge in
+but, if the hypothesis are true, the three test statistics follow a $\chi ^ 2$ distribution with a number of degrees of freedom equal to the number of hypothesis and converge in
 probability to the same value.
-<!-- Moreover, under H~o~ (or for a GDP "close" to H~o~), -->
-For the three tests, the statistic has a $\chi^2$ distribution, with a
-number of degrees of freedom equal to the number of
-hypothesis. 
 
 Although the three tests are not limited to linear constraints, we'll
-consider only linear hypothesis in this chapter. Moreover, as seen
+consider only linear hypothesis in this chapter. As seen
 previously, a model can always be reperametrized so that a set of
 linear hypothesis reduce to the test that a subset of the parameters
 ($\theta_2$) is zero.
@@ -1514,9 +1414,11 @@ In our generalized production function example, the original set of
 parameters are $(\beta_0, \beta_k, \beta_l, \beta_s, \gamma, \sigma)$
 and the constant returns to scales hypothesis is $\gamma = 0$ and
 $\beta_k + \beta_l + \beta_s = 1$. After the reparametrization, the
-set of parameters is $(\beta_0, \beta_k, \beta_l, \beta_s^*, \gamma,
-\sigma)$ and the constant returns to scales hypothesis is $\gamma =
+set of parameters is $(\beta_0, \beta_k, \beta_l, \beta_s^*, \lambda,
+\sigma)$ and the constant returns to scales hypothesis is $\lambda =
 \beta_s^*=0$.
+
+#### Wald test
 
 For the Wald test, under the null hypothesis, $\hat{\theta}_2$ has a
 zero expected value and its variance is a subset of the covariance
@@ -1527,39 +1429,64 @@ asymptotically normal. Therefore:
 $$
 \hat{\theta}_2 \overset{a}{\sim} N(0, \mbox{V}(\hat{\theta}_2))
 $$
-
 and therefore, the statistic: $\hat{\theta}_2 ^ \top
 \mbox{V}(\hat{\theta}_2)^{-1} \hat{\theta}_2$ is a chi-square with a
 number of degrees of freedom equal to the number of hypothesis. 
 
 ```{r }
-theta_2 <- coef(gpf)[c("log(m)", "gamma")]
-var_2 <- vcov(gpf)[c("log(m)", "gamma"), c("log(m)", "gamma")]
+#| collapse: true
+theta_2 <- coef(gpf)[c("log(m)", "lambda")]
+var_2 <- vcov(gpf)[c("log(m)", "lambda"), c("log(m)", "lambda")]
 wald <- as.numeric(theta_2 %*% solve(var_2, theta_2))
 wald
 ```
+
+We could also use the approximative formula that states that the Wald statistic is close to the sum of the squares of the corresponding t statistics if the correlation between the two parameters is not two high:
+
+```{r}
+#| collapse: true
+csgpf <- coef(summary(gpf))
+t1 <- csgpf["log(m)", 3] ; t2 <- csgpf["lambda", 3] ; t1 ^ 2 + t2 ^ 2
+```
+
+The approximation is very bad, which should be explained by a high correlation between the two coefficients:
+
+```{r}
+#| collapse: true
+s1 <- csgpf["log(m)", 2] ; s2 <- csgpf["lambda", 2] ; 
+v12 <- vcov(gpf)["log(m)", "lambda"] ; r12 <- v12 / (s1 * s2)
+r12
+```
+
+"Correcting" this correlation using @eq-ellipse, we get the correct value of the statistic:
+
+```{r}
+#| collapse: true
+(t1 ^ 2 + t2 ^ 2 - 2 * r12 * t1 * t2) / (1 - r12 ^ 2)
+```
+
+The statistic can also easily obtained using the `car::linearHypothesis` function described in @sec-wald_test_example:
+
+```{r}
+#| results: false
+car::linearHypothesis(gpf, c("log(m) = 0", "lambda = 0"))
+```
+
+#### Likelihood ratio
+
 The likelihood ratio statistic is very easy to compute if the two
 models have been estimated as it is simply twice the difference of the
 log-likelihood of the two models. The coefficients of the constrained
-model can be obtained by least squares:
-
+model can be obtained by least squares using the reparametrized version of the Cobb-Douglas (@eq-cobb_douglas_production_reparam) and imposing $\beta_J = 0$. Using `micsr::loglm`, we get:
 
 ```{r }
-crs <- lm(log(y / m) ~ log(k / m) + log(l / m), aps)
-crs_coefs <- c(coef(crs), 0, 0, sqrt(mean(resid(crs) ^ 2)))
-logLik_c <- gen_prod_fun(crs_coefs, sum = TRUE,
-                         gradient = FALSE, hessian = FALSE)
-logLik_nc <- logLik(gpf)
-lr_test <- 2 * (logLik_nc - logLik_c)
-as.numeric(lr_test)
+#| collapse: true
+crs <- loglm(y ~ log(k / m) + log(l / m) + offset(log(m)), aps)
+lr_test <- 2 * as.numeric(logLik(gpf) - logLik(crs))
+lr_test
 ```
 
-The Lagrange multiplier test is based on the constrained model. As
-this model can be obtained by maximizing the log-likelihood subject to
-a set of constraints it can be based on the values of the Lagrange
-multipliers associated with each constraint, which explains the
-name. It is also called the score test as, it is normally computed
-using the gradient (or score) of the constrained model.
+#### Lagrange multiplier
 
 We consider here the simplified case where the model is parametrized
 in a way that the hypothesis simply state that a subset of the
@@ -1568,22 +1495,22 @@ $\theta_1$ is estimated, so that elements of the gradient that are the
 derivatives of the log-likelihood with $\theta_1$ are 0. The other
 elements of the gradient are not 0, but should be close to 0 if the
 hypothesis are true. 
-
-Using the `gen_prod_fun` with the constrained estimators, we can
+Using the `zellner_revankar` function with the constrained estimators, we can
 compute the gradient:
 
 ```{r }
-cstm <- gen_prod_fun(crs_coefs)
+crs_coefs <- c(coef(crs)[1:3], 0, 0, coef(crs)[4])
+cstm <- zellner_revankar(crs_coefs, y = y, Z = Z)
 gcst <- cstm %>% attr("gradient") %>% apply(2, sum)
 gcst %>% round(3)
 ```
 
-for which, as expected, all the elements of the gradients are zero
+for which, as expected, all the elements are zero
 except the one corresponding to the derivatives of $\ln L$ with
-$\beta_m^*$ and $\gamma$. Denote $g(\tilde{\theta})$ the gradient
+$\beta_m^*$ and $\lambda$. Denote $g(\tilde{\theta})$ the gradient
 evaluated for the constrained vector of estimates, where
-$\tilde{\theta} = (\hat{\theta_1}, \theta_{20})$, $\hat{\theta}_1$
-being the **ML** estimates of $\beta_1$ in the constrained model and
+$\tilde{\theta} = (\hat{\theta}_1, \theta_{20})$, $\hat{\theta}_1$
+being the ML estimates of $\beta_1$ in the constrained model and
 $\theta_{20}$ the value of $\theta_2$ under H~0~. If H~o~ is true, the
 expectation of this gradient is a 0 vector. Moreover, its variance is
 the information matrix. Therefore, we have:
@@ -1593,12 +1520,11 @@ g(\hat{\theta}) \sim \mathcal{N}(0, I)
 $$
 
 and $g(\hat{\theta})^\top I ^ {-1} g(\hat{\theta})$ is, under H~0~ a
-$\chi^2$ with 2 degrees of freedom. $I ^ {-1}$ is just the matrix of
-covariance of the estimator of the constrained model. The same
+$\chi^2$ with 2 degrees of freedom. $I ^ {-1}$ is the
+covariance matrix of the estimator of the constrained model. The same
 statistic can be computed using only the subset of elements of
 $g(\hat{\theta})$ which are not 0 and the corresponding subset of the
 covariance matrix of the constrained estimator.
-
 The statistic can then be computed using either the hessian or the
 gradient based estimator of the information. The first one is just the
 opposite of the hessian and the second one the cross-product of the
@@ -1613,8 +1539,10 @@ Ig <- crossprod(G_c)
 With the two estimators in hand, the statistic can then be computed:
 
 ```{r }
+#| collapse: true
 score_h <- drop(crossprod(solve(Ih, gcst), gcst))
 score_g <- drop(crossprod(solve(Ig, gcst), gcst))
+c(hess = score_h, opg = score_g)
 ```
 In the latter case, the Lagrange multiplier test can also be computed using the
 results of a regression, because the statistic is:
@@ -1624,21 +1552,20 @@ g^\top(G^\top G) ^ {-1}g
 $$
 
 But the gradient $g$ is the column-wise sum of $G$ which can be writen
-as $g=G^\top \iota$, wher $\iota$ is a vector of ones of length $N$.
+as $g=G^\top j$, wher $j$ is a vector of ones of length $N$.
 Therefore, the test statistic is also:
 
 $$
-\iota^\top G (G^\top G) ^ {-1} G^ \top \iota = \iota^\top P_G \iota
+j^\top G (G^\top G) ^ {-1} G^ \top j = j^\top P_G j
 $$
 
-where $P_G$ is the projection matrix (more precisely the matrix that
-project any vector on the subspace defined by the columns of $G$).
-Therefore, if one regress $\iota$ on $G$, the fitted values of this
-regression are $P_G \iota$ and the sum of the squared of the fitted
-values are $\iota ^ \top P_G \iota$, $P_G$ being idempotent. In a
+where $P_G$ is the projection matrix on the subspace defined by the columns of $G$.
+Therefore, if one regress $j$ on $G$, the fitted values of this
+regression are $P_G j$ and the sum of the squares of the fitted
+values are $j ^ \top P_G j$, $P_G$ being idempotent. In a
 regression without intercept, this is the explained sum of
-squares. The total sum of squares being: $\iota ^ \top \iota = N$, the
-(uncentered) R-squared is equal to $\frac{\iota ^ \top P_G \iota}{N}$
+squares. The total sum of squares being: $j ^ \top j = N$, the
+(uncentered) R-squared is equal to $\frac{j ^ \top P_G j}{N}$
 and the test statistic is therefore $N$ times the R-squared of a
 regression on a vector of 1 on the column of the individual
 contributions to the gradient.
@@ -1646,13 +1573,14 @@ contributions to the gradient.
 ```{r }
 #| results: hide
 N <- length(y)
-lm(rep(1, N) ~ G_c - 1) %>% summary %>% .$r.squared %>% `*`(N)
+summary(lm(rep(1, N) ~ G_c - 1))$r.squared * N
 ```
-
+<!-- !!! micsr::rsq method for lm to write -->
 Using **R**, it is actually simpler to
 compute the sum of the squares of the fitted values.
 
 ```{r }
+#| collapse: true
 sum(fitted(lm(rep(1, N) ~ G_c - 1)) ^ 2)
 ```
 
@@ -1662,7 +1590,7 @@ To summarize the results of this section, the Wald statistic is
 using the hessian based
 estimation of the information is `r round(score_h, 2)`. The values are
 quite similar and the hypothesis are not rejected at the 5% level
-(critical value equal to `r round(qchisq(.95, df = 2), 2)` and are rejected at
+(critical value equal to `r round(qchisq(.95, df = 2), 2)`) and are rejected at
 the 10% level (critical value equal to `r round(qchisq(.90, df = 2), 2)`) only
 for the likelihood ratio test. On the contrary the score test computed
 using the gradient based estimate of the information has a much higher
@@ -1674,47 +1602,44 @@ hypothesis, even at the 1% level (critical value equal to
 ### The conditional moment test
 
 Compared to the three classical tests, conditional moment test don't
-define two nested models (a "large" one and a "small" one). This
-test is based on moment conditions that should be 0 under H~0~. There
-are particularly practical for models fitted by maximum likelihood,
+define two nested models (a "large" one and a "small" one). These
+test, first presented by @TAUC:85 and @NEWE:85 are based on moment conditions that should be 0 under H~0~. They
+are particularly useful for models fitted by maximum likelihood,
 although they can be used for models fitted by other estimation
 methods. Consider the example where the distribution of the response
 is related to the normal distribution. This is the case for the
 generalized production function estimated in the previous section, and
 it is also the case for the probit and the tobit model that will be
-developed in the last part of the book. With the ordinary least
-square estimator, the most important properties of the estimator,
-especially unbiaseness and consistency only relies on the hypothesis
+developed in the last part of the book. With the OLS estimator, the most important properties of the estimator,
+especially unbiasedness and consistency only relies on the hypothesis
 that the conditional expectation of the response is correctly
-specified. This is not the case for models fitted by maximum
-likelihood. Therefore, if the conditional distribution of the response
+specified. This is not the case for models fitted by ML. Therefore, if the conditional distribution of the response
 is not normal with a constant conditional variance, the estimator may
 be inconsistent. Testing the hypothesis of normality and of
 homoscedasticity is therefore crucial in this context.
 
 
-Denote $\mu_n = \mu(\theta, z_n)$ a vector for observation $n$, that
+Denote $\mu_n = \mu(\theta, z_n)$ a vector of length $J$ for observation $n$, that
 depends on a vector of parameters ($\theta$) and on a vector of
-variables ($z_n$, which typically contains the response and a vector
+variables ($w_n$, which typically contains the response and a vector
 of covariate). The hypothesis is that $\mbox{E}(\mu_n) = 0$.
-
 For example, to test normality, the hypothesis will be that the third
 moments of the errors is zero and that the fourth (standardized) moment
 is three and therefore: $\mu_n^\top = (\epsilon_n ^ 3, \epsilon_n ^
 4 - 3 \sigma_\epsilon ^4)$.
 
-Denote $m(\theta, Z) = \sum_{n=1} ^ N \mu(\theta, z_n)$.  The test is
+Denote $m(\theta, W) = \sum_{n=1} ^ N \mu(\theta, w_n)$.  The test is
 based on the sample equivalent of the moment conditions, which is:
 
 $$
-\hat{\tau} = m(\hat{\theta}, Z) / N = \frac{1}{N} \sum_{n=1} ^ N 
-\mu(\hat{\theta}, z_n) = \frac{1}{N} \sum_{n=1} ^ N \hat{\mu}_n
+\hat{\tau} = m(\hat{\theta}, W) / N = \frac{1}{N} \sum_{n=1} ^ N 
+\mu(\hat{\theta}, w_n) = \frac{1}{N} \sum_{n=1} ^ N \hat{\mu}_n
 $$
 
-and the hypotheses won't be rejected if the $\hat{\tau}$ vector is
-sufficiently close to a 0 vector. The derivation of its variance is
+and the hypotheses won't be rejected if $\hat{\tau}$  is
+sufficiently close to a vector of 0. The derivation of its variance is
 quite complicated because there are two sources of stochastic
-variations as both $\hat{\theta}$ and $\hat{\mu}_n$ are
+variations, as both $\hat{\theta}$ and $\hat{\mu}_n$ are
 random.^[@CAME:TRIV:05, page, 260.] Using a first order Taylor
 expansion around the true value $\theta_0$, we have:
 
@@ -1756,8 +1681,8 @@ $$
 $$
 
 
-$V$ is the variance of the vector $g(\theta_0, Z)$ (the gradient for
-the true value of the parameters) and $m(\theta_0, Z)$ divided
+Define $V$ as the variance of the vector in parenthesis in the previous equation, obtained by concatenating $g(\theta_0, Z)$ (the gradient for
+the true value of the parameters) and $m(\theta_0, Z)$, both divided
 $\sqrt{N}$. The probability limit of $V$ is:
 
 $$
@@ -1771,9 +1696,16 @@ $$
 $$
 
 The probability limit of the variance of $\sqrt{N} \hat{\tau}$ is
-therefore $\left[I, -\mathcal{W}\mathcal{H}^{-1}\right]^\top
+therefore:
+
+$$
+\mbox{V}(\sqrt{N} \hat{\tau}) \overset{p}{\rightarrow} 
+\left[I, -\mathcal{W}\mathcal{H}^{-1}\right]
 \mathcal{V} \left[I,
--\mathcal{W}\mathcal{H}^{-1}\right]$ and $\mathcal{V}$ can be
+-\mathcal{W}\mathcal{H}^{-1}\right] ^ \top
+$$ {#eq-var_sqrtN_tau}
+
+and $\mathcal{V}$ can be
 consistently estimated by:
 
 $$
@@ -1787,32 +1719,34 @@ $$
 $$
 
 with $\hat{M}$ the $N \times J$ matrix containing the individual
-contributions to $\hat{m}$ (with a $n$^th row equal to
-$\hat{\mu}_n^\top$) and $\hat{G}$ the a $N \times K$ matrix containing
+contributions to $\hat{m}$ (with a $n$^th^ row equal to
+$\hat{\mu}_n^\top$) and $\hat{G}$ the a $N \times (K+1)$ matrix containing
 the individual contributions to the gradient (with a $n$^th^ row equal
 to $\hat{\gamma}_n^\top$).
-
-
-Using this estimator of $\mathcal{V}$, developing the quadratic form
+Replacing $\mathcal{V}$ in @eq-var_sqrtN_tau, developing the quadratic form
 and regrouping terms, we finally get:^[@SKEE:VELL:99, eq. 2.13.]
 
 $$
-\hat{Q} = N\mbox{V}(\sqrt{N}\hat{\tau}) = N ^ 2 \mbox{V}(\hat{\tau})
+\mbox{V}(\sqrt{N}\hat{\tau})
 \overset{p}{\rightarrow} 
-\left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)^\top
+\frac{1}{N}\left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)^\top
 \left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)
 $$
 
 and the statistic is:
 
 $$
-\hat{\tau} ^\top (\hat{Q} / N ^ 2) ^ {-1} \hat{\tau} = \hat{m} ^ \top \hat{Q}
-^ {-1} \hat{m} = \iota ^ \top \hat{M} \hat{Q} ^ {-1} \hat{M} ^ \top \iota
+\hat{\tau} ^ \top \left[\frac{1}{N^2}\left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)^\top
+\left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)\right] \hat{\tau}
 $$
+or, in terms of $\hat{m} = N \hat{\tau}$:
+
+$$
+\hat{m} ^ \top\left[\left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)^\top
+\left(\hat{M} - \hat{G}\mathcal{H}^{-1}\mathcal{W}\right)\right] \hat{m} 
+$$ {#eq-cmtest_m}
 
 which is, under H~0~, a chi-squared with $J$ degrees of freedom.
-
-
 Different flavors of the test are obtained using different estimators
 of $\mathcal{W}$ and $\mathcal{H}$:
 
@@ -1834,11 +1768,11 @@ of $\mathcal{W}$ and $\mathcal{H}$:
 The last one is particularly convenient as it only requires the
 $\hat{G}$ matrix of the contributions to the gradient and the
 $\hat{M}$ matrix containing the contributions to the empirical moment
-vector. Rearranging term, the statistic is:
+vector. Rearranging term and using the fact that $\hat{m} = \hat{M} j$ with $j$ a vector of ones, @eq-cmtest_m becomes:
 
 $$
-\iota^\top \hat{M} \left[M^\top\left(I - \hat{G}(\hat{G}^\top \hat{G})^{-1}
-\hat{G}^\top\right)\hat{M}\right] ^ {-1} \hat{M}^\top \iota
+j^\top \hat{M} \left[M^\top\left(I - \hat{G}(\hat{G}^\top \hat{G})^{-1}
+\hat{G}^\top\right)\hat{M}\right] ^ {-1} \hat{M}^\top j
 $$ {\#eq-opg_cmtest}
   
 which is just the explained sum of squares of a regression of a vector
@@ -1850,7 +1784,7 @@ of covariates $(\hat{G}\; \hat{M})$. Therefore, the explained sum of
 squares is:
 
 $$
-\iota^\top (\hat{G}\; \hat{M})
+j^\top (\hat{G}\; \hat{M})
 \left(
 \begin{array}{cc}
 \hat{G}^\top \hat{G} & \hat{G}^\top \hat{M}\\
@@ -1863,7 +1797,7 @@ $$
 \hat{M}^\top
 \end{array}
 \right)
-\iota
+j
 $$ {\#eq-ess_cmtest}
 
 But all the columns of $\hat{G}$ sums to 0 ($\hat{G}^\top \iota=0$),
@@ -1875,12 +1809,11 @@ in @eq-opg_cmtest.
 
 
 As an example, we test the normality hypothesis in the context of the
-generalized production function previously estimated, for which we have:
-hypothesis of normality, we have:
+generalized production function previously estimated:
 
 $$
-\epsilon = \ln \frac{y}{m} + \theta \ln y - \left(\beta_0 + \sum_{j=1} ^ {J-1} \beta_j
-\ln z_{j} ^ * + \beta_J^*\ln z_J\right) \sim \mathcal(0, \sigma^2)
+\epsilon = \ln y + \theta \ln y - \left(\alpha + \sum_{j=1} ^ {J-1} \beta_j
+\ln z_{j} ^ * + \beta_J^*\ln z_J + \ln z_J\right) \sim \mathcal{N} (0, \sigma^2)
 $$
 
 We first extract the fitted coefficients of the model `htheta`, we
@@ -1890,21 +1823,21 @@ hessian `H`:
 
 ```{r }
 htheta <- coef(gpf)
-lnlest <- gen_prod_fun(htheta)
+lnlest <- zellner_revankar(htheta, y = y, Z = Z)
 G <- attr(lnlest, "gradient")
 H <- attr(lnlest, "hessian")
 ```
 
 Working on the reparametrized version of the model, we then transform
-the response and the matrix of covariates, compute $\epsilon$ the
+the matrix of covariates, compute $\epsilon$ the
 matrix of the individual contribution to the moments $M$ and the
 moment conditions $m$ which is a vector containing the columns of $M$.
 
 ```{r }
-Xm <- X
-Xm[, 2:3] <- X[, 2:3] - X[, 4]
-mu <- drop(Xm %*% htheta[1:4])
-eps <- (log(y) - X[, 4] + htheta["gamma"] * y - mu)
+Zm <- Z
+Zm[, 2:3] <- Z[, 2:3] - Z[, 4]
+mu <- drop(Zm %*% htheta[1:4])
+eps <- (log(y) - Z[, 4] + htheta["lambda"] * y - mu)
 M <- cbind(eps ^ 3, eps ^ 4 - 3 * htheta["sigma"] ^ 4)
 m <- M %>% apply(2, sum)
 ```
@@ -1913,9 +1846,9 @@ Then, the derivatives of $m$ with the parameters of the model are
 compute to obtain the $W$ matrix.
 
 ```{r }
-W <- matrix(c(-3 * apply(eps ^ 2 * X, 2, sum),
+W <- matrix(c(-3 * apply(eps ^ 2 * Z, 2, sum),
               3 * sum(eps ^ 2 * y), 0,
-              -4 * apply(eps ^ 3 * X, 2, sum),
+              -4 * apply(eps ^ 3 * Z, 2, sum),
               4 * sum(eps ^ 3 * y),
               - 12 * htheta["sigma"] ^ 3),
             ncol = 2)
@@ -1926,6 +1859,7 @@ information and the matrix of the analytic derivatives of $m$ just
 computed:
 
 ```{r }
+#| collapse: true
 N <- length(y)
 Q1 <- crossprod(M - G %*% solve(H) %*% W)
 drop(crossprod(m, solve(Q1, m)))
@@ -1935,7 +1869,6 @@ The statistic is `r round(drop(crossprod(m, solve(Q1, m))), 2)`, which
 is far less than the critical value for a $\chi^2$ with 2 degrees of
 freedom, even at the 10% level. The hypothesis of normality is
 therefore not rejected.
-
 We then compute the version of the test based on the the OPG to
 estimate the information matrix and on $G^\top M$ to estimate $W$. The
 statistic can be computed using matrix algebra or taking the explained
@@ -1946,62 +1879,20 @@ sum of squares in a regression of a column of 1 on $G$ and $M$:
 Q2 <- crossprod(M - G %*% solve(crossprod(G)) %*%
                 crossprod(G, M))
 drop(crossprod(m, solve(Q2, m)))
-iota <- rep(1, N)
-lm(iota ~ G + M - 1) %>% summary %>% .$r.squared * N
+j <- rep(1, N)
+summary(lm(j ~ G + M - 1))$r.squared * N
 ```
 
 Note that this second version of the test leads to a much higher value
 of the statistic and a probability value of
 `r round(pchisq(drop(crossprod(m, solve(Q2, m))), df= 2, lower.tail =FALSE), 3)`.
 
-```{r }
-#| include: false
-cm_norm <- function(x, type = c("analytical", "opg", "reg")){
-    type <- match.arg(type)
-    X <- model.matrix(x)
-    y <- model.response(model.frame(x))
-    N <- length(y)
-    K <- length(coef(x))
-    coefs <- c(coef(x), sigma = sigma2(x))
-    beta <- coefs[1:K]
-    sigma <- coefs[K + 1]
-    epsilon <- as.numeric(y - X %*% beta)
-    G <- cbind(1 / sigma ^ 2 * X * epsilon,
-               sigma = - 1  / sigma + 1 / sigma ^ 3 * epsilon ^ 2)
-    M <- cbind(asym = epsilon ^ 3, kurt = epsilon ^ 4 - 3 * sigma ^ 4)
-    m <- apply(M, 2, sum)
-    if (type == "analytical"){
-        I <- - rbind(cbind(- 1 / sigma ^ 2 * crossprod(X),
-                           sigma = - 2 / sigma ^ 3 * apply(X * epsilon, 2, sum)),
-                     sigma = c(- 2 / sigma ^ 3 * apply(X * epsilon, 2, sum),
-                               1 / sigma ^ 2 - 3 / sigma ^ 4 * sum(epsilon ^ 2)))
-        W <- - rbind(cbind(asym = - 3 * apply(epsilon ^ 2 * X, 2, sum),
-                           kurt = - 4 * apply(epsilon ^ 3 * X, 2, sum)),
-                     sigma = c(0, - 12 * N / sigma ^ 3))
-    }
-    if (type == "opg"){
-        I <- crossprod(G)
-        W <- crossprod(G, M)
-    }
-    if (type != "reg"){
-        Q <- crossprod(M - G %*% solve(I) %*% W)
-        stat <- as.numeric(m %*% solve(Q) %*% m)
-    }
-    else stat <- summary(lm(rep(1, N) ~ G + M - 1))$r.squared * N
-    stat
-}
-```
-
 ### Tests for non-nested models
 
-#### The original Vuong test
+#### Vuong test
 
 @VUON:89 proposed a test for non-nested model. He considers two
-competing models, $F_\beta = \left\{f(y|z; \beta); \beta \in
-\beta\right\}$ and $G_\gamma = \left\{g(y|z; \gamma); \gamma \in
-\Gamma\right\}$. Denoting $h(y | z)$ the true conditional density.
-The distance of $F_\beta$ from the true model is measured by the
-minimum KLIC:
+competing models charactherized by densities $f(y|z; \beta)$ and $g(y|z; \gamma)$. Denoting $h(y | z)$ the true conditional density. The distance of the first model to the true model is measured by the minimum Kullback-Leibler information criterion (**KLIK**):
 
 $$
 D_f = \mbox{E}^0\left[\ln h(y\mid z)\right] - \mbox{E}^0\left[\ln f(y\mid z;
@@ -2026,13 +1917,11 @@ $$
 
 The null hypothesis is that the distance of the two models to the true
 models are equal or, equivalently, that: $\Lambda=0$. The alternative
-hypothesis is either $\Lambda>0$, which means that $F_\beta$ is
-better than $G_\gamma$ or $\Lambda<0$, which means that $G_\gamma$
-is better than $F_\beta$. Denoting, for a given random sample of
+hypothesis is either $\Lambda>0$, which means that the first model is
+better than the second one or $\Lambda<0$, which means that the second model is better than the first one. Denoting, for a given random sample of
 size $N$, $\hat{\beta}$ and $\hat{\gamma}$ the maximum likelihood
 estimators of the two models and $\ln L_f(\hat{\beta})$ and $\ln
-L_g(\hat{\gamma})$ the maximum value of the log-likelihood functions
-of respectively $F_\beta$ and $G\gamma$, $\Lambda$ can be
+L_g(\hat{\gamma})$ corresponding values of the log-likelihood functions, $\Lambda$ can be
 consistently estimated by:
 
 $$
@@ -2046,7 +1935,6 @@ which is the likelihood ratio divided by the sample size. Note that
 the statistic of the standard likelihood ratio test, suitable for
 nested models is $2 \left(\ln L^f(\hat{\beta}) - \ln
 L^g(\hat{\gamma})\right)$, which is $2 N \hat{\Lambda}_N$.
-
 The variance of $\Lambda$ is:
 
 $$
@@ -2075,7 +1963,7 @@ The distribution of the statistic depends on whether $\omega^2_*$ is
 zero or positive.  If $\omega^2_*$ is positive, the statistic is
 $\hat{T}_N = \sqrt{N}\frac{\hat{\Lambda}_N}{\hat{\omega}_N}$ and,
 under the null hypothesis that the two models are equivalent,
-follows a standard normal distribution. This is the case for two
+follows a standard normal distribution. This is the case for
 strictly non-nested models.
 
 On the contrary, if $\omega^2_* = 0$, the distribution is much more
@@ -2163,7 +2051,7 @@ likelihood ratio test, because it doesn't assume, under the null, that
 the larger model is correctly specified.
 
 Note that, if the larger model is correctly specified, the information
-matrix equality implies that $B_f(\theta_*)-A_f(\theta_*)$. In this
+matrix equality implies that $B_f(\theta_*)=-A_f(\theta_*)$. In this
 case, the two matrices on the diagonal of $W$ reduce to $-I_{K_f}$ and
 $I_{K_g}$, the trace of $W$ to $K_g - K_f$ and the distribution of the
 statistic under the null reduce to a $\chi^2$ with $K_g - K_f$ degrees
@@ -2196,122 +2084,6 @@ For the overlapping case, the test should be performed in two steps:
   applying the test for non-nested models previously described.
 
 
-#### The non-degenerate Vuong test
-
-@SHI:15 proposed a non-degenerate version of the @VUON:89 test. She
-shows that the Vuong test has size distortion, leading to subsequent
-over-rejection. The cause of this problem is that the distribution of
-$\hat{\Lambda}$ is discontinuous in the $\omega^2$ parameter (namely a
-normal distribution if $\omega^2 > 0$ and a distribution related to a
-weight $\chi^2$ distribution if $\omega^2 = 0$). Especially in small
-samples, it may be difficult to distinguish a positive versus a zero
-value of $\omega ^ 2$ because of sampling error. To solve this
-problem, using local asymptotic theory, @SHI:15 showed that, rewriting
-the Vuong statistic as:
-
-$$
-\hat{T} = \frac{N \hat{\Lambda}_N}{\sqrt{N \hat{\omega} ^ 2_N}}
-$$
-
-the asymptotic distribution of the numerator and of the square of the
-denominator of the Vuong statistic is the same as:
-
-$$
-\left(
-\begin{array}{cc}
-N \hat{\Lambda}_N \\ N \hat{\omega} ^ 2 _ N
-\end{array}
-\right)
-\rightarrow^d
-\left(
-\begin{array}{cc}
-J_\Lambda \\ J_\omega
-\end{array}
-\right)
-=
-\left(
-\begin{array}{cc}
-\sigma z_\omega - z_\theta ^ \top V z_\theta / 2 \\
-\sigma ^ 2 - 2 \sigma \rho_* ^ \top V z_\theta + z_\theta ^ \top V ^ 2
-z_\theta
-\end{array}
-\right)
-$$
-
-where:
-
-$$
-\left(\begin{array}{c}z_\omega \\ z_\theta \end{array}\right) \sim
-N \left(0, \left(\begin{array}{cc} 1 & \rho_* ^ \top \\ \rho_* & I \end{array}\right) \right),
-$$
-
-$\rho_*$ is a vector of length $K_f + K_g$, $\sigma$ a positive scalar
-and V is the diagonal matrix containing the eigenvalues of $B ^
-{\frac{1}{2}} A ^ {-1} B ^ {\frac{1}{2}}$.
-
-
-Based on this result, @SHI:15 showed:
-
-- that the expected value of the numerator is $-\mbox{trace}(V) / 2$,
-  the classical Vuong statistic is therefore biased and this bias can
-  be severe in small samples and when the degree of parametrization of
-  the two models are very different^[As the trace of V is the same as
-  the trace of $A ^ {-1} B$, when the information matrix identity
-  holds, it is equal to $-K_f + K_g$. The bias of the numerator is
-  therefore caused by the difference in the degree of parametrization
-  of the two models.],
-- that the denominator, being random, can take values close to zero
-  with a significant probability, which can generate fat tails in the
-  distribution of the statistic.
-
-
-@SHI:15 therefore proposed
-to modify the numerator of the Vuong statistic:
-
-$$\hat{\Lambda}^{\mbox{mod}}_N = \hat{\Lambda}_N + \frac{\mbox{tr}(V)}{2 N}$$
-
-and to add a constant to the denominator, so that:
-
-$$
-\left(\hat{\omega}^{\mbox{mod}}(c)\right) ^ 2 = \hat{\omega} ^ 2 + c \;
-\mbox{tr}(V) ^ 2 / N
-$$
-
-The non-degenerate Vuong test is then:
-
-$$
-T_N^{\mbox{mod}} =
-\frac{\hat{\Lambda}^{\mbox{mod}}_N}{\hat{\omega}^{\mbox{mod}}}=
-\sqrt{N}\frac{\hat{\Lambda}_N + \mbox{tr}(V) / 2N}{\sqrt{\hat{\omega}
-^ 2 + c \;\mbox{tr}(V) ^ 2 / N}}
-$$
-
-The distribution of the modified Vuong statistic can be estimated by
-simulations: drawing in the distribution of $(z_\omega,
-z_\theta^\top)$, we compute for every draw $J_\Lambda$, $J_\omega$ and
-$J_\Lambda / \sqrt{J_\omega}$.  As $\sigma$ and $\rho_*$ can't be
-estimated consistently, the supremum other these parameters are taken,
-and @SHI:15 indicates that $\rho_*$ should be in this case a vector
-where all the elements are zero except for the one that coincides with
-the highest absolute value of $V$ which is set to 1.
-
-The Shi test is then computed as follow:
-
-@. start with a given size for the test, say $\alpha = 0.05$,
-@. for a given value of $c$, choose $\sigma$ which maximize the
-simulated critical value for $c$ and $\alpha$,
-@. adjust $c$ so that this critical value equals the normal critical
-value, up to a small difference (say 0.1); for example, if the size
-is 5%, the target is $v_{1 - \alpha / 2} = 1.96 + 0.1 = 2.06$,
-@. compute $\hat{T}_N^{\mbox{mod}}$ for the given values of $c$ and $\sigma$
-; if $\hat{T}_N^{\mbox{mod}} > v_{1 - \alpha / 2}$, reject the null
-hypothesis at the $\alpha$ level,
-@. to get a p-value, if $\hat{T}_N^{\mbox{mod}} > v_{1 - \alpha / 2}$
-increase $\alpha$ and repeat the previous steps until a new value of
-$\alpha$ is obtained so that $\hat{T}_N^{\mbox{mod}} = v_{1 - \alpha^*
-/ 2}$, $\alpha^*$ being the p-value of the test.
-
-
 @SHI:15 provides an example of simulations of non-nested linear models
 that shows that the distribution of the Vuong statistic can be very
 different from a standard normal. The data generating process used for
@@ -2326,7 +2098,7 @@ model and $z^g$ the set of $K_g$ covariates used in the second model
 and $\epsilon \sim N(0, 1 - a ^ 2)$. $z^f_k \sim N(0, a / \sqrt{K_f})$
 and $z^g_k \sim N(0, a / \sqrt{K_g})$, so that the explained variance
 explained by the two competing models is the same (equal to $a ^ 2$)
-and the null hypothesis of the Vuong test is true. The `sim_lm`
+and the null hypothesis of the Vuong test is true. The `micsr::vuong_sim`
 enables to simulate values of the Vuong test. As in @SHI:15, we use a
 very different degree of parametrization for the two models, with $K_f
 = 15$ and $K_G = 1$.
@@ -2334,7 +2106,7 @@ very different degree of parametrization for the two models, with $K_f
 
 ```{r }
 #| collapse: true
-Vuong <- micsr::sim_lm(N = 100, R = 1000,
+Vuong <- micsr::vuong_sim(N = 100, R = 1000,
                        Kf = 15, Kg = 1, a = 0.5)
 head(Vuong)
 mean(Vuong)
@@ -2344,10 +2116,9 @@ We can see that the mean of the statistic for the 1000 replications is
 far away from 0, which means that the numerator of the Vuong statistic
 is seriously biased. `r round(mean(abs(Vuong) > 1.96) * 100, 1)`% of the
 values of the statistic are greater than the critical value so that
-the Vuong test will lead in such context a noticeable
+the Vuong test will lead in such context to a noticeable
 over-rejection. The empirical density function is shown in the following figure,
 along with the normal density.
-
 
 ```{r }
 library("ggplot2")
@@ -2356,12 +2127,7 @@ ggplot(data = data.frame(Vuong = Vuong)) +
     geom_function(fun = dnorm, linetype = "dotted")
 ```
 
-
-<!-- two deterministic quantities are said to be asymptotically equal if -->
-<!-- they tend to the same limits as $n\rightarrow \infty$. Two random -->
-<!-- quantities are said to be asymptotically equal if they tend to the -->
-<!-- same limits in probability (Davidson McKinnon, p. 205). -->
-
+@SHI:15 proposed a non-degenerate Vuong test which correct the small sample bias of the numerator of the Vuong statistic and inflates the denominator by adding a constant. 
 
 #### An example: generalized production function vs translog function
 
@@ -2369,50 +2135,77 @@ A popular alternative to the generalized production function is the
 translog function, which is:
 
 $$
-\ln y = \beta_0 + \sum_{k=1} ^ K \beta_k \ln x_k + \frac{1}{2}
-\sum_{k=1}^K \sum_{l=1} ^ K \beta_{kl} \ln x_k \ln x_l
-$$
+\ln y = \alpha + \sum_{j=1} ^ J \beta_j \ln q_j + \frac{1}{2}
+\sum_{j=1}^J \sum_{k=1} ^ J \beta_{jk} \ln q_j \ln q_k
+$$ {#eq-translog_production}
 
 The elasticity of the production with a factor is:
 
 $$
-\frac{\partial \ln y}{\partial \ln x_k} = \beta_k + \sum_{l=1} ^ K
-\beta_{kl} \ln x_l
+\frac{\partial \ln y}{\partial \ln x_j} = \beta_j + \sum_{k=1} ^ J
+\beta_{jk} \ln q_k
 $$
 
-and the scale elasticity is just the sum of these $K$ elasticities:
+and the scale elasticity is just the sum of these $J$ elasticities:
 
 $$
-\epsilon = \sum_{k=1} ^ L \beta_k + \sum_{k=1} ^ K \sum_{l=1} ^ K
-\beta_{lk} \ln x_k = 
-\sum_{k=1} ^ L \beta_k + \sum_{k=1} ^ K \ln x_k \sum_{l=1} ^ K
-\beta_{lk}
+\epsilon = \sum_{j=1} ^ J \beta_j + \sum_{j=1} ^ J \sum_{k=1} ^ J
+\beta_{jk} \ln q_k = 
+\sum_{j=1} ^ J \beta_j + \sum_{k=1} ^ J \ln q_k \sum_{j=1} ^ J\beta_{jk}
 $$
 
-The constant returns to scale therefore implies that $\sum_k \beta_k =
-1$ and $\sum_{l=1} ^ K \beta_{kl} = 0 \;\forall\;k$.
+The constant returns to scale therefore implies that $\sum_j \beta_j =
+1$ and $\sum_{j=1} ^ J \beta_{jl} = 0 \;\forall\;k$. 
+<!-- With the same trick as the one used in @sec-system_equation, @eq-translog_production can be rewritten as: -->
 
-The translog production function is linear, so that it could be
-estimated using `lm`. However, in such a regression, the response
-would be the log of the production and not the production itself, so
-that the computed likelihood would be wrong. **micsr** provide a
-`loglm` function which return a `micsr` objects. The parameters are
-fitted using `lm`, but the contributions to the likelihood, to the
-gradient and the hessian are computed correctly, taking into account
-the fact that the response is $y$ and not $\ln y$. 
+<!-- $$ -->
+<!-- \ln y =  -->
+<!-- \sum_j ^{J-1}\beta_j q_j^* +  -->
+<!-- \frac{1}{2} \sum_{j=1} ^ {J - 1} \beta_{jj} q_j ^ * +   -->
+<!-- \sum_{j=1} ^ {J - 1} \sum_{k>j} ^ {J - 1} \beta_{jk}  -->
+<!-- q_j ^ * q_k ^ * + \ln q_J \sum_{j=1} ^ {J-1} \beta_{jJ} ^ * q_j^* + \beta_J ^ *\ln q_J + \frac{1}{2}\beta_{JJ}^* \ln^2q_J + \ln q_j -->
+<!-- $$ -->
 
+<!-- with $q_j ^ * = \ln q_j / q_I$, $\beta_J ^ * = 1 -\sum_{n=1}^{J-1}\beta_j$, $\beta_{jJ}^* = \sum_{k=1}^{J-1}\beta_{jk}$ and $\beta_{JJ} ^ * sum_{j=1}^J \beta_{jJ} ^ *$ and the constant return to scales hypothesis is $\beta_J ^ *, \beta_{jJ}^* = \beta_{JJ} = 0$. -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- llcont.micsr <- function(x) x$logLik -->
+<!-- llcont.maxLik <- function(x) x$objectiveFn(x$estimate, Z = Z, y = y, gradient = FALSE, hessian = FALSE) -->
+<!-- ``` -->
+
+
+<!-- And the constant return to scale hypothesis implies that $\beta_\lambda ^ *$ and $\beta_{jJ}^*, \forall j = 1\ldots J-1$ equal 0. -->
+
+We fit @eq-translog_production using `loglm`:
 
 ```{r }
-trsl <- loglm(I(y / m) ~ (log(k / m) + log(l / m) +
-                          log(m)) ^ 2 + I(log(k / m) ^ 2) +
-                  I(log(l / m) ^ 2) + I(log(m) ^ 2), aps)
+#| echo: false
+aps <- aps %>% mutate(km = log(k / m), lm = log(l / m))
+
+free <- loglm(y ~ km + lm + I(km ^ 2) + I(lm ^ 2) + km:lm + km:log(m) + lm:log(m) + log(m) + I(log(m) ^ 2) + offset(log(m)), aps)
+
+crs <-  loglm(y ~ km + I(km ^ 2) + lm + I(lm ^ 2)+ offset(log(m)), aps)
+cd <- loglm(y ~ km + lm + log(m) + offset(log(m)), aps)
+cd_crs <- loglm(y ~ km + lm + offset(log(m)), aps)
+trsl <- loglm(y ~ log(k) + log(l) + I(log(k) ^ 2) + I(log(l) ^ 2) + I(log(m) ^ 2) + log(k):log(l) +
+                log(m) + log(m):(log(k) + log(l)), aps)
+
+trsl <- loglm(y ~ log(k) + log(l) + log(m) + log(k):log(l) + log(k):log(m) + log(l):log(m) + I(log(k) ^ 2) + I(log(l) ^ 2) + I(log(m) ^ 2), aps)
 ```
+
+```{r}
+trsl <- loglm(y ~ log(k) + log(l) + log(m) + log(k):log(l) + 
+                log(k):log(m) + log(l):log(m) + I(log(k) ^ 2) + 
+                I(log(l) ^ 2) + I(log(m) ^ 2), aps)
+```
+
 
 All is required to compute the Vuong test for non-nested models is the
 contributions to the log-likelihood for both models:
 
 ```{r }
-est_gpf <- gen_prod_fun(coef(gpf))
+est_gpf <- zellner_revankar(coef(gpf), y = y, Z = Z)
 lnl_gpf <- as.numeric(est_gpf)
 lnl_trsl <- trsl$logLik
 ```
@@ -2420,8 +2213,8 @@ lnl_trsl <- trsl$logLik
 We can then compute the average likelihood ratio statistic (`L`), its
 variance (`w2`) and the statistic:
 
-
 ```{r }
+#| collapse: true
 N <- length(lnl_gpf)
 L <- mean(lnl_gpf) - mean(lnl_trsl)
 w2 <- mean((lnl_gpf - lnl_trsl) ^ 2) - L ^ 2
@@ -2432,9 +2225,15 @@ The probability value is `r round(pnorm(abs(vuong_stat), lower.tail = FALSE), 3)
 so that the test conclude that the two models are indistinguishable,
 although the difference of their log-likelihood is quite high:
 
-
 ```{r }
 #| collapse: true
 sum(lnl_gpf)
 sum(lnl_trsl)
 ```
+
+```{r}
+#| eval: false
+#| include: false
+nonnest2::vuongtest(gpf, free)
+```
+

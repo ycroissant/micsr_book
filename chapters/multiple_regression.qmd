@@ -1,31 +1,28 @@
 ```{r }
 #| include: false
+#| label: multiple_regression
 source("../_commonR.R")
 ```
 
 # Multiple Regression Model
 
 In this chapter, we'll analyze the computation and the properties of
-the **OLS** when the number of covariates ($K$) is at
+the OLS estimator when the number of covariates ($K$) is at
 least 2. Actually, we'll analyze in depth the case when $K=2$
 (generalizing from $K=2$ to $K>2$ being quite simple) and, compared
-two the previous two chapters, we'll insist on two features of the
+to the previous two chapters, we'll insist on two features of the
 multiple regression model:
 
 - the first one is the use of matrix algebra, which makes the
-  computation of the estimator elegant and compact,
-- the second one is the correlation between the covariates which is
-  the main point of difference between the simple and the multiple
-  linear model.
+  computation of the estimator and the analysis of its properties elegant and compact,
+- the second one is the correlation between the covariates; actually we'll show that the multiple and the simple linear models are different only if there exists such a correlation.
 
-We'll roughly follow the same plan for the simple linear model: we'll
+We'll roughly follow the same plan as for the simple linear model: we'll
 first present the structural model and the data set that we'll use
 throughout the chapter, we'll then present the computation of the
-estimator (from a theoritical point of view and with **R**), the
+estimator (from a theoretical point of view and with **R**), the
 geometry of the multiple linear model, its statistical properties and
-its inference procedures (confidence interval and tests).
-
-
+the inference methods (confidence interval and tests).
 
 ## The model and the data set
 
@@ -35,47 +32,47 @@ cross-section of countries.
 
 ### The structural model
 
-On of the most popular growth model on figure is the Solow-Swan model.
+On of the most popular growth model in the economic litterature is the Solow-Swan model.
 The production $Y$ (or more precisely the added value or GDP) is
 performed using two production factors, labor $L$ and capital $K$.
 Physical labor is transformed in effective labor using a term called
-$A$. $A$ is time-varying (typically increasing) and therefore represent
+$A$. $A$ is time-varying (typically increasing) and therefore represents
 the effect of technical progress which increase the productivity of
 labor. The functional form of the production function is a Cobb-Douglas:
 
 $$
-Y(t) = K(t) ^ \alpha \left[A(t)L(t)\right]^{1 - \alpha}
-$$
+Y(t) = K(t) ^ \kappa \left[A(t)L(t)\right]^{1 - \kappa}
+$$ {#eq-production_cobb_douglas}
 
-Coefficients of capital and labor are respectively $\alpha$ and
-$1-\alpha$. They represent the elasticity of the production respective
+Coefficients for capital and labor are respectively $\kappa$ and
+$1-\kappa$. They represent the elasticity of the production respective
 to each factor, but also the share of each factor in the national income
-($\alpha$ is therefore the share of wages and $1-\alpha$ the share of
-profits).
+($\kappa$ is therefore the share of profits and $1-\kappa$ the share of
+wages).
 
 Each variable is a continuous function of time $t$. We'll denote, for
-each variable $\dot{V}=\frac{d V}{d t}$, ie its derivative with respect
+each variable $\dot{V}=\frac{d V}{d t}$ the derivative with respect
 to time. Finally, we'll denote $y(t) = \frac{Y(t)}{A(t)L(t)}$ and $k(t)=\frac{Y(t)}{A(t)L(t)}$
 production and capital per unit of effective labor. We therefore have:
 
 $$
-y(t) = k(t) ^ \alpha
+y(t) = k(t) ^ \kappa
 $$ {\#eq-production_function}
 
 We'll hereafter ommit $(t)$ to make the notation less cluttered.
 Variation of capital is investment less depreciation. We assume that
-investment equal savings and that a constant percentage of income ($i$) is
+investment equals savings and that a constant percentage of income ($i$) is
 saved every year. The depreciation rate is denoted $\delta$. We then
 have:
 
 $$
-\dot{K} = \frac{d K}{d t} = s Y - \delta K
+\dot{K} = \frac{d K}{d t} = i Y - \delta K
 $$
 
-The growth of the capital stock $k = \frac{K}{AL}$ is:
+The growth of the capital stock per unit of effective labor $k$ is then:
 
 $$
-\dot{k} = \frac{d \frac{K}{AL}}{dt}=\frac{\dot{K}AL - (A\dot{L} -
+\dot{k} = \frac{d \frac{K}{AL}}{dt}=\frac{\dot{K}AL - (A\dot{L} +
 \dot{A}L)K}{A^2L^2}= \frac{\dot{K}}{AL} -
 \frac{K}{AL}\left(\frac{\dot{A}}{A} + \frac{\dot{L}}{L}\right) = (iy - \delta k)- k\left(\frac{\dot{A}}{A} + \frac{\dot{L}}{L}\right)
 $$
@@ -85,7 +82,7 @@ $L$ and $A$, ie the demographic growth rate and the technological
 progress rate, we finally have:
 
 $$
-\dot{k}(t)=iy(t)-(n+g+\delta)k(t) = ik(t) ^ \alpha - (n+g+\delta)k(t)
+\dot{k}(t)=iy(t)-(n+g+\delta)k(t) = ik(t) ^ \kappa - (n+g+\delta)k(t)
 $$
 
 At the steady state, the growth rate of capital per unit of effective
@@ -93,103 +90,102 @@ capital is 0. Solving $\dot{k}(t)=0$ we get the steady state value of
 $k(t)$, denoted $k^*$:
 
 $$
-k^* = \left(\frac{i}{n + g+ \delta}\right) ^ \frac{1}{1-\alpha}
+k^* = \left(\frac{i}{n + g+ \delta}\right) ^ \frac{1}{1-\kappa}
 $$
 
 Or:
 
 $$
-\left(\frac{K}{Y}\right)^*= \frac{k^*}{y^*}=k^{*(1-\alpha)} = \frac{s}{n + g+ \delta}
+\left(\frac{K}{Y}\right)^*= \frac{k^*}{y^*}=k^{*(1-\kappa)} = \frac{i}{n + g+ \delta}
 $$
 
-The production function can therefore be rewriten:
+From @eq-production_cobb_douglas, the production per capita is:
 
 $$
-\frac{Y(t)}{L(t)} = A(t) k(t) ^ {\alpha}
+\frac{Y(t)}{L(t)} = A(t) k(t) ^ {\kappa}
 $$
 
-Replacing $k(t)$ by $k^*$ en taking logs, we get:
+Replacing $k(t)$ by $k^*$ and taking logs, we get:
 
 $$
-\ln\frac{Y(t)}{L(t)} = \ln A(0) + g t   + \frac{\alpha}{1-\alpha} \ln i
-- \frac{\alpha}{1 - \alpha} \ln (n + g + \delta)
+\ln\frac{Y(t)}{L(t)} = \ln A(0) + g t   + \frac{\kappa}{1-\kappa} \ln i
+- \frac{\kappa}{1 - \kappa} \ln (n + g + \delta)
 $$
 
 Finally, let's denote $\ln A(0) = a + \epsilon$. $\epsilon$ is a
-multiplicative error term which represent the inital dispersion between
-countries in terms of initial value of technical progess. With
-$C=a + gt$, and $v = \ln(n + g + \delta)$, we get:
+multiplicative error term which represent the initial dispersion between
+countries in terms of initial value of technical progress. With
+$C=a + gt$, and $v = \ln(n + g + \delta)$, the linear model that we wish to estimate is finally:
 
 $$
-\ln\frac{Y}{L} = C + \frac{\alpha}{1-\alpha} \ln i - \frac{\alpha}{1 - \alpha} \ln v + \epsilon
+\ln\frac{Y}{L} = C + \frac{\kappa}{1-\kappa} \ln i - \frac{\kappa}{1 - \kappa} \ln v + \epsilon
 $$
 
-We therefore get a multipe regression model for which the response is
+We therefore get a multiple regression model for which the response is
 the log of GPD per capita, ($\ln \frac{Y}{L})$ and the two covariates are
-$\ln i_n$ et $\ln v_n$. Moreover, the structural model imposes some
+$\ln i_n$ (the saving rate) $\ln v_n$ (the demographic rate). Moreover, the structural model imposes some
 restrictions on the coefficients that can be tested. The two slopes are,
-in terms of the structural parameters of the theoritical model:
-$\beta_v = -\frac{\alpha}{1 - \alpha}$ and
-$\beta_i = \frac{\alpha}{1-\alpha}$. Moreover, $\alpha$ is the
+in terms of the structural parameters of the theoretical model:
+$\beta_v = -\frac{\kappa}{1 - \kappa}$ and
+$\beta_i = \frac{\kappa}{1-\kappa}$. Moreover, $\kappa$ is the
 elasticity of the GDP respective to the capital and also the share of
-profits in GDP. A common approximative value for this parameter is about
-1/3, which implies: $\beta_i = - \beta_v = \frac{\alpha}{1-\alpha}=0.5$.
+profits in GDP. A common approximation for the value of this parameter is about
+1/3, which implies: $\beta_i = - \beta_v = \frac{\kappa}{1-\kappa}=0.5$.
 
 @MANK:ROME:WEIL:92 proposed a generalization of the Solow-Swann model
 that includes human capital, denoted $H$. The production function is
 now:
 
 $$
-Y(t) = K(t) ^ \alpha H(t) ^ \beta \left[A(t)L(t)\right]^{1 - \alpha - \beta}
+Y(t) = K(t) ^ \kappa H(t) ^ \lambda \left[A(t)L(t)\right]^{1 - \kappa - \lambda}
 $$
 
-$\beta$ is the share of human capital in the GDP and the
-share of labor is now $(1 - \alpha - \beta)$. The modelization is very
-similar than previously. We first compute the growth rate of physical
+$\lambda$ is the share of human capital in the GDP and the
+share of labor is now $(1 - \kappa - \lambda)$. The model is very
+similar to the one we previously developped. We first compute the growth rate of physical
 and human capital ($\dot{k}$ and $\dot{h}$) per unit of effective labor, we set these
 two growth rates to 0 to get the stocks of physical and human capital at the
 steady state ($k^*$ and $h^*$) and we introduce these two values in the
 production function to get:
 
 $$
-\ln\frac{Y}{L} = C + \frac{\alpha}{1-\alpha-\beta} \ln i + 
- \frac{\beta}{1-\alpha-\beta} \ln e - \frac{\alpha + \beta}{1 - \alpha-\beta} \ln v + \epsilon 
-$$
-The model now contains three covariates and three slopes ($\beta_i$, $\beta_e$ and $\beta_v$). Moreover, the structural model implies a structural restriction ($\beta_i + \beta_e + \beta_v = 0$) that is testable.
+\ln\frac{Y}{L} = C + \frac{\kappa}{1-\kappa-\lambda} \ln i + 
+ \frac{\lambda}{1-\kappa-\lambda} \ln e - \frac{\kappa + \lambda}{1 - \kappa-\lambda} \ln v + \epsilon 
+$$ {#eq-growth_equation}
+
+where $e$ is the per capita level of human capital. The model now contains three covariates and three slopes ($\beta_i$, $\beta_e$ and $\beta_v$). Moreover, the structural model implies a structural restriction ($\beta_i + \beta_e + \beta_v = 0$) that is testable.
 
 ### Data set
 
-The data set is from a very influential paper of @MANK:ROME:WEIL:92. It
-consists on 121 countries for 1985 and is available as `micsr::growth`.
+The data set used is `micsr.data::growth` and is the one used by @MANK:ROME:WEIL:92. It
+consists on 121 countries for 1985.
 
 ```{r }
-#| label: un
-library("micsr")
-library("tidyverse")
-growth
+#| label: growth_print
+growth %>% print(n = 3)
 ```
 
 This data set contains a variable called `group` which enables the
 selection of subsamples. The levels of this factor are:
 
--   `oil`: for countries for which most part of the GDP is linked to oil
+-   `"oil"`: for countries for which most part of the GDP is linked to oil
     extraction,
--   `oecd`: for OECD countries,
--   `bqdata`: for countries with poor quality data,
--   `other`: for other countries.
+-   `"oecd"`: for OECD countries,
+-   `"lqdata"`: for countries with low quality data,
+-   `"other"`: for other countries.
 
 The variables used in the following regressions are per capita GDP in
 1985 (`gdp85`), investment rate (`inv`) and growth rate of the
 population (`popgwth`). To get the variable denoted `v` in the previous
-section, we need to add to the growht rate of the population the
+section, we need to add to the growth rate of the population the
 technical progress rate and the rate of depreciation. As these two
 variables are difficult to measure consistently, the authors assume that
 they don't exhibit any cross-country variation and that they sum to 5%. Therefore,
 `v` equals `popgwth + 0.05`.
 
 We first investigate the relationship between the two covariates: `inv`
-et `popgwth`. @fig-invpop presents the scatterplot with the size
-of the points proportionnal to GDP per capita.
+and `popgwth`. @fig-invpop presents the scatterplot, the size
+of the points proportional to GDP per capita.
 
 ```{r }
 #| label: fig-invpop
@@ -203,77 +199,72 @@ There is a weak negagive correlation between the two variables and rich
 countries are in general caracterized by a low demographic growth rate
 and a high investment rate. We also remark that there is an outlier,
 Kuwait, which has a very high demographic growth rate. We then compute
-the variable `v` and we rename `inv` in `i`:
+the variable `v` and we rename `inv` and `school` in `i` and `e` as in @eq-growth_equation:
 
 ```{r }
+#| label: mutate_and_rename_growth
 growth <- mutate(growth, v = popgwth + 0.05) %>% 
   rename(i = inv, e = school)
 ```
 
 ## Computation of the OLS estimator
 
-In this section, we present the computation of the **OLS** estimator with a number of covariates $K \geq 2$. We start with the case where $K=2$, for which it is possible to compute the estimators using roughly the same notations as the one used for the simple linear regression model. Then we'll perform the computation in the general case using matrix algebra.
+In this section, we present the computation of the OLS estimator with a number of covariates $K \geq 2$. We start with the case where $K=2$, for which it is possible to compute the estimators using roughly the same notations as the one used for the simple linear regression model. Then we'll perform the computation in the general case using matrix algebra.
 
-For one observation, denoting $x_{1n}$ and $x_{2n}$ the two covariates, the model is:
+For one observation, denoting $x_{n1}$ and $x_{n2}$ the two covariates, the model is:
 
 $$
-  y_{n}=\alpha+\beta_1 x_{1n}+\beta_2 x_{2n}+\epsilon_{n}
+  y_{n}=\alpha+\beta_1 x_{n1}+\beta_2 x_{n2}+\epsilon_{n}
 $$
 
-Each observation is now a point in the 3-D space defined by $(x_1, x_2, y)$ and $\alpha$, $\beta_1$ and $\beta_2$ are the coordinates of a plane that returns the expected value of $y$ for a given value of $x_1$ and $x_2$. The sum of squares residuals is:
+Each observation is now a point in the 3-D space defined by $(x_1, x_2, y)$ and $\gamma ^ \top = (\alpha,  \beta_1, \beta_2)$ are the coordinates of a plane that returns the expected value of $y$ for a given value of $x_1$ and $x_2$. The sum of squares residuals is:
 
-$$SSR=\sum_{n = 1} ^  N\left(y_{n}-\alpha-\beta_1x_{1n}-\beta_2x_{2n}\right)^2$$
+$$f(\alpha, \beta) =\sum_{n = 1} ^  N\left(y_{n}-\alpha-\beta_1x_{n1}-\beta_2x_{n2}\right)^2$$
 which leads to the following three first-order conditions:
 
 $$
 \left\{
 \begin{array}{rcl}
-\frac{\partial SSR}{\partial \alpha} &=& -2 \sum_{n = 1} ^ N 
-\left(y_{n}-\alpha-\beta_1x_{1n}-\beta_2x_{2n}\right) = 0 \\
-\frac{\partial SSR}{\partial \beta_1}  &=& 
--2\sum_{n = 1} ^  N x_{1n}\left(y_{n}-\alpha-\beta_1x_{1n}-\beta_2x_{2n}\right)=0 \\
-\frac{\partial SSR}{\partial \beta_2}  &=& 
+\frac{\partial f}{\partial \alpha} &=& -2 \sum_{n = 1} ^ N 
+\left(y_{n}-\alpha-\beta_1x_{n1}-\beta_2x_{n2}\right) = 0 \\
+\frac{\partial f}{\partial \beta_1}  &=& 
+-2\sum_{n = 1} ^  N x_{n1}\left(y_{n}-\alpha-\beta_1x_{n1}-\beta_2x_{n2}\right)=0 \\
+\frac{\partial f}{\partial \beta_2}  &=& 
 -2\sum_{n = 1} ^  N
-x_{2n}\left(y_{n}-\alpha-\beta_1x_{1n}-\beta_2x_{2n}\right)=0 
+x_{n2}\left(y_{n}-\alpha-\beta_1x_{n1}-\beta_2x_{n2}\right)=0 
 \end{array}
 \right.
 $$
 
 The first first-order conditions leads to:
 $\bar{y} - \alpha - \beta_1 \bar{x}_1 - \beta_2 \bar{x}_2 = 0$, which
-means that the sample mean is on the regression plane, or that the sum of the residuals is zero. Substracting
-from the other two first order conditions:
+means that the sample mean is on the regression plane, or that the sum of the residuals is zero. 
+For the two other first-order conditions, as the term in parenthesis is the residual for one observation and as its mean is 0, they indicate that the sample covariance between the residuals and both covariates should be 0. Therefore, we get exactly the same conditions as the one obtained for the simple linear regression model.
+
+Subtracting the first equation from the other, we get:
 
 $$
 \left\{
 \begin{array}{l}
-\sum_{n = 1} ^  N x_{1n}\left[(y_{n}-\bar{y})-\beta_1(x_{1n}-\bar{x}_1) -
-\beta_2(x_{2n} - \bar{x}_2)\right]=0 \\
-\sum_{n = 1} ^  N x_{2n}\left[(y_{n}-\bar{y})-\beta_1(x_{1n}-\bar{x}_1) -
-\beta_2(x_{2n} - \bar{x}_2)\right]=0 \\
+\sum_{n = 1} ^  N x_{n1}\left[(y_{n}-\bar{y})-\beta_1(x_{n1}-\bar{x}_1) -
+\beta_2(x_{n2} - \bar{x}_2)\right]=0 \\
+\sum_{n = 1} ^  N x_{n2}\left[(y_{n}-\bar{y})-\beta_1(x_{n1}-\bar{x}_1) -
+\beta_2(x_{n2} - \bar{x}_2)\right]=0 \\
 \end{array}
 \right.
 $$
-
-As the second term in bracket is the residual, these two conditions
-indicates that the sample covariance between the residuals and the two
-covariates is 0. Therefore, we get exactly the same conditions as the one obtained for the simple linear regression model:
-
-- the sum or the average of the residuals is zero,
-- the sample covariance between the residuals and the covariates is zero. 
-
-Developping terms, we get:
+Or replacing $x_{nk}$ by $x_{nk} - \bar{x}_k$ and developing terms:
 
 $$
   \left\{
 \begin{array}{lclcl}
-\sum_{n = 1} ^  N (x_{1n} - \bar{x}_1)(y_{n} - \bar{y}) &=& 
-\beta_1\sum_{n=1} ^ N (x_{1n} - \bar{x}_1) ^ 2 &+& 
-\beta_2 \sum_{n = 1} ^ {N} (x_{1n} - \bar{x}_1)(x_{2n} - \bar{x}_2) \\
+\sum_{n = 1} ^  N (x_{n1} - \bar{x}_1)(y_{n} - \bar{y}) &=& 
+\beta_1\sum_{n=1} ^ N (x_{n1} - \bar{x}_1) ^ 2 &+& 
+\beta_2 \sum_{n = 1} ^ {N} (x_{n1} - \bar{x}_1)(x_{n2} - \bar{x}_2) \\
 \sum_{n = 1} ^  N 
-(x_{2n}- \bar{x}_2)(y_{n}-\bar{y}) &=& 
-\beta_1\sum_{n = 1} ^  N (x_{1n} - \bar{x}_1)(x_{2n} - \bar{x}_2)  &+&
-\beta_2 \sum_{n = 1} ^  N (x_{2n} - \bar{x}_2) ^ 2  \\
+(x_{n2}- \bar{x}_2)(y_{n}-\bar{y}) &=& 
+\beta_1\sum_{n = 1} ^  N (x_{n1} - \bar{x}_1)(x_{n2} - \bar{x}_2)  &+&
+\beta_2 \sum_{n = 1} ^  N (x_{n2} - \bar{x}_2) ^ 2  \\
 \end{array}
 \right.
 $$
@@ -288,7 +279,7 @@ X=\left(\begin{array}{cc}
 x_{11} & x_{21} \\
 x_{12} & x_{22} \\
 \vdots & \vdots \\
-x_{1N} & x_{2N} \\
+x_{n1} & x_{n2} \\
 \end{array}\right)
 \;\;
 y=\left(\begin{array}{c}
@@ -328,15 +319,15 @@ of length $N$ containing the sample mean of $z$ $\bar{z}$ repeated $N$
 times. As premultiplying $z$ by the identity matrix returns $z$,
 premultiplying $z$ by $\tilde{I}$ returns a vector of length $N$
 containing the $N$ values of $z$ in difference from the sample mean.
-Denoting $\tilde{z} = \tilde{I} z$, we get:
+Note that $\tilde{I}$ is **idempotent**, which means that $\tilde{I} \times \tilde{I}$. It can be checked that using direct multiplication, but also by reminding that premultiplyong a vector by $\tilde{I}$ removes the sample mean of the values of the vector. The transformed vector then have a zero mean, so that applying the same premultitplication one more time will leave it unchanged. Therefore, $\tilde{I}(\tilde{I} z) = \tilde{I}z$. Denoting $\tilde{z} = \tilde{I} z$, we get:
 
 $$
 \tilde{X}= \tilde{I} X =
 \left(\begin{array}{cc}
-x_{11} - \bar{x_1} & x_{21} - \bar{x_2}\\
-x_{12} - \bar{x_1} & x_{22} - \bar{x_2}\\
+x_{11} - \bar{x}_1 & x_{21} - \bar{x}_2\\
+x_{12} - \bar{x}_1 & x_{22} - \bar{x}_2\\
 \vdots & \vdots \\
-x_{1N} - \bar{x_1} & x_{2N} - \bar{x_2}\\
+x_{n1} - \bar{x}_1 & x_{n2} - \bar{x}_2\\
 \end{array}\right)
 ,\;\;
 \tilde{y} = \tilde{I} y =\left(\begin{array}{c}
@@ -353,8 +344,8 @@ $$
 \tilde{X} ^ \top \tilde{X} = 
 X ^ \top \tilde{I} X =
 \left(\begin{array}{cc}
-\sum_{n = 1} ^  N (x_{1n} - \bar{x}_1) ^ 2 & \sum_{n = 1} ^  N (x_{1n} - \bar{x}_1)(x_{2n} - \bar{x}_2)\\
-\sum_{n = 1} ^  N (x_{1n} - \bar{x}_1)(x_{2n} - \bar{x}_2) & \sum_{n = 1} ^  N (x_{2n} - \bar{x}_2) ^ 2\\
+\sum_{n = 1} ^  N (x_{n1} - \bar{x}_1) ^ 2 & \sum_{n = 1} ^  N (x_{n1} - \bar{x}_1)(x_{n2} - \bar{x}_2)\\
+\sum_{n = 1} ^  N (x_{n1} - \bar{x}_1)(x_{n2} - \bar{x}_2) & \sum_{n = 1} ^  N (x_{n2} - \bar{x}_2) ^ 2\\
 \end{array}
 \right)
 =
@@ -368,8 +359,8 @@ $$
 $$
 \tilde{X}^\top \tilde{y} = X ^ \top \tilde{I} y =
 \left(\begin{array}{c}
-\sum_{n = 1} ^  N (x_{1n} - \bar{x}_1)(y_{n}- \bar{y})\\
-\sum_{n = 1} ^  N (x_{2n} - \bar{x}_2)(y_{n}- \bar{y})\\
+\sum_{n = 1} ^  N (x_{n1} - \bar{x}_1)(y_{n}- \bar{y})\\
+\sum_{n = 1} ^  N (x_{n2} - \bar{x}_2)(y_{n}- \bar{y})\\
 \end{array}
 \right)
 =
@@ -379,19 +370,23 @@ S_{2y} \\
 \end{array}
 \right)
 $$
-$S_{kk}$ is the total variation of $x_k$ and $S_{kl}$ the 
+
+$S_{kk}$ is the total variation of $x_k$, $S_{kl}$ the 
 covariation of $x_k$ and $x_l$ and $S_{ky}$ the covariation between covariate $k$ and the response. Note that the quantities $S_{kk}$ and $S_{ky}$ were already present in the simple linear model as $S_{xx}$ and $S_{xy}$ (there are now two of them). The new term is $S_{kl}$, which measures the correlation between two covariates. 
 
-The first order conditions can then be writen in matrix form:
+The first order conditions can then be written in matrix form:
 
 $$
 \tilde{X}^\top \tilde{y} = \tilde{X} ^ \top \tilde{X} \beta
 $$
-And the **OLS** estimator is obtained by premultiplying both sides of the equation by the inverse of $\tilde{X} ^ \top \tilde{X}$. Note that premultiplying the vector $\tilde{X}^\top \tilde{y}$ by the inverse of $\tilde{X} ^ \top \tilde{X}$ is a natural extension of the computation we've performed for the simple linear model which consisted on dividing $S_{xy}$ by $S_{xx}$. 
+
+And the OLS estimator is obtained by premultiplying both sides of the equation by the inverse of $\tilde{X} ^ \top \tilde{X}$:
 
 $$
 \hat{\beta} = \left(\tilde{X} ^ \top \tilde{X}\right) ^ {- 1} \tilde{X}^\top \tilde{y}
 $$ {\#eq-mls}
+
+Note that premultiplying the vector $\tilde{X}^\top \tilde{y}$ by the inverse of $\tilde{X} ^ \top \tilde{X}$ is a natural extension of the computation we've performed for the simple linear model which consisted on dividing $S_{xy}$ by $S_{xx}$. 
 
 To understand this formula, we write $\tilde{X} ^ \top \tilde{X}$
 and $\tilde{X} ^ \top \tilde{y}$ as:
@@ -451,7 +446,7 @@ $$
 -   the third one divides the covariances by the product of the standard
     deviations to get sample coefficients of correlation.
 
-To compute the estimator, we need to inverse of $\tilde{X} ^ \top \tilde{X}$, which is:
+To compute the estimator, we need to inverse to compute the inverse of $\tilde{X} ^ \top \tilde{X}$, which is:
 
 $$
 \left(\tilde{X} ^ \top \tilde{X}\right) ^ {- 1} = 
@@ -503,7 +498,7 @@ $$
 \right.
 $$
 
-If the two variates are uncorrelated in the sample
+If the two covariates are uncorrelated in the sample
 ($S_{12} = \hat{\sigma}_{12} = \hat{\rho}_{12} = 0$), we have:
 
 $$
@@ -550,29 +545,30 @@ $\left| \frac{\hat{\rho}_{2y}}{\hat{\rho}_{12}\hat{\rho}_{1y}}\right| \geq 1$.
 Consider the case where the two covariates are positively correlated
 with the response. As an example, consider the wage equation with $x_1$ education and $x_2$ a dummy for males. Two cases should then be analysed:
 
-- the two covariates are positively correlated (males are more educated than females in average). In this case $\hat{\rho}_{2y}/(\hat{\rho}_{12}\hat{\rho}_{1y})>1$ and the numerator of @eq-mult_simple is $< 1 - \hat{\rho}_{12} ^ 2$, so that $\hat{\beta}_1<\hat{\beta}_1^S$. $\hat{\beta}_1 ^ S$ is upward biased because it estimates the sum of the positive direct effect of education on wage and a positive indirect effect (more education means leads to a subpopulation with a higher share of males and therefore higher wages),
-- the two covariates negatively correlated (males are less educated than females in average). In this case, $\hat{\rho}_{2y}/(\hat{\rho}_{12}\hat{\rho}_{1y})<0$ and the numerator of @eq-mult_simple is greater than one, so that $\hat{beta}_1>\hat{\beta}_1^S$. $\hat{\beta}_1 ^ S$ is downward biased because it estimates the sum of the positive direct effect of education on wage and a negative indirect effect (more education means leads to a subpopulation with a lower share of males and therefore lower wages).
+- the two covariates are positively correlated (males are more educated than females in average). In this case $\hat{\rho}_{2y}/(\hat{\rho}_{12}\hat{\rho}_{1y})>1$ and the numerator of @eq-mult_simple is lower than $1 - \hat{\rho}_{12} ^ 2$, so that $\hat{\beta}_1<\hat{\beta}_1^S$. $\hat{\beta}_1 ^ S$ is upward biased because it estimates the sum of the positive direct effect of education on wage and a positive indirect effect (more education leads to a subpopulation with a higher share of males and therefore higher wages),
+- the two covariates negatively correlated (males are less educated than females in average). In this case, $\hat{\rho}_{2y}/(\hat{\rho}_{12}\hat{\rho}_{1y})<0$ and the numerator of @eq-mult_simple is greater than one, so that $\hat{\beta}_1>\hat{\beta}_1^S$. $\hat{\beta}_1 ^ S$ is downward biased because it estimates the sum of the positive direct effect of education on wage and a negative indirect effect (more education means leads to a subpopulation with a lower share of males and therefore lower wages).
 
-The general derivation of the **OLS** estimator is, denoting
+The general derivation of the OLS estimator is, denoting:
 
 -   $j_N$ a vector of 1 of length $N$,
 -   $Z = (j_N, X)$ a vector formed by bidding a vector of one to the
-    vector of covariates and
--   $\gamma^\top = (\alpha, \beta ^ \top)$ the vector of parameter
-    obtained by bind the intercept $\alpha$ to the vector of slopes:
+    matrix of covariates and
+-   $\gamma^\top = (\alpha, \beta ^ \top)$ the vector of parameters
+    obtained by adding the intercept $\alpha$ to the vector of slopes:
 
 $$
-SSR = (y - Z\gamma)^\top (y - Z\gamma) = y ^ \top y +  \gamma ^ \top Z
+f(\gamma) = (y - Z\gamma)^\top (y - Z\gamma) = y ^ \top y +  \gamma ^ \top Z
 ^ \top Z \gamma -2 \gamma ^ \top Z ^ \top y
 $$
+The $K+1$ first order conditions are:
 
 $$
-\frac{\partial SSR}{\partial \gamma} = 2 Z ^ \top Z \gamma - 2 Z ^ \top
+\frac{\partial f}{\partial \gamma} = 2 Z ^ \top Z \gamma - 2 Z ^ \top
 y = -2 Z ^ \top (y - Z\gamma) = 0
 $$
 
 The last expression indicates that all the columns of $Z$ are orthogonal
-to the vector of residuals $y - Z\gamma=0$. Solving for $\gamma$, we
+to the vector of residuals $y - Z\gamma$. Solving for $\gamma$, we
 get:
 
 $$
@@ -582,16 +578,16 @@ $$
 The matrix of second derivatives is:
 
 $$
-\frac{\partial^2 SSR}{\partial \gamma\partial^\top \gamma} = 
+\frac{\partial^2 f}{\partial \gamma\partial^\top \gamma} = 
 2 Z ^ \top Z
 $$
-It is a positive semi-definite matrix, so that $\hat{\gamma}$ is a minimum of $SSR$.
+It is a positive semi-definite matrix, so that $\hat{\gamma}$ is a minimum of $f$.
 
 ## Geometry of least squares
 
 ### Geometry of the multiple regression model
 
-The geometry of the multiple regression model is presented on figure
+The geometry of the multiple regression model is presented on
 @fig-multregmodel.
 
 ```{r }
@@ -603,27 +599,27 @@ knitr::include_graphics("./tikz/fig/OLS3D.png", auto_pdf = TRUE)
 
 We now have $N = 3$ and $K = 2$ and therefore each variable is a vector
 in the 3D space. As the two covariates $x_1$ and $x_2$ are linearly
-independant, they span a subspace of dimension 2, which is a plane in this
+independent, they span a subspace of dimension 2, which is a plane in this
 3D space. $\hat{y}$ is the orthogonal projection of $y$ on this subspace
 and $\hat{\epsilon}$, is the vector that links $\hat{y}$ and $y$.
 $\hat{\epsilon}$ is therefore the projection of $y$ on the complement to
 the subspace defined by $(x_1, x_2)$, which is a straight line
 orthogonal to the plane defined by $(x_1, x_2)$. Therefore
 $\hat{\epsilon}$ is orthogonal to $x_1$ and to $x_2$, which means that
-the residuals are uncorrelated on the sample to the two covariates. The
+the residuals are uncorrelated with the two covariates. The
 decomposition of $y$ on the sum of two orthogonal vectors
 $\hat{\epsilon}$ and $\hat{y}$ doesn't depend on the two variables $x_1$
-and $x_2$ per se, but on the subspace spaned by $x_1$ and $x_2$. This means
-that any couple of independant linear combination of $x_1$ and $x_2$
+and $x_2$ per se, but on the subspace spanned by $x_1$ and $x_2$. This means
+that any couple of independent linear combination of $x_1$ and $x_2$
 will leads to the same subspace as the one defined by $x_1$ and $x_2$
 and therefore to the same residuals and the same fitted values.
 
 More formaly, as $\hat{\beta} = (X ^ \top X) ^ {-1} X ^ \top y$, we have
-$\hat{y} = X \hat{\beta} = X (X ^ \top X) ^ {-1} X ^ \top y = P_X y$. $M$
+$\hat{y} = X \hat{\beta} = X (X ^ \top X) ^ {-1} X ^ \top y = P_X y$. $P$
 is sometimes called the "hat" matrix, as it "put an hat" on $y$. This
-matrix transform the vector of response as a vector of prediction. As
-$\hat{epsilon} = y - \hat{y}$, we also have $\hat{epsilon} = y - P_X y = (I-P_X) y=M_Xy$.
-We therefore consider two matrix $P_X$ and $M_X$:
+matrix transforms the vector of response as a vector of prediction. As
+$\hat{\epsilon} = y - \hat{y}$, we also have $\hat{\epsilon} = y - P_X y = (I-P_X) y=M_Xy$.
+We therefore consider two matrices $P_X$ and $M_X$:
 
 $$
 \left\{
@@ -634,13 +630,13 @@ M_X &=& I - X (X ^ \top X) ^ {-1} X ^ \top \\
 \right.
 $$ {#eq-projmatrix}
 
-This matrices are square matrices of dimension $N \times N$, which means
-that they are in practise very large matrices, and are therefore never
+that are square and symetric of dimension $N \times N$, which means
+that they are in practice very large matrices, and are therefore never
 computed. However, they have very interesting analytic features. First,
 they are idempotent, which means that $P_X \times P_X = P_X$ and
 $M_X \times M_X = M_X$. This means that while pre-multiplying a vector by such
 a matrix, this vector is projected in a subspace. For example
-$P_X y = \hat{y}$, the $y$ vector is projected in the subspace spaned by
+$P_X y = \hat{y}$, the $y$ vector is projected in the subspace spanned by
 $x_1$ and $x_2$. $P_X \times (P_X y) = P_X \hat{y} = \hat{y} = P_X y$; as $\hat{y}$ being in the subspace spaned by $x_1$ and $x_2$,
 projecting it in this subspace leave this vector unchanged. Except the
 identity matrix, idempotent matrices are not full rank. Their rank can
@@ -667,12 +663,12 @@ $\hat{y}$ and $\hat{\epsilon}$, which means that
 $\hat{y} + \hat{\epsilon} = y$ and that
 $\hat{y}^\top\hat{\epsilon} = 0$.
 
-### The Frish-Waugh theorem
+### The Frisch-Waugh theorem
 
 Consider the regression of $y$ on a set of regressors $X$, which for some
-reason is separated in two subsets $X_1$ and $X_2$. Suppose that we are
+reasons is separated in two subsets $X_1$ and $X_2$. Suppose that we are
 only interested in the coefficients $\beta_2$ associated with $X_2$. The
-Frish-Waugh theorem states that the same estimator $\hat{\beta}_2$ is
+Frisch-Waugh theorem states that the same estimator $\hat{\beta}_2$ is
 obtained:
 
 -   by regressing $y$ on $X_1$ and $X_2$,
@@ -681,14 +677,14 @@ obtained:
     regressions and finally regressing $M_1y$ on $M_1X_2$.
 
 ```{r }
-#| label: fig-frishwaugh
-#| fig.cap: "The Frish-Waugh theorem"
+#| label: fig-Frischwaugh
+#| fig.cap: "The Frisch-Waugh theorem"
 #| echo: false
 #| out.width: "80%"
 knitr::include_graphics("./tikz/fig/frishWaugh.png", auto_pdf = TRUE)
 ```
 
-@fig-frishwaugh illustrates the Frish-Waugh theorem.
+@fig-Frischwaugh illustrates the Frisch-Waugh theorem.
 
 The **first regression** is the regression of $y$ on $x_1$ and $x_2$. We then get an orthogonal decomposition of $y$ in the vector of fitted values $\hat{y}=P_{12}y$ and of the residuals $\hat{\epsilon}_{12}=M_{12}y$. We also show on this figure the decomposition of $\hat{y}$ in $x_1$ and $x_2$, which is
 represented by the sum of the two vectors $\hat{\beta}_1 x_1$ and
@@ -698,10 +694,10 @@ The **second regression** is the regression of $M_1y$ on $M_1x_2$. $M_1x_2$ is t
 
 As both $M_1y$ and $M_{12}y$ are orthogonal to $x_1$, so is the vector that join those two vectors. Therefore, this vector is parallel to $M_1x_2$ and it is therefore the fitted value of the second regression ($M_1y$ on $M_1x_2$), $P_{M_1x_2}y$. It is also equal to $\tilde{\beta}_2 M_1x_2$, $\tilde{\beta}_2$ being the estimator of $x_2$ on the second regression. Note also that $\hat{\epsilon}_{12} = M_{12}y$ is the residual of the second regression, which is therefore the same as the residuals of the first regression.
 
-Finally, consider the regression of $\hat{\beta}_2 x_2$ on $x_1$. The residual of this regression is $\hat{\beta}_2M_1x_2$. As it lies on the plane spaned by $x_1$ and $x_2$ and is orthogonal to $x_1$, it is parallel to $P_{M_1x_2}y=\tilde{\beta}_2M_1x_2$. Moreover, the Frish-Waugh theorem states that both vectors have the same length and are therefore identical, which means that $\tilde{\beta}_2 = \hat{\beta}_2$ and that the two regressions give identical estimators.
+Finally, consider the regression of $\hat{\beta}_2 x_2$ on $x_1$. The residual of this regression is $\hat{\beta}_2M_1x_2$. As it lies on the plane spaned by $x_1$ and $x_2$ and is orthogonal to $x_1$, it is parallel to $P_{M_1x_2}y=\tilde{\beta}_2M_1x_2$. Moreover, the Frisch-Waugh theorem states that both vectors have the same length and are therefore identical, which means that $\tilde{\beta}_2 = \hat{\beta}_2$ and that the two regressions give identical estimators.
 
 
-The Frish-Waugh is easily demonstrated using some geometric arguments.
+The Frisch-Waugh is easily demonstrated using some geometric arguments.
 Consider the regression with all the covariates:
 
 $$
@@ -732,28 +728,31 @@ $$
 $$
 
 which is exactly the estimation obtained by regressing $M_1 y$ on
-$M_1 X_2$ and therefore proove the theorem.
-
-We finally note (an important result that will be used in @sec-three_tests, that $\hat{\epsilon}_1=M_1y$, $\hat{\epsilon}_{12}=M_{12}y$ and $P_{M_1x_2}y$ form a right triangle, $\hat{\epsilon}_1$ being the hypothenuse. Therefore, using the Pythagorean theorem, we have:
+$M_1 X_2$. We finally note (an important result that will be used in @sec-three_tests), that $\hat{\epsilon}_1=M_1y$, $\hat{\epsilon}_{12}=M_{12}y$ and $P_{M_1x_2}y$ form a right triangle, $\hat{\epsilon}_1$ being the hypotenuse. Therefore, using the Pythagorean theorem, we have:
 
 $$
 \mid\mid \hat{\epsilon}_{12}^2\mid\mid + \mid\mid P_{M_1X_2}y\mid\mid = \mid\mid \hat{\epsilon}_{1}^2\mid\mid
 $$ {\#eq-pyth_ssr}
 
 ## Computation with R
+
 To estimate the multiple linear model, we use as for the single linear
-model the `lm` function; the difference is now that on the right side of
+model the `lm` function; the difference being that now, on the right side of
 the formula, we have several variables (here two), separated by the `+`
-operator:^[Actually, formulas have a much richer syntax that includes other operators, like for example `*` and `:`; this will be discussed in the next chapter.]
+operator. Actually, formulas have a much richer syntax that includes other operators, like for example `*` and `:`. This will be discussed in [Chapter -@sec-interpretation_chapter].
 
 ```{r }
+#| label: estimation_solow_model
 slw_tot <- lm(log(gdp85) ~ log(i) + log(v), growth)
 slw_tot
 ```
 
-The estimator can also be computed "by hand", using matrix algebra. To start, we use the `model.frame` function which, as `lm` has `formula` and `data` arguments. For pedagogical purpose, we add the `group` variable in the formula.
+### Computation using matrix algebra
+
+The estimator can also be computed "by hand", using matrix algebra. To start, we use the `model.frame` function which, as `lm` `formula` and  `data` arguments. For pedagogical purpose, we add the `group` variable in the formula.
 
 ```{r }
+#| label: model_frame_growth
 #| collapse: true
 mf <- model.frame(log(gdp85) ~ log(i) + log(v) + group, growth)
 head(mf, 3)
@@ -769,23 +768,21 @@ nrow(growth)
 
 Several interesting elements of the model can be extracted from the
 fitted model; the data frame used for the estimation is obtained using
-the `model.frame`; it returns a data frame limited to the columns
-(eventually transformed, as it is here as all the variables are in logs)
-and to the lines used in the estimation:
-
-The $Z$ matrix is obtained using the `model.matrix` function, which also use a 
+`model.frame`. The $Z$ matrix is obtained using the `model.matrix` function, which also use a 
 `formula`/`data` interface, the data being the model frame `mf`:
 
 ```{r }
+#| label: model_matrix_growth
 Z <- model.matrix(log(gdp85) ~ log(i) + log(v) + group, mf)
 head(Z, 3)
 ```
 
-Note that the model matrix includes an intercept^[as already seen, to remove it, one has to use either `+ 0` or `- 1` in the formula.] and the `group` variable, which is a cathegorical variable is transformed in a set of dummy variables. More precisely, a dummy variable is created for all the modalities except the first (`"oecd"`).
+Note that the model matrix includes an intercept^[as seen in @sec-remove_intercept, to remove it, one has to use either `+ 0` or `- 1` in the formula.] and the `group` variable, which is a categorical variable is transformed into a set of dummy variables. More precisely, a dummy variable is created for all the modalities except the first one (`"oecd"`).
 
 The response is obtained using the `model.response` function:
 
 ```{r }
+#| label: model_response_growth
 y <- model.response(mf)
 head(y, 3)
 ```
@@ -802,33 +799,106 @@ Once the model matrix and the response vector are created, the estimator can eas
 The most straightforward formula to get the OLS estimator is:
 
 ```{r }
+#| label: ols_straight_formula
 solve(t(Z) %*% Z) %*% t(Z) %*% y
 ```
 
 But `crossprod` is more efficient, $A^\top B$ being obtained using
 `crossprod(A, B)` and $A^\top A$ is either `crossprod(A, A)` or
-`crossprod(A)`. Therefore, $Z^\top Z$ and $Z^\top y$ are respectly obtained using:
+`crossprod(A)`. Therefore, $Z^\top Z$ and $Z^\top y$ are respectively obtained using:
 
 ```{r }
 #| results: hide
+#| label: using_crossprod
 crossprod(Z)
 crossprod(Z, y)
 ```
 
-Moreover, `solve` can be used to solve a system of linear equations: `solve(A, z)` compute the vector $w$ such that $Aw=z$, which is $w=A^{-1}z$. Therefore, the **OLS** estimator can be computed using the more efficient and compact following code:^[Internally, `lm` use a very efficient algorithm to compute the estimator called the QR decomposition.]
+Moreover, `solve` can be used to solve a system of linear equations: `solve(A, z)` compute the vector $w$ such that $Aw=z$, which is $w=A^{-1}z$. Therefore, the OLS estimator can be computed using the more efficient and compact following code:
 
 ```{r}
 #| results: hide
+#| label: using_crossprod_solve
 solve(crossprod(Z), crossprod(Z, y))
+```
+
+### Efficient computation: the QR decomposition
+
+The efficient method used by `lm` to compute the OLS estimate is the QR decomposition:^[see @DAVI:MACK:93, section 1.5, pp. 25-31] the matrix of covariate $Z$ can be written as the product of an orthonormal matrix $Q$ of dimension $N \times (K + 1)$ (therefore $Q^\top Q = I$) and an upper triangular matrix $R$ of dimension $(K+1) \times (K+1)$. Then, the linear model can be written as:
+
+$$
+y = Z\gamma + \epsilon = QR\gamma + \epsilon = Q \delta + \epsilon
+$$
+
+with $\delta = R \gamma$. With $Q$ as the matrix of covariates, the OLS estimator is $\hat{\delta} = (Q ^ \top Q ) ^ {-1} Q ^ \top y = Q^\top y$, which is obtained without matrix inversion. Then $\hat{y} = Q \hat{\gamma} = Q Q ^ \top y$ and $\hat{\epsilon} = (I - Q Q ^ \top) y$. With $Z$ as the matrix of covariates, the OLS estimator is $\hat{\gamma} = R ^ {-1} \delta$. The inverse of a triangular matrix can be very easily obtained with a very high numerical accuracy. Moreover, $\hat{\gamma}$ can be obtained without inverting $R$. With $K = 2$, we have:
+
+$$
+\left(\begin{array}{c} \delta_0 \\ \delta_1 \\ \delta_2 \end{array}\right) = 
+\left(
+\begin{array}{ccc}
+r_{11} & r_{12} & r_{13} \\
+0 & r_{22} & r_{23} \\
+0 & 0 & r_{33}
+\end{array}
+\right) 
+\left(\begin{array}{c} \alpha \\ \beta_1 \\ \beta_2 \end{array}\right)
+= 
+\left(\begin{array}{c} 
+r_{11} \alpha + r_{12} \beta_1 + r_{13} \beta_2 \\
+r_{22} \beta_1 + r_{23} \beta_2 \\
+r_{33} \beta_2
+\end{array}\right)
+$$
+which can be solved recursively:
+
+- $\beta_2 = \delta_2 / r_{33}$,
+- $\beta_1 = (\delta_1 - r_{23}\beta_2) / r_{22}$,
+- $\alpha = (\delta_0 - r_{12} \beta_1 - r_{13} \beta_2) / r_{11}$.
+
+Finally, $(X^\top X) ^ {-1} = (R^\top Q^ \top Q R) ^ {-1} = (R ^ \top R) ^{-1} = R ^ {-1} R ^ {- 1 \top}$.
+
+We illustrate the computation of the OLS estimator using the QR decomposition using the previously estimated growth model, without the `group` covariate. The QR decomposition is performed using the `qr` function:
+
+```{r}
+#| label: qr_decomposition
+Z <- model.matrix(log(gdp85) ~ log(i) + log(v), mf)
+qrZ <- qr(Z)
+```
+
+`qr` returns an object of class `qr` and the `qr.R` and `qr.Q` function can be used to retrieve the two matrices. We check that $R$ is upper triangular and that $Q^\top Q  = I$:
+
+```{r}
+#| label: extracting_Q_R
+#| collapse: true
+R <- qr.R(qrZ)
+Q <- qr.Q(qrZ)
+crossprod(Q)
+R
+```
+
+$\hat{\delta}$ is then obtained as the crossproducts of $Q$ and $y$:
+
+```{r}
+hdelta <- crossprod(Q, y) %>% drop
+hdelta
+```
+
+and $\hat{\gamma}$ is obtained by solving recursivelly $\hat{\delta} = R \hat{\gamma}$:
+
+```{r}
+beta_2 <- hdelta[3] / R[3, 3]
+beta_1 <- (hdelta[2] - R[2, 3] * beta_2) / R[2, 2]
+alpha <- (hdelta[1] - R[1, 2] * beta_1  - R[1, 3] * beta_2) / R[1, 1]
+c(alpha, beta_1, beta_2)
 ```
 
 ## Properties of the estimators
 
-In this section, we'll briefly analyse the statistical properties of the **OLS** estimator with more than one covariate. Most of these properties are similar to the one we have described on the previous chapter. They'll be presented in this section using matrix algebra.
+In this section, we'll briefly analyze the statistical properties of the OLS estimator with more than one covariate. Most of these properties are similar to the one we have described on the previous chapter. They'll be presented in this section using matrix algebra.
 
 ### The unbiasness of the OLS estimator
 
-The vector of slopes can be writen as a linear combination of the response vector
+The vector of slopes can be written as a linear combination of the response vector
 and then of the error vector:
 
 $$
@@ -840,64 +910,66 @@ $$
 \end{array}
 $$ {#eq-hbeta}
 
-$\tilde{I} X ^ \top \epsilon = \tilde{X}^\top\epsilon$ is a $K$-length vector containing the product of
-every covariates (the column of $X$) in deviation from the sample mean
-and the vector of errors:
+<!-- $\tilde{I} X ^ \top \epsilon = \tilde{X}^\top\epsilon$ is a $K$-length vector containing the product of -->
+<!-- every covariates (the column of $X$) in deviation from the sample mean -->
+<!-- and the vector of errors: -->
 
-$$
-\tilde{X}^\top\epsilon =
-\left(
-\begin{array}{c}
-\sum_{n=1} ^ N (x_{1n} - \bar{x}_1) \epsilon_n \\
-\sum_{n=1} ^ N (x_{2n} - \bar{x}_2) \epsilon_n \\
-\vdots \\
-\sum_{n=1} ^ N (x_{1n} - \bar{x}_K) \epsilon_n
-\end{array}
-\right) 
-= \sum_{n = 1} ^ N \psi_n
-$$
+<!-- $$ -->
+<!-- \tilde{X}^\top\epsilon = -->
+<!-- \left( -->
+<!-- \begin{array}{c} -->
+<!-- \sum_{n=1} ^ N (x_{n1} - \bar{x}_1) \epsilon_n \\ -->
+<!-- \sum_{n=1} ^ N (x_{n2} - \bar{x}_2) \epsilon_n \\ -->
+<!-- \vdots \\ -->
+<!-- \sum_{n=1} ^ N (x_{n1} - \bar{x}_K) \epsilon_n -->
+<!-- \end{array} -->
+<!-- \right)  -->
+<!-- = \sum_{n = 1} ^ N \psi_n -->
+<!-- $$ -->
 
-$\sum_{n = 1} ^ N \psi_n$, evaluated for $\hat{\beta}$ the vector of
-slopes estimates is a K-length vector of 0 (ie the vector of the
-first-order conditions for minimizing the sum of squares residuals, also
-called the vector of scores).
+<!-- $\sum_{n = 1} ^ N \psi_n$, evaluated for $\hat{\beta}$ the vector of -->
+<!-- slopes estimates is a K-length vector of 0 (ie the vector of the -->
+<!-- first-order conditions for minimizing the sum of squares residuals, also -->
+<!-- called the vector of scores). -->
+
 The expected value of $\hat{\beta}$ conditional on $X$ is:
 
 $$
 \mbox{E}(\hat{\beta}\mid X) = \beta +
 (\tilde{X}^\top\tilde{X})^{-1}\tilde{X}^\top\mbox{E}(\epsilon \mid X)
 $$
-The unbiasness condition is therefore that
+
+The unbiasedness condition is therefore that
 $\mbox{E}(\epsilon \mid X) = 0$, which is a direct generalization of the
 result obtained for the linear regression model, namely $\epsilon$ has a
-constant expected value (that can be set to 0 without any restriction) whatever the value of the covariates. It implies also that the population covariance between the errors and all the covariates is 0. 
+constant expected value (that can be set to 0 without any restriction) whatever the value of the covariates. It implies also that the population covariance between the errors and any of the covariates is 0. 
 
-### The variance of the OLS estimator
+### The variance of the OLS estimator {#sec-variance_ols}
 
 The variance of $\hat{\beta}$ is now a matrix of variance-covariance:
 
-$$\hat{\sigma}^2_{\hat{\beta}} = 
-\mbox{E}\left[(\hat{\beta}- \beta)(\hat{\beta}- \beta)^\top\right]
+$$\mbox{V}(\hat{\beta}\mid X) = 
+\mbox{E}\left[(\hat{\beta}- \beta)(\hat{\beta}- \beta)^\top\mid X\right]
 $$
 
-Using equation @eq-hbeta:
+Using @eq-hbeta:
 
-$$\hat{\sigma}^2_{\hat{\beta}} = 
+$$\mbox{V}(\hat{\beta}\mid X) = 
 \mbox{E}\left[(\tilde{X} ^ \top\tilde{X})^{-1}\tilde{X}^\top\epsilon \epsilon ^ \top
 \tilde{X} (\tilde{X}^\top\tilde{X})^{-1} \mid X\right]
 $$
 
 $$
-\hat{\sigma}^2_{\hat{\beta}} = 
+\mbox{V}(\hat{\beta}\mid X)=
 \frac{1}{N}
 \left(\frac{1}{N}
 \tilde{X}^\top\tilde{X}\right)^{-1}\left[\frac{1}{N}\mbox{E}(\tilde{X}^\top \epsilon \epsilon ^
 \top \tilde{X} \mid X)\right] \left(\frac{1}{N}\tilde{X}^\top\tilde{X}\right) ^ {-1}
-$$
+$$ {#eq-general_variance}
 
 This is a **sandwich** formula, the **meat**:
 $\frac{1}{N}\mbox{E}\left(X'\bar{I}\epsilon \epsilon ^ \top \bar{I} X \mid X\right)$
-being surronded by two slices of **bread**:
+being surrounded by two slices of **bread**:
 $\left(\frac{1}{N} \tilde{X}^\top\tilde{X}\right)^{-1}$. Note the two matrices are
 squares and of dimension $K$. The bread is just the inverse of the
 covariance matrix of the covariates.
@@ -909,12 +981,12 @@ $$
 \frac{1}{N}
 \left(
 \begin{array}{cccc}
-\left(\sum_{n=1} ^ N (x_{1n} - \bar{x}_1) \epsilon_n)\right) ^ 2 &
-\left(\sum_{n=1} ^ N (x_{1n} - \bar{x}_1) \epsilon_n)\right) 
-\left(\sum_{n=1} ^ N (x_{2n} - \bar{x}_2) \epsilon_n)\right)  \\
-\left(\sum_{n=1} ^ N (x_{1n} - \bar{x}_1) \epsilon_n)\right) 
-\left(\sum_{n=1} ^ N (x_{2n} - \bar{x}_2) \epsilon_n)\right) &
-\left(\sum_{n=1} ^ N (x_{2n} - \bar{x}_2) \epsilon_n)\right) ^ 2
+\left(\sum_{n=1} ^ N (x_{n1} - \bar{x}_1) \epsilon_n)\right) ^ 2 &
+\left(\sum_{n=1} ^ N (x_{n1} - \bar{x}_1) \epsilon_n)\right) 
+\left(\sum_{n=1} ^ N (x_{n2} - \bar{x}_2) \epsilon_n)\right)  \\
+\left(\sum_{n=1} ^ N (x_{n1} - \bar{x}_1) \epsilon_n)\right) 
+\left(\sum_{n=1} ^ N (x_{n2} - \bar{x}_2) \epsilon_n)\right) &
+\left(\sum_{n=1} ^ N (x_{n2} - \bar{x}_2) \epsilon_n)\right) ^ 2
 \end{array}
 \right)
 }
@@ -926,21 +998,20 @@ $\left(\sum_{n=1} ^ N (x_n - \bar{x}) \epsilon_n)\right) ^ 2$.
 
 As for the simple regression model, the formula of the variance simplifies with the hypothesis of:
 
-- homoscedasticity: $\mbox{E}(\epsilon_n ^ 2 \mid x) = \sigma ^ 2$ and
+- homoscedasticity: $\mbox{E}(\epsilon_n ^ 2 \mid x) = \sigma_\epsilon ^ 2$ and
 - absence of correlation: $\mbox{E}(\epsilon_n \epsilon_m \mid x) = 0 \; \forall \; m \neq n$.
 
 In this case, the meat reduces to
-$\sigma_\epsilon ^ 2 \frac{1}{N} \tilde{X} ^ \top \tilde{X}$, ie up to a scalar to the matrix of covariance of the covariates. Using
-@eq-XpXm1, we finaly get:
+$\sigma_\epsilon ^ 2 \frac{1}{N} \tilde{X} ^ \top \tilde{X}$, ie up to a scalar to the matrix of covariance of the covariates and @eq-general_variance becomes:
 
 $$
-V(\hat{\beta})=\sigma^2_{\hat{\beta}} = \sigma_\epsilon^2(\tilde{X}^\top\tilde{X})^{-1}
+V(\hat{\beta})= \sigma_\epsilon^2(\tilde{X}^\top\tilde{X})^{-1}
 $$ {\#eq-vbeta}
 
-which  can be rewriten as:
+which  can be rewritten, using @eq-XpXm1:
 
 $$
-\hat{\sigma}^2_{\hat{\beta}}=
+\mbox{V}(\hat{\beta})=
 \frac{\sigma_\epsilon^2}{N\hat{\sigma}_1\hat{\sigma}_2(1-\hat{\rho}_{12}^2)}
 \left(\begin{array}{cc}
 \frac{\hat{\sigma}_2}{\hat{\sigma}_1} & -\hat{\rho}_{12}\\
@@ -952,20 +1023,17 @@ $$
 from which we get:
 
 $$
-\hat{\sigma}_{\hat{\beta}_1}=
-\frac{\hat{\sigma}_\epsilon}{\sqrt{N}\hat{\sigma}_1\sqrt{1-\hat{\rho}_{12}^2}}
-\mbox{, }
-\hat{\sigma}_{\hat{\beta}_2}=
-\frac{\hat{\sigma}_\epsilon}{\sqrt{N}\hat{\sigma}_2\sqrt{1-\hat{\rho}_{12}^2}}
-\mbox{, }
+\hat{\sigma}_{\hat{\beta}_k}=
+\frac{\hat{\sigma}_\epsilon}{\sqrt{N}\hat{\sigma}_k\sqrt{1-\hat{\rho}_{12}^2}}
+\mbox{ for }k = 1, 2{, }
 \hat{\sigma}_{\hat{\beta}_1\hat{\beta}_2}=
 -\frac{\hat{\rho}_{12}\hat{\sigma}_\epsilon^2}{N\hat{\sigma}_1\hat{\sigma}_2(1-\hat{\rho}_{12}^2)}
 \mbox{ and } \hat{\rho}_{\hat{\beta}_1\hat{\beta}_2} = -\hat{\rho}_{12}
-$$
+$$ {#eq-var_covar_slopes}
 
 First remark that if $\hat{\rho}_{12} = 0$, which means that the two
 covariates are uncorrelated, the formula for the standard deviation of a
-slope in the multiple regression model reduce to the formula of the
+slope in the multiple regression model reduces to the formula of the
 single regression model, which means that the standard deviation is
 proportional to:
 
@@ -993,40 +1061,42 @@ $\mbox{E}(\hat{\epsilon} ^ \top \hat{\epsilon}) = \mbox{tr}\, M_Z \sigma_\epsilo
 Therefore, an unbiased estimator of $\sigma_\epsilon^2$ is:
 
 $$
-\hat{\sigma}_\epsilon^2 = \frac{\hat{\epsilon}^\top\hat{\epsilon}}{N - K - 1} = 
+\dot{\sigma}_\epsilon^2 = \frac{\hat{\epsilon}^\top\hat{\epsilon}}{N - K - 1} = 
 \frac{\sum_{n=1}^N \epsilon_n ^ 2}{N - K - 1}
 $$
 
-and replacing $\sigma_\epsilon ^ 2$ by $\hat{\sigma}_\epsilon ^ 2$ in @eq-vbeta, we get an unbiased estimator of the covariance matrix of the estimators:
+and replacing $\sigma_\epsilon ^ 2$ by $\dot{\sigma}_\epsilon ^ 2$ in @eq-vbeta, we get an unbiased estimator of the covariance matrix of the estimators:
 
 $$
-\hat{V}(\hat{\beta})=\hat{\sigma}^2_{\hat{\beta}} = \hat{\sigma}_\epsilon^2(\tilde{X}^\top\tilde{X})^{-1}
+\hat{V}(\hat{\beta}) = \dot{\sigma}_\epsilon^2(\tilde{X}^\top\tilde{X})^{-1}
 $$ {\#eq-vbeta}
 
-We now go back to the estimation of the growth model.
+We now go back to the estimation of the growth model. As @MANK:ROME:WEIL:92, we use a restricted sample by excluding countries for which most part of the GDP is linked to oil extraction and those with low quality data. 
 
 ```{r }
+#| label: growth_subsample
 growth_sub <- growth %>% filter(! group %in% c("oil", "lqdata"))
 slw_tot <- lm(log(gdp85) ~ log(i) + log(v), growth_sub)
 ```
 
-The simple covariance matrix of the estimators is obtained using the
+The covariance matrix of the estimators is obtained using the
 `vcov` function:
 
 ```{r }
+#| label: vcov_function_growth
 vcov(slw_tot)
 ```
 
-The `summary` computes detailed results of the regression, in particular the table of coefficient, which can be extracted using the `coef` method:
+The `summary` method computes detailed results of the regression, in particular the table of coefficients, which can be extracted using the `coef` method:
 
 ```{r}
+#| label: summary_growth
 slw_tot %>% summary %>% coef
 ```
 
-
 ### The OLS estimator is BLUE
 
-The demonstration made in the first chapter can be easily extended to
+The demonstration made in @sec-simple_ols_blue for the simple linear model can easily be extended to
 the multiple regression model. The OLS estimator is:
 
 $$
@@ -1037,14 +1107,14 @@ Consider another linear estimator:
 $$
 \tilde{\gamma}=Ay=\left[(Z^\top Z)^{-1}Z^\top + D\right]y = (I + DZ)\gamma + \left[(Z^\top Z)^{-1}Z^\top + D\right]\epsilon
 $$ 
-The unbiasness of $\tilde{\gamma}$ implies that $DZ=0$, so that:
+
+The unbiasedness of $\tilde{\gamma}$ implies that $DZ=0$, so that:
 
 $$
-\tilde{\gamma}-\gamma= \left[(Z^\top Z)^{-1}X^\top + D\right]\epsilon = (\hat{\gamma}- \gamma) + D\epsilon = (\hat{\gamma}- \gamma) + Dy
+\tilde{\gamma}-\gamma= \left[(Z^\top Z)^{-1}Z^\top + D\right]\epsilon = (\hat{\gamma}- \gamma) + D\epsilon = (\hat{\gamma}- \gamma) + Dy
 $$ 
 because $DZ=0$ implies that $D\epsilon=Dy$. Therefore,
-$\tilde{\gamma}- \hat{\gamma}=Dy$. The covariance between the **OLS**
-estimator and the vector of differences of the two estimators is:
+$\tilde{\gamma}- \hat{\gamma}=Dy$. The covariance between the OLS estimator and the vector of differences of the two estimators is:
 
 $$
 \mbox{E}\left[(\tilde{\gamma}-\hat{\gamma})(\hat{\gamma} - \gamma)\right] = \mbox{E}\left[D\epsilon\epsilon^\top Z(Z^\top Z) ^ {-1}\right]
@@ -1061,16 +1131,16 @@ $$
 $$ 
 as $\mbox{V}(Dy)$ is a covariance matrix, it is semi-definite
 positive, and therefore, the difference between the variance matrix of
-any unbiased linear estimator and the **OLS** estimator is a
-semi-definite positive matrix, which means that the **OLS** estimator is
+any unbiased linear estimator and the OLS estimator is a
+semi-definite positive matrix, which means that the OLS estimator is
 the most efficient linear unbiased estimator.
 
 ### Asymptotic properties of the OLS estimator
 
-Once again, the asymptotic properties for the multiple regression model
-are direct extentions of those we have seen for the simple regression
+Asymptotic properties of the multiple regression model
+are direct extensions of those we have seen for the simple regression
 model. With $\mbox{E}(\hat{\beta}) = \beta$ and 
-$\mbox{V}(\hat{\beta}) = \frac{\sigma_\epsilon ^ 2}{N} \left(\frac{1}{N}\tilde{X}^ \top X\right) ^ {- 1}$, the **OLS** estimator is consistent
+$\mbox{V}(\hat{\beta}) = \frac{\sigma_\epsilon ^ 2}{N} \left(\frac{1}{N}\tilde{X}^ \top X\right) ^ {- 1}$, the OLS estimator is consistent
 ($\mbox{plim} \;\hat{\beta} = \beta$) if the covariance matrix of the
 covariates $\frac{1}{N}\tilde{X} ^  \top \tilde{X}$ converges to a finite
 matrix. The central-limit theorem implies that:
@@ -1088,82 +1158,79 @@ $$
 
 ## Confidence interval and test
 
-In the previous chapter, we have seen how to compute a confidence interval for a single parameter and a test of one hypothesis. The confidence interval was a segment, ie a range of values that contains the true value of the parameter with a given probability and the tests where performed using a normal or a Student distribution. 
+In the previous chapter, we have seen how to compute a confidence interval for a single parameter and how to perform a test for one hypothesis. The confidence interval was a segment, ie a range of values that contains the true value of the parameter with a given probability and the tests were performed using a normal or a Student distribution. 
 
 Of course, the same kind of analysis can be performed with a multiple regression. But, in this latter case:
 
-- a confidence interval can also be computed for several coefficients (for two coefficients, it will be represented by an area)
+- a confidence interval can also be computed for several coefficients (for two coefficients, it will be represented by an area),
 - tests of multiple hypothesis can be performed, using a chi-squared or a Fisher distribution.
 
-To illustrate, we'll use the Solow model. Remind that the model to estimate is:
+To illustrate these points, we'll use the Solow model. Remind that the model to estimate is:
 
 $$
 \ln y = \alpha + \beta_i \ln i + \beta_v \ln v + \epsilon
 $$
 
-where $y$ is the per capita gdp, $i$ the investment rate and $v$ the sum of the labor force growth rate, the depreciation rate and the technical progress rate. Moreover, the relation between $\beta_i$ and $\beta_v$ and the structural parameter $\alpha$, which is the share of profits in the gdp is $\beta_i = - \beta_v =alpha / (1 -\alpha)$. 
+where $y$ is the per capita gdp, $i$ the investment rate and $v$ the sum of the labor force growth rate, the depreciation rate and the technical progress rate. Moreover, the relation between $\beta_i$ and $\beta_v$ and the structural parameter $\kappa$, which is the share of profits in the gdp is $\beta_i = - \beta_v =\kappa / (1 -\kappa)$. 
 
 We'll analyse the confidence interval for the couple of coefficients $(\beta_i, \beta_v)$ and we'll test two hypothesis:
 
 - the first one is imposed by the model, we must have $\beta_i + \beta_v = 1$,
-- the second one correspons to a reasonable value of the share of profits, which is approximatively one third; therefore we'll test the hypothesis that $\alpha = 1/3$, which implies that $\beta_i = 0.5$.
+- the second one correspons to a reasonable value of the share of profits, which is approximatively one third; therefore we'll test the hypothesis that $\kappa = 1/3$, which implies that $\beta_i = 0.5$.
 
 Note that these two hypothesis implies that $\beta_v=-0.5$.
 
 ### Simple confidence interval and test
 
-As in the previous chapter, the asymptotic distribution of the estimators is a multivariate normal distribution^[If the errors are normal, the exact distribution of the estimators is normal (see @sec-clt).]. The distribution of one estimator (say $\hat{\beta}_1$) or of a linear combination of several estimators is a univariate normal distribution with, for the two-covariates case, a standard deviation equal to: $\sigma_{\hat{\beta}_1} = \frac{\sigma_\epsilon}{\sqrt{N}\hat{\sigma}_1\sqrt{1 - \hat{\rho}_{12} ^ 2}}$. Therefore $(\hat{\beta}_1 - \beta_1) / \sigma_{\hat{\beta}_1}$ follows (exactly if $\epsilon$ is normal) a standard normal distribution. 
-
-Confidence interval and tests for a coefficient is therefore the same as for the case of the simple linear regression model. In particular:
+The asymptotic distribution of the estimators is a multivariate normal distribution^[If the errors are normal, the exact distribution of the estimators is normal (see @sec-clt).]. The distribution of one estimator (say $\hat{\beta}_1$) or of a linear combination of several estimators is a univariate normal distribution with, for the two-covariates case, a standard deviation equal to: $\sigma_{\hat{\beta}_1} = \frac{\sigma_\epsilon}{\sqrt{N}\hat{\sigma}_1\sqrt{1 - \hat{\rho}_{12} ^ 2}}$. Therefore $(\hat{\beta}_1 - \beta_1) / \sigma_{\hat{\beta}_1}$ follows (exactly if $\epsilon$ is normal) a standard normal distribution. 
+Confidence interval and tests for a coefficient are therefore computed exactly as for the case of the simple linear regression model. In particular, using @eq-var_covar_slopes, we get:
 
 $$
-t_k = \frac{\hat{\beta}_k - \beta_k}{\hat{\sigma}_{\hat{\beta}_k}}
-$$
+t_k = \frac{\hat{\beta}_k - \beta_k}{\hat{\sigma}_{\hat{\beta}_k}} = 
+\frac{\hat{\beta}_k - \beta_k}{\frac{\hat{\sigma}_\epsilon}{\sqrt{N}\hat{\sigma}_1\sqrt{1 -\hat{\rho}_{12}^2}}}
+$$ {#eq-student_multiple}
 
-follows exactly a student distribution with $N-K-1$ degrees of freedom if the errors are normal and asymptotically a normal distribution whatever the distribution of errors. Therefore, $1 - \alpha$ confidence invervals are: $\hat{\beta}_k \pm \mbox{cv}_{1-\alpha / 2} t_k$ where $\mbox{cv}_{1-\alpha / 2}$ is the critical value of either a student or a
-normal distribution. For a given hypothesis: $H_0:\beta_k = \beta_k^0$,
-$t_k^0=\frac{\hat{\beta}_k - \beta_k^0}{\hat{\sigma}_{\hat{\beta}_k}}$
-is a draw on a normal or a student distribution if $H_0$ is true.
+follows exactly a Student distribution with $N-K-1$ degrees of freedom if the errors are normal and asymptotically a normal distribution whatever the distribution of errors. Therefore, $1 - \alpha$ confidence intervals are: $\hat{\beta}_k \pm \mbox{cv}_{1-\alpha / 2} t_k$ where $\mbox{cv}_{1-\alpha / 2}$ is the critical value of either a Student or a
+normal distribution. For a given hypothesis: $H_0:\beta_k = \beta_{k0}$,
+$t_{k0}=\frac{\hat{\beta}_k - \beta_{k0}}{\hat{\sigma}_{\hat{\beta}_k}}$
+is a draw on a normal or a Student distribution if $H_0$ is true.
 
-Remind that "reasonable" values of the two slopes in our growth model should be $+/-0.5$. We check whether these values are in the confidence interval, using the `confint` function`:
+Remind that "reasonable" values of the two slopes in our growth model should be $+/-0.5$. We check whether these values are in the confidence intervals, using the `confint` function`:
 
 ```{r }
+#| label: confint_growth
 confint(slw_tot, level = 0.95)
 ```
 
 $0.5$ and $-0.5$ are not in the the 95% confidence interval for respectively $\hat{\beta}_i$ and for $\hat{\beta}_v$. 
 
-The hypothesis that the true value of the parameters are 0  is very easy to compute as they are based on the t statistic that is routinely returned by the `summary` function of the `lm` function:
-
-```{r}
-v <- slw_tot %>% summary %>% coef
-v
-```
-
-but, with our example, the hypothesis that $\beta_i = 0$ is the hypothesis that the share of profits is 0, which is of little interest.
-
-More interinstingly, we could check the hypothesis that the coefficients are equal to $\pm 0.5$. In this case, we can "manually" compute the test statistics by extracting the relevant elements in the matrix returned by `coef(summary(x))`:
+The hypothesis that the true value of the parameters are 0  is very easy to compute as they are based on the t statistics that are routinely returned by the `summary` method for `lm` objects.
+But, in our example, the hypothesis that $\beta_i = 0$ is the hypothesis that the share of profits is 0, which is of little interest. More interestingly, we could check the hypothesis that the coefficients are equal to $\pm 0.5$. In this case, we can "manually" compute the test statistics by extracting the relevant elements in the matrix returned by `coef(summary(x))`:
 
 ```{r }
+#| label: extraction_summary_coef
+#| collapse: true
+v <- slw_tot %>% summary %>% coef
 (v[2:3, 1] - c(0.5, - 0.5)) / v[2:3, 2]
 ```
 
-which confirms that both hypothesis are rejected. The same kind of linear hypothesis on one coefficient can be simplyer tested by using a different parametrization of the same model. The trick is to write the model such a way than the coefficients are 0 if the hypothesis is true. For example, in order to test the hypothesis that $\beta_i = 0.5$, we must have in the model $(\beta_i - 0.5)\ln i$; therefore, the term $-0.5\ln i$ is added on the right side of the formula and should therefore be added also on the left side. Adding also $0.5 \ln v$ on both sides of the formula, we finally get:
+which confirms that both hypothesis are rejected. The same kind of linear hypothesis on one coefficient can be simplyer tested by using a different parametrization of the same model. The trick is to write the model in such a way that a subset of coefficients are 0 if the hypothesis is true. For example, in order to test the hypothesis that $\beta_i = 0.5$, we must have in the model $(\beta_i - 0.5)\ln i$; therefore, the term $-0.5\ln i$ is added on the right side of the formula and should therefore be added also on the left side. Adding also $0.5 \ln v$ on both sides of the formula, we finally get:
 
 $$
 (\ln y - 0.5 \ln i + 0.5 \ln v) = \alpha + (\beta_i - 0.5) \ln i + (\beta_v + 0.5) \ln v + \epsilon
-$$ {\#eq-reparam}
+$$
 
-and the slopes are now equal to 0 under $H_0$.
+and the two slopes are now equal to 0 under $H_0$.
 
 ```{r }
+#| label: constrained_coefs_pm05
 slw_totb <- lm(log(gdp85 * sqrt(v / i) ) ~ log(i) + log(v), growth_sub)
 slw_totb %>% summary %>% coef
 ```
 
-which gives exactly the same values for the $t$ statistic.
+which gives exactly the same values for the $t$ statistics.
 
-A simple hypothesis may also not concern the value of one coefficient, but a linear combination of several coefficients. For example, for our growth model, the theoritical model implies that
+A simple hypothesis may also concern a linear combination of several coefficients and not the value of one coefficient. For example, the structural growth model implies that
 $\beta_i + \beta_v = 0$.
 
 If the hypothesis is true:
@@ -1172,6 +1239,7 @@ $\mbox{V}(\hat{\beta}_i + \hat{\beta}_v) = \hat{\sigma}_{\hat{\beta}_1}^2 + \hat
 The statistic can then be computed by extracting the relevant elements of the covariance matrix of the fitted model:
 
 ```{r }
+#| label: test_sum_two_coefficients
 v <- vcov(slw_tot)
 v_sum <- v[2, 2] + v[3, 3] + 2 * v[2, 3]
 stat_sum <- (coef(slw_tot)[2] + coef(slw_tot)[3]) %>% unname
@@ -1181,7 +1249,7 @@ pval_sum <- 2 * pt(abs(t_sum), df = df.residual(slw_tot),
 c(stat = stat_sum, t = t_sum, pv = pval_sum)
 ```
 
-The hypothesis is therefore not rejected, even at the 10% level. Once again, such a linear hypothesis can be more easily tested using a different parametrization. Introducing in the model the term: $(\beta_i + \beta_v) \ln i$, substracting $\beta_v \ln_i$ and re-arranging terms, we have:
+The hypothesis is therefore not rejected, even at the 10% level. Once again, such a linear hypothesis can be more easily tested using a different parametrization. Introducing in the model the term: $(\beta_i + \beta_v) \ln i$, substracting $\beta_v \ln_i$ and re-arranging terms:
 
 $$
 \begin{array}{rcl}
@@ -1191,18 +1259,17 @@ $$
 \ln \frac{v}{i} + \epsilon 
 \end{array}
 $$
-ie, a model for which the two covariates are now $\ln i$ and $\ln v / i$, the hypothesis being that the coefficient associated with $\ln i$ is equal to 0.
+We then have a model for which the two covariates are now $\ln i$ and $\ln v / i$, the hypothesis being that the coefficient associated of $\ln i$ is equal to 0.
 
 ```{r }
+#| label: sum_two_coef_repar
 slw_totc <- lm(log(gdp85) ~ log(i) + log(v / i), growth_sub)
-```
-
-```{r }
 slw_totc %>% summary %>% coef
 ```
 
 ```{r }
 #| echo: false
+#| label: confellipse
 confellipse <- function(object){
     v <- car::confidenceEllipse(object, level = c(0.99, 0.95, 0.9), draw = FALSE)
     growth_ell <- Reduce("rbind", lapply(1:3, function(x)
@@ -1219,7 +1286,7 @@ confellipse <- function(object){
 }
 ```
 
-### Joint confidence interval and multiple hypothesis
+### Joint confidence interval and test of joint hypothesis
 
 #### Joint confidence interval
 
@@ -1229,9 +1296,11 @@ $$
 \hat{\beta} \stackrel{a}{\sim} \mathcal{N}\left(\beta, \frac{\sigma_\epsilon ^ 2}{N} \left(\frac{1}{N}\tilde{X}^\top\tilde{X}\right)^ {-1}\right)
 $$
 
-In the simple linear case, substracting the expected value and dividing by the standard deviation, we get a standard normal deviate. Taking the square, we get a $\chi^2$ with one degree of freedom. If the $K$ slopes are uncorrelated:
-$\sum_{k=1} ^ K\frac{(\hat{\beta}_n - \beta_n) ^ 2}{\hat{\sigma_{\hat{\beta}_k}} ^ 2}$
-is a $\chi^2$ with $K$ degrees of freedom. If the slopes are correlated, this correlation should be "corrected", more precisely a quadratic form of the vector of slopes in deviation from its mean with the inverse of its variance should be computed:
+In the simple linear case, subtracting the expected value and dividing by the standard deviation, we get a standard normal deviate. Taking the square, we get a $\chi^2$ with one degree of freedom. If the $K$ slopes are uncorrelated: $\sum_{k=1} ^ K\frac{(\hat{\beta}_k - \beta_{k0}) ^ 2}{\hat{\sigma_{\hat{\beta}_k}} ^ 2}$
+is a $\chi^2$ with $K$ degrees of freedom. 
+
+
+If the slopes are correlated, this correlation should be "corrected", more precisely a quadratic form of the vector of slopes in deviation from its expectation with the inverse of its variance should be computed:
 
 $$
 q_K = (\hat{\beta}-\beta) ^ \top
@@ -1240,9 +1309,9 @@ q_K = (\hat{\beta}-\beta) ^ \top
 \left(\frac{1}{N}\tilde{X}^\top\tilde{X}\right) (\hat{\beta}-\beta)
 \sim \chi^2_K
 $$
-Note that, if $K=1$, $\hat{\beta}- \beta$ and $\mbox{V}(\hat{\beta})$ are scalars and the expression reduce to $(\hat{\beta}- \beta) / \sigma_{\hat{\beta}}^2$, which is a square of the t statistic.
+<!-- Note that, if $K=1$, $\hat{\beta}- \beta$ and $\mbox{V}(\hat{\beta})$ are scalars and the expression reduce to $(\hat{\beta}- \beta) / \sigma_{\hat{\beta}}^2$, which is a square of the t statistic. -->
 
-For the two-coefficients case, we have:
+For $K=2$, we have:
 
 $$
 q_2 = \left(\hat{\beta}_1 - \beta_1, \hat{\beta}_2 - \beta_2 \right)
@@ -1270,54 +1339,52 @@ q_2 = \frac{N}{\sigma_\epsilon ^ 2}
 \right]
 $$ {#eq-ellipsebeta}
 
-or, replacing $(\hat{\beta}_k - \beta_k)$ by
-$t_k \frac{\sigma_\epsilon}{\sqrt{N} \hat{\sigma}_k \sqrt{1 - \hat{\rho}_{12} ^ 2}}$,
-we finally get:
+Using @eq-student_multiple, this expression can also be rewritten in terms of the Student statistics $t_k$:
 
 $$
 q_2 = \frac{1}{1 - \hat{\rho}_{12} ^ 2}\left(t_1 ^ 2 + t_2 ^ 2 + 
-2 \hat{\rho}_{12} t_1 t_2\right)
+2 \hat{\rho}_{12} t_1 t_2\right) = 
+\frac{1}{1 - \hat{\rho}_{\hat{\beta}_1\hat{\beta}_2} ^ 2}\left(t_1 ^ 2 + t_2 ^ 2 - 
+2 \hat{\rho}_{\hat{\beta}_1\hat{\beta}_2} t_1 t_2\right)
 $$ {#eq-ellipse}
+
+the last equality resulting from the fact that the coefficient of correlation of two slopes is the opposite of the coefficient of correlation of the corresponding covariates (see @eq-var_covar_slopes).
 
 Therefore, a $(1-\alpha)$ confidence interval for a couple of
 coefficients $(\beta_1, \beta_2)$ is the set of values for which
-@eq-ellipse is lower that the critical value for a chi squared with 2 degrees of freedom, which is for example 5.99 for two degrees of
-freedom and $1-\alpha = 0.95$.
-
+@eq-ellipse is lower that the critical value for a $\chi ^ 2$ with 2 degrees of freedom, which is for example 5.99 for two degrees of freedom and $1-\alpha = 0.95$.
 Equating @eq-ellipse to 0, we get the equation of an ellipse, with two particular cases:
 
 -   if $\hat{\rho}_{12} = 0$, ie if the two covariates and therefore the
-    coefficients are uncorrelated, the expression reduce to the sum of
+    coefficients are uncorrelated, the expression reduces to the sum of
     squares of the t statistics, which is an ellipse with vertical and
     horizontal tangents,
 -   if $\hat{\rho}_{12} = 0$ and $\hat{\sigma}_1 = \hat{\sigma}_2$, this
     reduce to the equation of a circle.
 
-@eq-ellipse can't be computed as it depends on $\sigma_\epsilon$ which is unknown. Replacing $\sigma_\epsilon$ by $\hat{\sigma}_\epsilon$, we get:
+@eq-ellipse can't be computed as it depends on $\sigma_\epsilon$ which is unknown. Replacing $\sigma_\epsilon$ by $\dot{\sigma}_\epsilon$, we get:
 
 $$
 \hat{q}_2 = \frac{1}{1 - \hat{\rho}_{12} ^ 2}\left(\hat{t}_1 ^ 2 + \hat{t}_2 ^ 2 + 
 2 \hat{\rho}_{12} \hat{t}_1 \hat{t}_2\right)
 $$ {#eq-ellipse_est}
 
-where $\hat{q}_2$ now follows asymptotically a chi-square distribution with 2 degrees of freedom. If the errors are normal, dividing by $K$ (here 2), we get  an exact
-Fisher $F$ distribution with $2$ and $N - K - 1$ degrees of freedom.
+where $\hat{q}_2$ now follows asymptotically a $\chi ^ 2$ distribution with 2 degrees of freedom. If the errors are normal, dividing by $K$ (here 2), we get an exact Fisher $F$ distribution with $2$ and $N - K - 1$ degrees of freedom.
 
 In the simple case of no correlation between the covariates, the $\chi^2$ and the $F$
 statistics are therefore the sum and the mean of the squares of the t statistics. As
-for the student distribution, which converges in distribution to a
+for the Student distribution, which converges in distribution to a
 normal distribution, $K \times$ the $F$ statistic converges in
 distribution to a $\chi ^ 2$ with $K$ distribution. For example, with
 $K=2$, the critical value for a $F$ distribution with $2$ and $\infty$
 degrees of freedom is half the corresponding $\chi^2$ value with two
 degrees of freedom (5.99 for the 95% confidence level), which is
 $2.996$.
-
 The confidence interval is represented on @fig-ellipse; the blue
 point is the point estimation, the vertical and horizontal segments are
 the separate confidence interval for both coefficients at the 95% level. We also add in
-red the point that corresponds to the hypothesis $\alpha = 1/3$, which
-implies that $\beta_i = - \beta_v = \frac{\alpha}{1-\alpha} = 0.5$. Finally, we add a line with a slope equal
+red the point that corresponds to the hypothesis $\kappa = 1/3$, which
+implies that $\beta_i = - \beta_v = \frac{\kappa}{1-\kappa} = 0.5$. Finally, we add a line with a slope equal
 to $-1$ and an intercept equal to 0 which corresponds to the hypothesis that $\beta_i = - \beta_v$.
 
 ```{r }
@@ -1335,7 +1402,7 @@ confellipse(slw_tot) +
     labs(x = "ln i", y = "ln v", linetype = NULL)
 ```
 
-The confidence ellipse is a "fat sausage"^[@STOC:WATS:15.] with the long part of the
+The confidence ellipse is a "fat sausage"^[@STOC:WATS:15, p. 235.] with the long part of the
 sausage slightly oriented in the lower-left/upper-right direction. This
 is because, as we have seen previously, the two covariates exhibit a
 small negative correlation, which implies a small positive correlations
@@ -1353,17 +1420,16 @@ hypothesis. Consider for example:
     interval ellipse,
 -   $(\beta_i = 1.25, \beta_v = -3.1)$ represented by a triangle point:
     the simple hypothesis $\beta_i = 1.25$ is not rejected, as the simple
-    hypothesis $\beta_b = -3.1$, but the joint hypothesis
+    hypothesis $\beta_b = -3.1$ is, but the joint hypothesis
     is not rejected, the triangle point being inside the 95% confidence interval ellipse.
 
 The hypothesis that the two coefficients sum to 0 is not rejected as
 some points of the straight line that figure this hypothesis are in the confidence ellipse.
-Concerning the hypothesis that $\beta_i = 0.5$ and $\beta_v = -0.5$, the two simple hypothesis and the joint hypothesis are rejected at the 95% confidence level: the two estimates are neither in the segments representing the simple confidence interval and nor inside the ellipse figuring the joint confidence interval. 
+Concerning the hypothesis that $\beta_i = 0.5$ and $\beta_v = -0.5$, the two simple hypothesis and the joint hypothesis are rejected at the 95% confidence level: the two estimates are neither in the segments representing the simple confidence interval nor inside the ellipse figuring the joint confidence interval. 
 
 #### Joint hypothesis
 
-To test a joint hypothesis for a the values of a couple of parameters $(\beta_{10}, \beta_{20})$, we have seen previously that we can simply check whether the corresponding point is inside or outside the confidence interval ellipse. We can also compute the statistic in @eq-ellipse_est for $(\beta_1=\beta_{10}, \beta_2=\beta_{20})$
-and compares it to the critical value.
+To test a joint hypothesis for a the values of a couple of parameters $(\beta_{10}, \beta_{20})$, we have seen previously that we can simply check whether the corresponding point is inside or outside the confidence interval ellipse. We can also compute the statistic given in @eq-ellipse_est for $(\beta_1=\beta_{10}, \beta_2=\beta_{20})$ and compares it to the critical value.
 
 The statistic is computed using the elements in the matrix returned by
 `coef(summary(x))`, which contains in particular the estimations and
@@ -1371,6 +1437,7 @@ their standard deviations. We first compute the t statistics
 corresponding to the two simple hypothesis:
 
 ```{r }
+#| label: student_coefs_pm05
 sc <- slw_tot %>% summary %>% coef
 t_i <- (sc[2, 1] - 0.5) / sc[2, 2]
 t_v <- (sc[3, 1] + 0.5) / sc[3, 2]
@@ -1380,6 +1447,7 @@ We then apply the simplified formula, which is the sum or the mean of
 the squares of the t statistics:
 
 ```{r }
+#| label: chisqf_approx_coef_pm05
 St2 <- t_i ^ 2 + t_v ^ 2
 Mt2 <- (t_i ^ 2 + t_v ^ 2) / 2
 c(St2, Mt2)
@@ -1388,7 +1456,9 @@ c(St2, Mt2)
 for which the distributions under $H_0$ are respectively a $\chi ^ 2$
 and a $F$, with the folowing critical values:
 
-```{r collapse = TRUE}
+```{r }
+#| collapse: true
+#| label: quantiles_chisq_f
 qchisq(0.95, df = 2)
 qf(0.95, df1 = 2, df2 = df.residual(slw_tot))
 ```
@@ -1400,22 +1470,23 @@ correlation between the two covariates. We compute this coefficient
 using the data frame of the fitted model, which is obtained using the
 `model.frame` function. Using the initial data frame `growth` wouldn't
 give the correct value because the estimation is not performed on the
-full data set because of missing data:
+full data set because of missing data and because the estimation is performed exclude some groups of countries:
 
-```{r collapse = TRUE}
+```{r }
+#| collapse: true
+#| label: coef_corr_i_v
 mf <- model.frame(slw_tot)
-head(mf, 3)
-c(nrow(mf), nrow(growth))
 r_iv <- summarise(mf, r = cor(`log(i)`, `log(v)`)) %>% pull(r)
 r_iv
 ```
 
 Note that the names of the covariates are not regular names as they
-contains parenthesis, therefore they should be surrounded by sticks. The
+contains parenthesis, therefore they should be surrounded by the ` ` ` sign. The
 coefficient of correlation between the two covariates is
 `r round(r_iv, 3)`. We obtain:
 
 ```{r }
+#| label: fstat_coef_pm05
 Fstat <- (t_i ^ 2 + t_v ^ 2 + 2 * r_iv * t_i * t_v) / (1 - r_iv ^ 2) / 2
 Fstat
 ```
@@ -1424,10 +1495,10 @@ The statistic (`r round(Fstat, 3)`) is slightly greater than the
 approximative value (`r round(Mt2, 3)`) previously computed, we
 therefore reject once again the null hypothesis. 
 
-
 ### The three test principles {#sec-three_tests}
 
-In the previous subsection, we started with a general (unconstrained) model, we constructed a confidence ellipse for the two parameters, and we were abble to test a set of hypothesis, either by checking whether the values of the parameters corresponding to the hypothesis were inside the confidence ellipse, or by computing the value of the statistic for the tested values of the parameters. Actually, this testing principle, based on the unconstrained model, is just one way of testing hypothesis. The geometry of least squares and the Frish-Waugh theorem highlight the fact that any set of hypothesis can be tested using the fact that this set of hypothesis give rise to two models:
+<!-- !!! clarifier les notations Z vs X -->
+In the previous subsection, we started with a general (unconstrained) model, we constructed a confidence ellipse for the two parameters, and we were abble to test a set of hypothesis, either by checking whether the values of the parameters corresponding to the hypothesis were inside the confidence ellipse, or by computing the value of the statistic for the tested values of the parameters. Actually, this testing principle, based on the unconstrained model, is just one way of testing hypothesis. The geometry of least squares and the Frisch-Waugh theorem highlight the fact that any set of hypothesis can be tested using the fact that this set of hypothesis give rise to two models:
 
 -   a **constrained model**, which imposes the hypotheses,
 -   an **unconstrained model**, which doesn't impose the hypotheses.
@@ -1443,20 +1514,19 @@ unconstrained model or both:
 A set of $J$ linear hypothesis is writen as:
 
 $$
-R \beta = q
+R \gamma = q
 $$
 
-where $R$ is a matrix of dimension $J \times K$ and $q$ is a vector of length
-$J$. $J$, the number of hypothesis, is necessary lower than $K$.
+where $R$ is a matrix of dimension $J \times (K + 1)$ and $q$ is a vector of length
+$J$. $J$, the number of hypothesis, is necessary lower or equal to $K$.
 Actually, a set of $J$ hypothesis can always be rewriten as a model of
 the form $y = X_1\beta_1 + X_2\beta_2 + \epsilon$, the hypothesis being
-$\mbox{H}_0: \beta_2 = 0$. For example, if the hypothesis is $H_0: \beta_1 = 2$, removing $2X2$ from both sides of the equation gives: $y - 2 X_2= X_1\beta_1 + X_2(\beta_2-2) + \epsilon$ and the coefficient of $X_2$ is now 0 under $H_0$. In this setting, the three test are easily constructed using the Frish-Waugh theorem, with $H_0: \beta_2 = 0$.
+$\mbox{H}_0: \beta_2 = 0$. In this setting, the three test are easily constructed using the Frisch-Waugh theorem, with $H_0: \beta_2 = 0$.
 
 #### Wald test
 
 The Wald test is based on the unconstrained model, for which a vector of
-slopes $\hat{\beta}_2$ is estimated. Using the Frish-Waugh theorem, this vector can be obtained as the regression of the residuals of $y$ on $X_1$ ($M_1y$) on the residuals of every column of $X_2$ on $X_1$ ($M_1X_2$). Then, $\hat{\beta}_2 = (X_2^\top M_1 X_2) ^ {-1} X_2^\top M_1 y$, with expected value and variance equal to $\beta_2$ (0 under $H_O$) and $\mbox{V}(\hat{\beta}_2) = \sigma_\epsilon^2 (X_2^\top M_1 X_2) ^ {-1}$
-
+slopes $\hat{\beta}_2$ is estimated. Using the Frisch-Waugh theorem, this vector can be obtained as the regression of the residuals of $y$ on $X_1$ ($M_1y$) on the residuals of every column of $X_2$ on $X_1$ ($M_1X_2$). Then, $\hat{\beta}_2 = (X_2^\top M_1 X_2) ^ {-1} X_2^\top M_1 y$, with expected value and variance equal to $\beta_2$ (0 under $H_0$) and $\mbox{V}(\hat{\beta}_2) = \sigma_\epsilon^2 (X_2^\top M_1 X_2) ^ {-1}$
 Convergence in distribution implies that:
 
 $$
@@ -1464,7 +1534,7 @@ $$
 $$
 
 The distribution of the quadratic form of a centered vector of normal
-random variable with the inverse of its covariance matrix is a $\chi^2$
+random variables of length $J$ with the inverse of its covariance matrix is a $\chi^2$
 with $J$ degrees of freedom:
 
 $$
@@ -1487,11 +1557,11 @@ $$
 {\sigma_\epsilon^2}
 $$
 
-#### Score test
+#### Lagrange multiplier or score test
 
-Consider the constrained model, which impose $\beta_2 = 0$. It is therefore obtained by regressiong $y$ on $X_1$ only and the vector of residuals is $\hat{\epsilon}_1 = M_1 y$. The idea of this test is that, if $H_0$ is true, $X_2 ^ \top \hat{\epsilon}_1$
-should be closed to zero ($\hat{\epsilon}_1$ is "almost" orthogonal to
-the subspace spaned by $X_2$). Therefore, we consider the vector
+Consider the constrained model, which impose $\beta_2 = 0$. It is therefore obtained by regressing $y$ on $X_1$ only and the vector of residuals is $\hat{\epsilon}_1 = M_1 y$. The idea of this test is that, if $H_0$ is true, $X_2 ^ \top \hat{\epsilon}_1$
+should be closed to zero, $\hat{\epsilon}_1$ being "almost" orthogonal to
+the subspace spaned by $X_2$. Therefore, we consider the vector
 $X_2 ^ \top \hat{\epsilon}_1 = X_2 ^ \top M_1 y$, which, under $H_0$, should have a 0 expected value. The variance of this vector is: $\sigma_\epsilon ^ 2 (X_2^\top M_1X_2)^{-1}$ so that, applying the central limit theorem:
 
 $$
@@ -1499,7 +1569,7 @@ X_2 ^ \top \hat{\epsilon}_1 \equiv X_2 ^ \top M_1 y \stackrel{a}{\sim} \mathcal{
 \left(0, \sigma_\epsilon ^ 2 X_2 ^ \top M_1 X_2\right)
 $$
 
-and get the score test statistic using the quadratic form:
+The statistic is obtained, as previously, by computing the quadratic form:
 
 $$
 \mbox{score}=y ^ \top M_1 X_2  \left(\sigma_\epsilon ^ 2 X_2 ^ \top M_1
@@ -1530,9 +1600,12 @@ Consider the augmented Solow model:
 $$
 y = \alpha + \beta_i i + \beta_v v + \beta_e e + \epsilon
 $$
-with $\beta_i = \frac{\alpha}{1 - \alpha - \beta}$, $\beta_v = -\frac{\alpha + \beta}{1 - \alpha - \beta}$ and $\beta_e = \frac{\beta}{1 - \alpha - \beta}$.
+with $\beta_i = \frac{\kappa}{1 - \kappa - \lambda}$, $\beta_v = -\frac{\kappa + \lambda}{1 - \kappa - \lambda}$ and $\beta_e = \frac{\lambda}{1 - \kappa - \lambda}$.
+
+For convenience, we compute the logarithm of the variables before using `lm`:
 
 ```{r}
+#| label: compute_logs
 growth_sub2 <- growth_sub %>% 
   mutate(y = log(gdp85), i = log(i), v = log(v), e = log(e))
 mrw2 <- lm(y ~ i + v + e, growth_sub2)
@@ -1541,17 +1614,18 @@ mrw2 <- lm(y ~ i + v + e, growth_sub2)
 We consider two hypothesis:
 
 - $\beta_i + \beta_v + \beta_e = 0$, this hypothesis is directly implied by the structural model,
-- $\alpha = 1 /3$, the share of profits has a reasonable value.
+- $\kappa = 1 /3$, the share of profits has a reasonable value.
 
-The second hypothesis implies that $\beta_i = \frac{1/3}{2/3 - \beta}$ and therefore that $\beta_e = 2 \beta_i - 1$. The model can be re-parametrised in such way that two slopes are 0 if the two hypothesis are satisfied:
+The second hypothesis implies that $\beta_i = \frac{1/3}{2/3 - \lambda}$ and therefore that $\beta_e = 2 \beta_i - 1$. The model can be re-parametrized in such way that two slopes are 0 if the two hypothesis are satisfied:
 
 $$
-y + e - v = \alpha + \beta_i (i + 2e - 3v) + (\beta_e-2\beta_i+1)(e-v)+(\beta_i + \beta_e+\beta_v)v
+y + e - v = \kappa + \beta_i (i + 2e - 3v) + (\beta_e-2\beta_i+1)(e-v)+(\beta_i + \beta_e+\beta_v)v
 $$
 
-Therefore, the unconstrained model can be written as a model with $y + e - v$ as the response and $i + 2 e - 3 v$, $e-v$ and $v$ as the three covariates.
+Therefore, the unconstrained model can be written as a model with $y + e - v$ as the response and $i + 2 e - 3 v$, $e-v$ and $v$ as the three covariates and the constrained model as a model with the same response but with $i + 2 e - 3$ as unique covariate.
 
 ```{r}
+#| label: constrained_unconstr_models_growth
 growth_sub2 <- growth_sub2 %>% 
   mutate(y2 = y + e - v, i2 = i + 2 * e - 3 * v, e2 = e - v)
 mrw_c <-  lm(y2 ~ i2,         growth_sub2)
@@ -1562,12 +1636,14 @@ coef_nc
 
 The two hypothesis can be tested one by one as the test is that:
 
-- the slope of $I(e-v)$ equals 0 for the hypothesis that $\alpha = 1/3$,
-- $the slope of $v$ equals 0 for the hypothesis that $\beta_i+\beta_e+\beta_v=0$.
+- the slope of $e2 = e-v$ equals 0 for the hypothesis that $\kappa = 1/3$,
+- the slope of $v$ equals 0 for the hypothesis that $\beta_i+\beta_e+\beta_v=0$.
 
-Both hypothesis are not rejected, even at the 10% level. To test the join hypothesis, we can get a first glance by using the approximative formula which is the sum or the mean of the squares of the student t (respectively a $\chi^2$ with 2 degrees of freedom and a F with 2 and 71 degrees of freedom):
+Both hypothesis are not rejected, even at the 10% level. To test the join hypothesis, we can first use the approximative formula which is the sum or the mean of the squares of the t statistics (respectively a $\chi^2$ with 2 degrees of freedom and a F with 2 and 71 degrees of freedom):
 
 ```{r}
+#| label: approx_results_joint_hyp
+#| collapse: TRUE
 appr_chisq <- coef_nc[3, 3] ^ 2 + coef_nc[4, 3] ^ 2
 appr_f <- appr_chisq / 2
 c(appr_chisq, appr_f)
@@ -1577,9 +1653,9 @@ pf(appr_f, df1 = 2, df2 = 71, lower.tail = FALSE)
 
 Based on this approximation, the joint hypothesis is clearly not rejected. We now turn to the computation of the statistics, using the three test principles.
 
-#### Wald test
+#### Wald test {#sec-wald_test_example}
 
-Considering the initial unconstrained model, for which the formula is $y \sim i + v + e$, the set of the two hypothesis can be writen in matrix form as:
+Considering the initial unconstrained model, for which the formula is $y \sim i + v + e$, the set of the two hypothesis can be written in matrix form as:
 
 $$
 \left(
@@ -1602,6 +1678,7 @@ $$
 The matrix $R$ and the vector $q$ are created in **R**:
 
 ```{r}
+#| label: R_constraints_growth
 R <- matrix(0, 2, 4) ; q <- c(1, 0)
 R[1, 2] <- 2 ; R[1, 4] <- - 1 ; R[2, 2:4] <- 1
 ```
@@ -1609,38 +1686,49 @@ R[1, 2] <- 2 ; R[1, 4] <- - 1 ; R[2, 2:4] <- 1
 We then have $H_0: R\gamma - q = 0$ and, for the fitted unconstrained model, we get: $R\hat{\gamma} - q$. Under $H_0$ the expected value of this vector is 0 and its estimated variance is $R^\top \hat{V}_{\hat{\gamma}}R=\hat{\sigma}_\epsilon ^ 2R^\top(Z^\top Z)^{-1}R$. Then:
 
 $$
-(R\hat{\gamma} - q)^\top \left[R^\top \hat{V}_{\hat{\gamma}}R\right]^{-1}(R\hat{\gamma} - q)
-$$
+(R\hat{\gamma} - q)^\top \left[R \hat{V}_{\hat{\gamma}}R ^ \top\right]^{-1}(R\hat{\gamma} - q)
+$$ {#eq-wald_test_formula}
+
 is asymptotically a $\chi^2$ with $J=2$ degrees of freedom. Dividing by $J$, we get a F statistic with $2$ and $71$ degrees of freedom.
 
 ```{r}
+#| label: wald_test_growth
 c(t(R %*% coef(mrw2) - q) %*% 
     solve(R %*% vcov(mrw2) %*% t(R)) %*%  
     (R %*% coef(mrw2) - q) / 2)
 ```
 
+`car::linearHypothesis` performs Wald tests with a nice syntax: the first argument is a fitted model and the second one is a vector of character which enables simply to write the hypothesis:
+
+```{r}
+#| label: linear_hypothesis
+car::linearHypothesis(mrw2, c("i + v + e = 0", "e = 2 * i - 1"))
+```
 
 #### Likelihood ratio test
 
-The computation of the likelihood ratio statistic is very simple while the two models have been estimated. The sum of squares of the two models are extracted using the `deviance` method and we divide the difference of the two sums of squares by $\hat{\sigma}_\epsilon^2$ (the `sigma` method is used to extract the standard deviation of the residuals) and by 2 to get a F statistic.
+The computation of the likelihood ratio statistic is very simple once the two models have been estimated. The sum of squares of the two models are extracted using the `deviance` method and we divide the difference of the two sums of squares by $\dot{\sigma}_\epsilon^2$ (the `sigma` method is used to extract the standard deviation of the residuals) and by 2 to get a F statistic.
 
 ```{r}
+#| label: lr_test_growth
 (deviance(mrw_c) - deviance(mrw2))/ sigma(mrw2) ^ 2 / 2
 ```
 
 #### Score test
 
-For the score test, we consider the re-parametrized model and we define $X_1$ as $i + 2 * e - 3 * v$ and $X_2$ as $e-v$ and $v$.
+For the score test, we consider the re-parametrized model and we define $1_1$ as a vector of one and $i + 2  e - 3  v$ and $X_2$ as $e-v$ and $v$.
 
 ```{r}
+#| label: score_test_model_matrix
 X2 <- model.matrix(~ e + v - 1, model.frame(mrw2))
-X1 <- model.matrix(mrw_c)
+Z1 <- model.matrix(mrw_c)
 ```
-The test is based on the vector $X_2 ^ \top \hat{\epsilon}_c$, where $\hat{\epsilon}_c$ is the vector of the residuals for the constrained model. Under $H_0$, the expected value of $X_2 ^ \top \hat{\epsilon}_c$ is 0 and its variance is $\sigma_\epsilon ^ 2 X_2^ \top M_1 X_2$. $M_1 X_2$ is a matrix of residuals of all the columns of $X_2$ on $X_1$.
+
+The test is based on the vector $X_2 ^ \top \hat{\epsilon}_c$, where $\hat{\epsilon}_c$ is the vector of the residuals for the constrained model. Under $H_0$, the expected value of $X_2 ^ \top \hat{\epsilon}_c$ is 0 and its variance is $\sigma_\epsilon ^ 2 X_2^ \top M_1 X_2$. $M_1 X_2$ is a matrix of residuals of all the columns of $X_2$ on $Z_1$.
 
 ```{r}
 ec <- resid(mrw_c)
-M1X2 <- resid(lm(X2 ~ X1))
+M1X2 <- resid(lm(X2 ~ Z1))
 ```
 
 The statistic is then $\hat{\epsilon}_c^\top X_2 \left[X_2^ \top M_1 X_2\right]^{-1} X_2 \hat{\epsilon}_c / \sigma_\epsilon^2$. The statistic can be computed using an estimator of $\sigma_\epsilon^2$, and dividing by $J=2$ to get a F statistic.
@@ -1651,17 +1739,17 @@ c(t(crossprod(X2, ec)) %*%
     crossprod(X2, ec) / sigma(mrw_c) ^ 2 / 2)
 ```
 
-The statistic is slightly different from the one computed previously, the difference being that the estimation of $\sigma_\epsilon$ is based on the constrained model.
+The statistic is slightly different from the one computed previously, the difference being only due to the fact that the estimation of $\sigma_\epsilon$ is based for the score test on the constrained model.
 
 
 ### Testing that all the slopes are 0
 
-The test that all the slopes are 0 is routinely reported by softwares performing **OLS** estimation. It can be computed using any of the three test principles, but the likelihood ratio test is particulary appealing in this context, the constrained model being a model with only an intercept: $y_n = \alpha + \epsilon_n$. In this case, $\hat{\alpha} = \bar{y}$ and $\hat{\epsilon} = (y_n - \bar{y})$. Therefore, the sum of squares residuals for the constrained model is $S_{yy} = \sum_n (y_n - \bar{y}) ^ 2$ and is also denoted $\mbox{TSS}$ for total sum of squares. The statistic is then:
+The test that all the slopes are 0 is routinely reported by softwares performing OLS estimation. It can be computed using any of the three test principles, but the likelihood ratio test is particulary appealing in this context, the constrained model being a model with only an intercept: $y_n = \alpha + \epsilon_n$. In this case, $\hat{\alpha} = \bar{y}$ and $\hat{\epsilon} = (y_n - \bar{y})$. Therefore, the resisudal sum of squares for the constrained model is $S_{yy} = \sum_n (y_n - \bar{y}) ^ 2$ and is also denoted $\mbox{TSS}$ for total sum of squares. The statistic is then:
 
 $$
-\frac{\mbox{TSS} - \mbox{RSS}}{\sigma_\epsilon ^ 2}
+\frac{\mbox{TSS} - \mbox{RSS}}{\sigma_\epsilon ^ 2} \sim \chi ^ 2_K
 $$
-which is a $\chi ^ 2$ with $K$ degrees of freedom if the hypothesis that all the slopes are 0 is true. To compute this statistic, $\sigma_\epsilon^2$ has to be estimated; a natural estimator is $\mbox{RSS} / (N - K - 1)$ but, if $H_0$ is true, $\mbox{TSS} / (N - 1)$ is also an unbiased estimator. Moreover, dividing by the sample size ($N$) and not by the number of degrees of freedom leads to biased but consistent estimators. Using the first estimator of $\sigma_\epsilon^2$ and dividing by $K$, we get the $F$ statistic with $K$ and $N-K-1$ degrees of freedom:
+which is a $\chi ^ 2$ with $K$ degrees of freedom if the hypothesis that all the slopes are 0 is true. To compute this statistic, $\sigma_\epsilon^2$ has to be estimated. A natural estimator is $\mbox{RSS} / (N - K - 1)$ but, if $H_0$ is true, $\mbox{TSS} / (N - 1)$ is also an unbiased estimator. Moreover, dividing by the sample size ($N$) and not by the number of degrees of freedom leads to biased but consistent estimators. Using the first estimator of $\sigma_\epsilon^2$ and dividing by $K$, we get the $F$ statistic with $K$ and $N-K-1$ degrees of freedom:
 
 $$
 \frac{\mbox{TSS} -\mbox{RSS}}{\mbox{RSS}}\frac{N - K - 1}{K} \sim F_{K, N-K-1}
@@ -1670,7 +1758,7 @@ $$
 Using $\mbox{TSS} / N$ as an estimate for $\sigma_\epsilon^2$, we get a very simple statistic that is asymptotically a $\chi^2$ with $K$ degrees of freedom:
 
 $$
-N \frac{\mbox{TSS} -\mbox{RSS}}{\mbox{TSS}} \sim \chi ^ 2_{K}
+N \frac{\mbox{TSS} -\mbox{RSS}}{\mbox{TSS}}  \stackrel{a}{\sim} \chi^2_{K}
 $$
 
 These two statistics are closely related to the $R^2$ which is, using this notation, equal to $1 - \mbox{RSS} / \mbox{TSS} = (\mbox{TSS} - \mbox{RSS}) / \mbox{TSS}$. We can then write the $F$ statistic as: 
@@ -1683,50 +1771,49 @@ and the asymptotic $\chi^2$ statistic as $N R^2$.
 There is no easy way to extract the $R^2$ and the $F$ statistic with **R**. Both are computed by the `summary` method of `lm`:
 
 ```{r}
+#| label: summary_lm_names
 slm <- slw_tot %>% summary
 slm %>% names
 ```
 and can be extracted "manually" from the list returned by `summary` using the `$` operator:
 
 ```{r}
+#| label: extracting_r2_f
 #| collapse: true
 slm$r.squared
 slm$fstatistic
 ```
 
-The interest of this testing strategy is not limited to the test that all the slopes of a real model is 0. It can also be used to test any set of hypothesis, using re-parametrization and the Frish-Waugh theorem. Consider for example the hypothesis that $\beta_i = 0.5$ and $\beta_i + \beta_e + \beta_v=0$. We have seen previously that, after re-parametrization, this corresponds to the model:
+The interest of this testing strategy is not limited to the test that all the slopes of a real model is 0. It can also be used to test any set of hypothesis, using re-parametrization and the Frisch-Waugh theorem. Consider for example the hypothesis that $\beta_i = 0.5$ and $\beta_i + \beta_e + \beta_v=0$. We have seen previously that, after re-parametrization, this corresponds to the model:
 
 ```{r}
+#| label: constrained_reparam_growth
 mrw_nc <- lm(y2 ~ i2 + e2 + v, growth_sub2)
 mrw_nc %>% coef
 ```
 
-with, if the two hypothesis are true, the two slopes associated with `e2` and `v` equal to 0. Now, using the Frish-Waugh theorem, and denoting $X_1 = (j, i_2)$ and $X_2 = (e_2, v)$:
+with, if the two hypothesis are true, the two slopes associated with `e2` and `v` equal to 0. Now, using the Frisch-Waugh theorem, and denoting $X_1 = (j, i_2)$ and $X_2 = (e_2, v)$:
 
 ```{r}
+#| label: frisch_waugh_growth
 y2b <- lm(y2 ~ i2, growth_sub2) %>% resid
 e2b <- lm(e2 ~ i2, growth_sub2) %>% resid
 vb <- lm(v ~ i2, growth_sub2) %>% resid
-mrw_ncb <- lm(y2b ~ e2b + vb)
+mrw_ncb <- lm(y2b ~ e2b + vb - 1)
 mrw_ncb %>% coef
 ```
 
 We get exactly the same estimators as previously for `e2` and `v`, but now the joint hypothesis is that all the slopes of the second model are 0. Therefore, the test is based on the F statistic that is returned by `summary(lm(x))` and doesn't require any further calculus:
 
 ```{r}
+#| label: frisch_waugh_growth_fstat
 summary(mrw_ncb)$fstatistic
 ```
 
-## System estimation and constrained least squares
+Actually, a degrees of freedom correction should be performed to get exactly the same results because `mrw_ncb` has $75 - 2 = 73$ degrees of freedom, as the real number of degrees of freedom is $75 - 4  = 71$.
 
 
-```{r }
-#| include: false
-#| message: false
-source("clm.R")
-```
-
-### System of equations
+## System estimation and constrained least squares {#sec-system_equation}
 
 Very often in economics, the phenomenon under investigation is not
 well described by a single equation, but by a system of
@@ -1737,6 +1824,7 @@ behavior of a producer is described by a minimum cost equation along
 with equations of factor demand and the behavior of a consumer is
 described by a set of demand equations. 
 
+### System of equations
 
 We consider therefore a system of $L$ equations denoted
 $y_l=X_l\beta_l+\epsilon_l$, with $l=1\ldots L$. In matrix form, the
@@ -1751,15 +1839,15 @@ $$
 =
 \left(
   \begin{array}{ccccc}
-    X_1 & 0 & \ldots & 0 \\
-    0 & X_2 & \ldots & 0 \\
+    Z_1 & 0 & \ldots & 0 \\
+    0 & Z_2 & \ldots & 0 \\
     \vdots & \vdots & \ddots & \vdots \\
-    0 & 0 & \ldots & X_L
+    0 & 0 & \ldots & Z_L
   \end{array}
 \right)
 \left(
   \begin{array}{c}
-    \beta_1 \\ \beta_2 \\ \vdots \\ \beta_L
+    \gamma_1 \\ \gamma_2 \\ \vdots \\ \gamma_L
   \end{array}
 \right)
 +
@@ -1775,8 +1863,8 @@ vector of responses and by constructing a block-diagonal matrix of
 covariates, each block being the matrix of covariates for one of the
 equation. 
 
-To analyze production characteristics (returns to scale, elasticities
-of substitution between pairs of inputs), the modern approach is to
+As an example consider the analyze of production characteristics (returns to scale, elasticities
+of substitution between pairs of inputs). The modern approach is to
 consider the minimum cost function, which depends on the level of
 production and on input unit prices $C(y, p_1, \ldots p_J)$ and, using
 Shepard Lemma, to derive from this cost function the demands for
@@ -1786,21 +1874,21 @@ $$
 \frac{\partial C}{\partial p_j} = x_j(y, p_1, \ldots, p_J)
 $$
 
-The cost function is obviously homogenous of degree 1 with price,
+The cost function is obviously homogeneous of degree 1 in input unit prices,
 which means that, for a given level of input, if all the price
-increase proportionnally, the quantity of the different inputs are the
+increase proportionally, the quantity of the different inputs are the
 same and therefore the cost function increases by the same
 percentage. This writes: $C(y, \lambda p_1, \ldots \lambda p_J) =
 \lambda C(y, p_1, \ldots, p_J)$ and $x_j(y, \lambda p_1, \ldots,
 \lambda p _J) = x_j(y, p_1, \ldots p_J)$ the latter relation
-indicating that the demands for input are homogenous of degree 0 with
-the price. Among the different functional forms that were proposed to
+indicating that the demands for input are homogeneous of degree 0 in
+input unit prices. Among the different functional forms that have been proposed to
 estimate the cost function, the translog specification is the most
 popular. It can be considered as the second-order approximation of a
 general cost function:
 
 $$
-\ln C = \beta_o + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y \sum_i \beta_i \ln p_i + \frac{1}{2}
+\ln C = \alpha + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y +\sum_i \beta_i \ln p_i + \frac{1}{2}
 \sum_i\sum_j \beta_{ij} \ln p_i \ln p_j
 $$
 
@@ -1811,9 +1899,9 @@ $$
 s_i = \frac{\ln C}{\ln p_i} = \frac{p_i x_i}{C} = \beta_i + \sum_{j=1} ^ I \beta_{ij} \ln p_j
 $$
 
-Homogeneity of degree 1 with price implies that the cost shares don't
-depends on the level of price. Therefore, $\sum_j^I \beta_{ij} = 0$,
-or $\beta_{iI} = - \sum_j^{I-1} \beta_{ij}$. Therefore:
+Homogeneity of degree 1 in input prices implies that the cost shares don't
+depend on the level of prices. Therefore, $\sum_j^I \beta_{ij} = 0$,
+or $\beta_{iI} = - \sum_j^{I-1} \beta_{ij}$ and:
 
 $$
 \begin{array}{rcl}
@@ -1832,10 +1920,10 @@ p_I\right] \\
 $$
 
 Moreover, the cost shares sums to 1 whatever the price, so that
-$\sum_i \beta_i = 1$. Therefore, the cost function can be rewriten as:
+$\sum_i \beta_i = 1$. Therefore, the cost function can be rewritten as:
 
 $$
-C^* = \beta_0 + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y + \sum_i ^{I-1}\beta_i p_i^* + 
+C^* = \alpha + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y + \sum_i ^{I-1}\beta_i p_i^* + 
 \frac{1}{2} \sum_{i=1} ^ {I - 1} \beta_{ii} {p_i^*} ^ 2 +  
 \sum_{i=1} ^ {I - 1} \sum_{j>i} ^ {I - 1} \beta_{ij} p_i^* p_j^* 
 $$
@@ -1847,12 +1935,12 @@ s_i = \beta_i + \sum_{j=1} ^ {I-1} p_j ^ *
 $$
 
 Consider the case where $I=3$. In this case, the complete system of
-equation is:
+equations is:
 
 $$
 \left\{
 \begin{array}{rcl}
-C^* &=& \beta_0 + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y + \beta_1 p_1 ^ * + \beta_2 p_2 ^ *
+C^* &=& \alpha + \beta_y \ln y + \frac{1}{2}\beta_{yy} \ln^2 y + \beta_1 p_1 ^ * + \beta_2 p_2 ^ *
 + \frac{1}{2} \beta_{11} {p_1^*} ^ 2 + \beta_{12} p_1^* p_2^* +
   \frac{1}{2} \beta_{22} {p_2^*} ^ 2 \\
 s_1 &=& \beta_1 + \beta_{11} p_1 ^ * + \beta_{12} p_2 ^ * \\
@@ -1867,8 +1955,7 @@ restrictions; for example, the coefficient of $p_1^*$ in the cost
 equation should be equal to the intercept of the cost share for the
 first factor. 
 
-
-To estimate the translog cost function, we use the data set of
+We estimate the translog cost function, with the `apples` data set of
 @IVAL:LADO:OSSA:SIMI:96 who studied the production cost of apple
 producers. Farms in this sample produce apples and other fruits
 (respectively `apples` and `otherprod`). The authors observe the sales
@@ -1881,10 +1968,11 @@ unique output variable `y`. The expenses in the tree factors are given
 by `capital`, `labor` and `materials` and the corresponding unit
 prices are `pc`, `pl` and `pm`. The data set is an unbalanced panel of
 173 farms observed for three years (1984, 1985 and 1986). We consider
-only one year (1986)` and, for a reason that we'll be clear latter, we
+only one year (1985) and, for a reason that we'll be clear latter, we
 divide all the variables by their sample mean:
 
 ```{r }
+#| label: apples
 ap <- apples %>% filter(year == 1985) %>%
     transmute(y = otherprod + apples,
               ct = capital + labor + materials,
@@ -1901,50 +1989,52 @@ We then create three formulas corresponding to the system of 3
 equations (the cost function and the two factor shares):
 
 ```{r }
+#| label: apples_equations
 eq_ct <- ct ~ y + y2 + pl + pm + pl2 + plm + pm2
 eq_sl <- sl ~ pl + pm
 eq_sm <- sm ~ pl + pm
 ```
-These equations can be estimated one by one using **OLS**, but in this
+
+These equations can be estimated one by one using OLS, but in this
 case, the trans-equations restrictions are ignored. The whole system can also be
-estimated directly by stacking the three vectors of covariates and
+estimated directly by stacking the three vectors of responses and
 constructing a block diagonal matrix of covariates, each block being
 the relevant set of covariates for one equation. We use for this
 purpose the **Formula** package. We first create a "meta" formula
 which contains the three responses on the left side and the whole set
 of covariates on the right side. Then, we extract, using
 `model.matrix`, the three model matrices for the three
-equations (`X_c`, `X_l` and `X_m` respectively for the cost, the labor
+equations (`Z_c`, `Z_l` and `Z_m` respectively for the cost, the labor
 share and the material share equations). The column names of this
 matrices are customized using the `nms_cols` function, which for
-example, turns the original column names of `X_l` (`(Intercept)`, `pl`
+example, turns the original column names of `Z_l` (`(Intercept)`, `pl`
 and `pm`) to `sl_cst`, `sl_pl` and `sl_pm`. We then construct the
 block diagonal matrix (using the `Matrix::bdiag` function) and use our
 customized names:
 
 ```{r }
+#| label: bdiag_covariates
 library(Formula)
 eq_sys <- Formula(ct + sl + sm ~ y + y2 + pl + pm + pl2 + plm + pm2)
-mf <- model.frame(eq_sys, ap)  ; X_c <- model.matrix(eq_ct, mf) 
-X_l <- model.matrix(eq_sl, mf) ; X_m <- model.matrix(eq_sm, mf)
+mf <- model.frame(eq_sys, ap)  ; Z_c <- model.matrix(eq_ct, mf) 
+Z_l <- model.matrix(eq_sl, mf) ; Z_m <- model.matrix(eq_sm, mf)
 nms_cols <- function(x, label)
     paste(label, c("cst", colnames(x)[-1]), sep = "_")
-nms_c <- nms_cols(X_c, "cost") ; nms_l <- nms_cols(X_l, "sl")
-nms_m <- nms_cols(X_m, "sm")
-Xs <- Matrix::bdiag(X_c, X_l, X_m) %>% as.matrix
-colnames(Xs) <- c(nms_c, nms_l, nms_m)
-head(Xs, 2)
+nms_c <- nms_cols(Z_c, "cost") ; nms_l <- nms_cols(Z_l, "sl")
+nms_m <- nms_cols(Z_m, "sm")
+Zs <- Matrix::bdiag(Z_c, Z_l, Z_m) %>% as.matrix
+colnames(Zs) <- c(nms_c, nms_l, nms_m)
+head(Zs, 2)
 ```
 
-`model.part` enables to retrieve the three responses (a data frame
-with three variables `ct`, `sl` and `sm` and, using `pivot_longer`, we
-stack the three responses' vectors in one column:
+`Formula::model.part` enables to retrieve any part of the model. Here, we want to extract the three responses which are the only left side of the formula, so we set `lrs` and `rhs` respectively to 1 and 0. The result is a data frame with three variables `ct`, `sl` and `sm`. We then use `dplyr::pivot_longer`, to stack the three responses in one column. Note the use of the optional argument `cols_vary` that is set to `"slowest"`, so that the elements are stacked columnwise:
 
 ```{r }
+#| label: stack_responses
 Y <- model.part(eq_sys, mf, rhs = 0, lhs = 1)
-Ys <- Y %>% pivot_longer(1:3, cols_vary = "slowest", names_to = "equation",
+ys <- Y %>% pivot_longer(1:3, cols_vary = "slowest", names_to = "equation",
                          values_to = "response")
-print(Ys, n = 2)
+print(ys, n = 2)
 ```
 
 The estimation can be performed using the response vector and the
@@ -1952,19 +2042,21 @@ matrix of covariates:
 
 ```{r }
 #| results: false
-lm(Ys$response ~ Xs - 1)
+#| label: system_estimation_matrix
+lm(ys$response ~ Zs - 1)
 ```
 
-However, nicer imput is obtained by constructing a tibble by biding
-the columns of `Ys` and `Xs` and then using the usual formula-data
+However, nicer input is obtained by constructing a tibble by biding
+the columns of `ys` and `Zs` and then using the usual formula-data
 interface. In order to avoid to write the whole long list of
 covariates, the dot can be used in the right hand side of the formula,
 which means in this context all the variables (except the response
 which is on the left hand side of the formula). The intercept and the
-`response` variable should be omitted from the regression.
+`equation` variable should be omitted from the regression.
 
 ```{r }
-stack_data <- Ys %>% bind_cols(Xs)
+#| label: system_estimation_tibble
+stack_data <- ys %>% bind_cols(Zs)
 ols_unconst <- lm(response ~ . - 1 - equation, stack_data)
 ols_unconst
 ```
@@ -1972,45 +2064,14 @@ ols_unconst
 ### Constrained least squares
 
 Linear restrictions on the vector of coefficients to be estimated can be
-represented using a restriction matrix $R$ and a numeric vector $q$:
-
-$$
-R\beta = q
-$$
-
-where $\beta ^ \top = (\beta_1 ^ \top, \ldots, \beta_L ^ \top)$ is the
+represented using a restriction matrix $R$ and a numeric vector $q$: $R\gamma = q$^[See @sec-wald_test_example.], where $\gamma ^ \top = (\gamma_1 ^ \top, \ldots, \gamma_L ^ \top)$ is the
 stacked vector of the coefficients for the whole system of equations.
-For example, if the sum of the first two coefficients must equal 1 and
-the first and third ones should be equal, the joint restrictions can
-be written as:
 
 $$
-\left(
-\begin{array}{ccc}
-  1 & 1 & 0 \\
-  1 & 0 & -1 \\
-\end{array}
-\right)
-\left(
-\begin{array}{c}
-  \beta_1 \\ \beta_2 \\ \beta_3
-\end{array}
-\right)
-=
-\left(
-\begin{array}{c}
-1 \\ 0
-\end{array}
-\right)
+L = \epsilon^\top \epsilon + 2\lambda^\top(R\gamma-q)
 $$
 
-To estimate the constrained **OLS** estimator, we write the Lagrangian:
-
-$$
-L = \epsilon^\top \epsilon + 2\lambda^\top(R\beta-q)
-$$
-
-with $\epsilon=y - X\beta$ and $\lambda$ the vector of Lagrange
+with $\epsilon=y - Z\gamma$ and $\lambda$ the vector of Lagrange
 multipliers associated to the different constraints.[^non_spherical-1]
 The Lagrangian can also be written as:
 
@@ -2018,8 +2079,8 @@ The Lagrangian can also be written as:
     simplify the first order conditions.
 
 $$
-L = y^\top y - 2 \beta^\top X^\top y + \beta^\top X^\top X \beta +
-2\lambda (R\beta-q)
+L = y^\top y - 2 \gamma^\top Z^\top y + \gamma^\top Z^\top Z \gamma +
+2\lambda (R\gamma-q)
 $$
 
 The first order conditions are:
@@ -2027,8 +2088,8 @@ The first order conditions are:
 $$
 \left\{
   \begin{array}{rcl}
-    \frac{\partial L}{\partial \beta}&=&-2X^\top y + 2 X^\top X \beta + 2R^\top \lambda =0\\
-    \frac{\partial L}{\partial \lambda}&=&2(R\beta-q)=0
+    \frac{\partial L}{\partial \gamma}&=&-2Z^\top y + 2 Z^\top Z \gamma + 2R^\top \lambda =0\\
+    \frac{\partial L}{\partial \lambda}&=&2(R\gamma-q)=0
   \end{array}
 \right.
 $$
@@ -2038,24 +2099,24 @@ which can also be written in matrix form as:
 $$
 \left(
 \begin{array}{cc}
-  X^\top X & R^\top \\
+  Z^\top Z & R^\top \\
   R & 0 \\
 \end{array}
 \right)
 \left(
 \begin{array}{c}
-  \beta \\ \lambda 
+  \gamma \\ \lambda 
 \end{array}
 \right)
 =
 \left(
 \begin{array}{c}
-  X^\top y\\ q
+  Z^\top y\\ q
 \end{array}
 \right)
 $$
 
-The constrained **OLS** estimator can be obtained using the formula for
+The constrained OLS estimator can be obtained using the formula for
 the inverse of a partitioned matrix:
 
 $$
@@ -2084,32 +2145,29 @@ $$
 with $F_2=\left(A_{22}-A_{21}A_{11}^{-1}A_{12}\right)^{-1}$ and
 $F_1=\left(A_{11}-A_{12}A_{22}^{-1}A_{21}\right)^{-1}$.
 
-We have here $F_2=-\left(R(X^\top X)^{-1}R^\top\right)^{-1}$. The
-constrained estimator is then: $\hat{\beta}_c=B_{11}X^\top y+ B_{12}q$,
+We have here $F_2=-\left(R(Z^\top Z)^{-1}R^\top\right)^{-1}$. The
+constrained estimator is then: $\hat{\gamma}_c=B_{11}Z^\top y+ B_{12}q$,
 with
-$B_{11} = (X^\top X)^{-1}\left(I-R^\top(R(X^\top X)^{-1}R^\top)^{-1}R(X^\top X)^{-1}\right)$
+$B_{11} = (Z^\top Z)^{-1}\left(I-R^\top(R(Z^\top Z)^{-1}R^\top)^{-1}R(Z^\top Z)^{-1}\right)$
 and
-$B_{12}=(X^\top X)^{-1}R^\top\left(R(X^\top X)^{-1}R^\top\right)^{-1}$
+$B_{12}=(Z^\top Z)^{-1}R^\top\left(R(Z^\top Z)^{-1}R^\top\right)^{-1}$
 
 The unconstrained estimator being
-$\hat{\beta}_{nc}=\left(X^\top X\right)^{-1}X^\top y$, we finally get:
+$\hat{\beta}_{nc}=\left(Z^\top Z\right)^{-1}Z^\top y$, we finally get:
 
 $$
-\hat{\beta}_c=\hat{\beta}_{nc} - (X^\top X)^{-1}R^\top(R(X^\top
-X)^{-1}R^\top)^{-1}(R\hat{\beta}_{nc}-q)
+\hat{\gamma}_c=\hat{\gamma}_{nc} - (Z^\top Z)^{-1}R^\top(R(Z^\top
+Z)^{-1}R^\top)^{-1}(R\hat{\gamma}_{nc}-q)
 $$ {#eq-const_lm}
 
 The difference between the constrained and the unconstrained
 estimators is then a linear combination of the excess of the linear
 constraints of the model evaluated for the unconstrained model.
-
-
 For the system of cost and factor shares for apple production
 previously described, we have 14 coefficients and 6 restrictions:
 
-
-
 ```{r }
+#| label: restrict_matrix_apples
 R <- matrix(0, nrow = 6, ncol = 14)
 R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
     R[5, c(7, 13)] <- R[6, c(8, 14)] <- c(1, -1)
@@ -2118,6 +2176,7 @@ R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
 Applying @eq-const_lm, we get:
 
 ```{r }
+#| label: constrained_ls_manual
 excess <- R %*% coef(ols_unconst)
 XpX <- crossprod(model.matrix(ols_unconst))
 beta_c <- coef(ols_unconst) -
@@ -2128,24 +2187,32 @@ beta_c
 More simply, `micsr::clm` can be used, which compute the constrained
 least squares estimator with as arguments a `lm` object (the
 unconstrained model) and `R`, the matrix of restrictions (and
-optionnaly a `q` vector):
+optionally a `q` vector):
 
 ```{r }
+#| label: constrained_ls_clm
 ols_const <- clm(ols_unconst, R)
 ```
 and returns a `lm` object.
 
-
 Finally, the **systemfit** library is devoted to system
-estimation. Its main arguments are a list of equations and a data
+estimation and provide a `systemfit` function. Its main arguments are a list of equations and a data
 frame, but it also has a `restrict.matrix` and a `restrict.rhs`
 arguments to provide respectively $R$ and $q$.
 
 ```{r }
 #| results: hide
-#| message: false
-library(systemfit)
-sft <- systemfit(list(cost = eq_ct, labor = eq_sl, materials = eq_sm),
-                 data = ap, restrict.matrix = R)
+#| label: system_est_systemfit
+systemfit::systemfit(list(cost = eq_ct, labor = eq_sl, materials = eq_sm),
+                     data = ap, restrict.matrix = R)
 ```
+
+Once the constrained least squares estimator has been computed, one can test the validity of the constraints, using @eq-wald_test_formula:
+
+```{r}
+R %*% vcov(ols_const) %*% t(R)
+```
+
+
+
 
