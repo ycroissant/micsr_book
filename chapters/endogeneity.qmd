@@ -1121,7 +1121,8 @@ dinc_elig <- vietnam %>%
     mutate(mean = mean / cpi * 100, sd = sd / cpi * 100) %>% 
     select(- variable, - cpi) %>%
     pivot_wider(names_from = (eligible), values_from = c(mean, sd)) %>%
-    mutate(dmean = mean_yes - mean_no, dsd = sqrt(sd_no ^ 2 + sd_yes ^ 2)) %>%
+    mutate(dmean = mean_yes - mean_no, 
+           dsd = sqrt(sd_no ^ 2 + sd_yes ^ 2)) %>%
     select(-(mean_no:sd_yes))
 dinc_elig %>% print(n = 2)
 ```
@@ -1175,7 +1176,8 @@ deviation:
 ```{r }
 dshare_elig <- veterans %>%
     pivot_wider(names_from = eligible, values_from = c(mean, sd)) %>%
-    mutate(dshare = mean_yes - mean_no, sd_dshare = sqrt(sd_yes ^ 2 + sd_no ^ 2)) %>%
+    mutate(dshare = mean_yes - mean_no, 
+           sd_dshare = sqrt(sd_yes ^ 2 + sd_no ^ 2)) %>%
     select(- (mean_no:sd_total))
 dshare_elig %>% print(n = 2)
 ```
@@ -1204,7 +1206,8 @@ The income differentials are depicted in @fig-veterans
 wald %>%
     filter(race == "white") %>%
     ggplot(aes(year, wald)) +
-    geom_ribbon(aes(ymin = wald - 1.96 * sd, ymax = wald + 1.96 * sd), fill = "lightgrey") +
+    geom_ribbon(aes(ymin = wald - 1.96 * sd, ymax = wald + 1.96 * sd), 
+                fill = "lightgrey") +
     geom_hline(yintercept = 0, linetype = "dashed") +
     geom_smooth(se = FALSE, span = 0.2) +
     facet_grid(~ birth)
@@ -1441,7 +1444,8 @@ so-called **first stage regression**:
 #| results: 'asis'
 slaves_first <- lm(log(slarea) ~ atlantic + indian +
                        redsea + sahara, sltd)
-modelsummary::msummary(slaves_first, estimate = "{estimate} ({std.error})",
+modelsummary::msummary(slaves_first, 
+                       estimate = "{estimate} ({std.error})",
                        statistic = NULL,
                        coef_omit = "(colony)", output = "markdown",
                        gof_map = c("nobs", "r.squared", "F"))
@@ -1457,7 +1461,8 @@ estimation:
 ```{r }
 sltd <- sltd %>% add_column(hlslarea = fitted(slaves_first))
 slaves_second <- lm(log(gdp) ~ hlslarea, sltd)
-modelsummary::msummary(slaves_second, estimate = "{estimate} ({std.error})",
+modelsummary::msummary(slaves_second, 
+                       estimate = "{estimate} ({std.error})",
                        statistic = NULL,
                        coef_omit = "(colony)", output = "markdown",
                        gof_map = c("nobs", "r.squared", "F"))
@@ -2357,8 +2362,4 @@ rejected at the 5% level, but not at the 1% level. Finally, as there
 are 4 instruments, the Sargan statistic, which is the quadratic form
 of the 4 moment conditions with the inverse of its variance is $4.89$
 and is a $\chi ^ 2$ with 3 degrees of freedom if the instruments are
-valids. This hypothesis is not rejected, even at the 10% level.
-
-
-## References
-
+valid. This hypothesis is not rejected, even at the 10% level.

@@ -1818,7 +1818,7 @@ Actually, a degrees of freedom correction should be performed to get exactly the
 Very often in economics, the phenomenon under investigation is not
 well described by a single equation, but by a system of
 equations. Moreover, there may be inter-equations constraints on the
-coefficients. It is particulary the case in the field of the
+coefficients. It is particularly the case in the field of the
 micro-econometrics of consumption or production. For example, the
 behavior of a producer is described by a minimum cost equation along
 with equations of factor demand and the behavior of a consumer is
@@ -1856,7 +1856,7 @@ $$
     \epsilon_1 \\ \epsilon_2 \\ \vdots \\ \epsilon_L
   \end{array}
 \right)
-$$
+$$ {#eq-system_equation}
 
 Therefore, the whole system can be estimated directly by stacking the
 vector of responses and by constructing a block-diagonal matrix of
@@ -2207,11 +2207,11 @@ systemfit::systemfit(list(cost = eq_ct, labor = eq_sl, materials = eq_sm),
                      data = ap, restrict.matrix = R)
 ```
 
-Once the constrained least squares estimator has been computed, one can test the validity of the constraints, using @eq-wald_test_formula:
+<!-- Once the constrained least squares estimator has been computed, one can test the validity of the constraints, using @eq-wald_test_formula: -->
 
-```{r}
-R %*% vcov(ols_const) %*% t(R)
-```
+<!-- ```{r} -->
+<!-- R %*% vcov(ols_const) %*% t(R) -->
+<!-- ``` -->
 
 
 

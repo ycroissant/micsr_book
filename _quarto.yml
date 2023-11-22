@@ -9,22 +9,22 @@ titlepage-logo: "./latex/cemoi.png"
 
 book:
   author: "Yves Croissant"
-  date: "24/11/2022"
+  date: "17/11/2023"
   chapters:
   - index.qmd
-  - part: The ordinary least square estimator
-    chapters:
-    # - ./chapters/simple_regression.qmd
-    # - ./chapters/simple_regression_properties.qmd
-      - ./chapters/multiple_regression.qmd
-    # # - ./chapters/coefficients.qmd
+  - ./chapters/spatial.qmd
+  # - part: The ordinary least square estimator
+  #   chapters:
+  #     - ./chapters/simple_regression.qmd
+  #     - ./chapters/simple_regression_properties.qmd
+  #     - ./chapters/multiple_regression.qmd
+  #     - ./chapters/coefficients.qmd
   # - part: Beyound the OLS estimator
   #   chapters:
+  #     - ./chapters/maximum_likelihood.qmd
   #     - ./chapters/non_spherical.qmd
-      - ./chapters/maximum_likelihood.qmd
   #     - ./chapters/endogeneity.qmd
   #     - ./chapters/treateff.qmd
-  #     - ./chapters/spatial.qmd
   # - part: Special responses
   #   chapters:
   #     - ./chapters/binomial.qmd
@@ -53,12 +53,13 @@ format:
 #    toc-own-page: true
 #    include-in-header: ./latex/macros.tex
     include-in-header: 
-      text: |
-        \usepackage{makeidx}
-        \makeindex
-    include-after-body: 
-      text: |
-        \printindex
+      ./preamble.tex
+      # text: |
+      #   \usepackage{makeidx}
+      #   \makeindex
+    # include-after-body: 
+    #   text: |
+    #     \printindex
 
 
 editor: source

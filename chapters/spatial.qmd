@@ -31,12 +31,16 @@ glance.htest <- function(x, ...){
 
 # Spatial econometrics
 
-## Simple features
+Spatial econometrics is a very dynamic field in modern econometrics. Geolocated data are now frequently available, even when the data doesn't concern geographic entities like countries, regions or towns, but households or firms. From their geographic coordinates, one is able to define for every observation a set of neighbors and the correlation between neighbors can then be taken into account. There are two very different type of geographical data: vectors and rasters. A vector is a point or a set of point that defines a line. A raster is a grid that contains the value of one variable (for example a numeric indicating the elevation or a factor for land use). Relatively recently, two **R** packages has emerged that provide plenty of function that enables to deal easily with vectors and rasters. These are respectively **sf** (for **simple feature**) and **terra** and supersede the **sp** and the **raster** packages. In this chapter, we'll consider only vectors.
 
-The first task is to get geographical informations about the
-observations. This is usualy done by importing external files in
+The first two sections are devote to simple features, @sec-simple_features presents the structure of simple features objects and @sec-sf_computation, using the example of a spatial RD design illustrates how to deal with spatial features in a statistical analyzes. @sec-spatial_correlation deals with the detection and the measurement of spatial correlation. Finally, @sec-spatial_models present some popular spatial models, namely the SAM and the SEM models.
+
+## Simple features {#sec-simple_features}
+
+In a spatial statistical analysis, the first task is to get geographical information about the
+observations. This is usually done by importing external files in
 **R**, for example shapefiles. This task is performed by the **sf**
-library (for **s**imple **f**eature) and the result is a `sf`
+library and the result is a `sf`
 object. To understand what a simple feature is, it is best to
 construct a simple one "by hand". The geographical representation of
 an observation is a `sfg` for simple feature geometry. It can be a
@@ -46,11 +50,9 @@ where it started.
 We first load the **sf** package:
 
 ```{r message = FALSE}
-library(tidyverse)
 library(sf)
-library(micsr)
 ```
-The message indicates that **sf** use three important external
+The message indicates that **sf** uses three important external
 libraries:
 
 - **GEOS** to compute topological operations,
@@ -68,29 +70,23 @@ coordinate that specifies the east/west position of a point on
 hearth. Meridians are lines that connect the two poles and the
 longitude is the angular value of the position of a point to the
 reference (Greenwhich) meridian.] is $2.33$.
-
-The `st_point` function can be used to construct a `sfg` for Paris:
+Most of **sf**'s function starts with `st_`. The `st_point` function can be used to construct a `sfg` for Paris, the argument being a numeric vector containing the longitude and the latitude.
 
 ```{r }
 paris <- st_point(c(2.33, 48.87))
 paris
 ```
-We then perform the same operation for Lyon and Marseille:
+We then perform the same operation for Lyon and Marseilles:
 
 ```{r }
 lyon <- st_point(c(4.85, 45.76))
 marseille <- st_point(c(5.37, 43.30))
 ```
 
-We then construct a `sfc` (simple feature collection) which is a set
-of `sfg`s. The different elements are entered as unnamed arguments of
+We then construct a `sfc` (simple feature column) which is a set
+of `sfg`s, using the `st_sfc` function. The different elements are entered as unnamed arguments of
 the function and a `crs` argument can be used to specify the
-**CRS**. Several format are available:
-
-- **proj4string** is a character string,
-- **EPSG** is an integer,
-- **WKT** (for well known text) is a list.
-
+**CRS**. Three formats exist to describe the **CRS**: **proj4string** (a character string), **EPSG** (an integer), and **WKT**, for well known text (a list).
 We can use here either `"+proj=longlat +datum=WGS84 +no_defs"` or
 `4326`. The datum is the representation of the earth from which the
 latitudes and the longitudes are computed. 
@@ -99,11 +95,9 @@ latitudes and the longitudes are computed.
 cities_coords <- st_sfc(paris, lyon, marseille, crs = 4326)
 cities_coords
 ```
-Printing the `sfg` gives interesting informations, as the bounding box
+Printing the `sfc` gives interesting information, as the bounding box
 (the coordinates of the rectangle that contains the data) and the **CRS**.
-
-Finally, we can construct a `sf` object by putting together the `sfg`
-and a tibble containing informations about our cities. 
+Finally, we can construct a `sf` object by putting together a tibble containing information about the cities and the `sfc`. 
 
 ```{r }
 cities_data <- tibble(pop = c(2.161, 0.513, 0.861),
@@ -123,12 +117,14 @@ cities %>% st_geometry
 ```
 
 and is "sticky", which means that if some column are selected, the
-geometry column is always returned:
+geometry column is always returned, ie:
 
 ```{r }
+#| results: false
 cities %>% select(pop)
 ```
 
+returns `pop` **and** `cities_coords`, even if the latter was not selected.
 We can then plot our three cities, along with a map of France, which
 is obtained using the `geodata::gadm` function.^[This function is an
 interface to the `http://www.gadm.org` site which provides the
@@ -139,11 +135,10 @@ file is stored in the current directory.].
 
 ```{r }
 france <- geodata::gadm("FR", 1, ".")
-france %>% class
 ```
 
-`france` is not an object of class `sf`, so we first coerce it to a
-`sf` and then we extract the geometry:
+`france` is not an object of class `sf`,^[It is actually an object of class `SpatVector`, defined in the **terra** library.] so we first coerce it to a
+`sf` and then we extract the geometry and the series called `NAME_1` which contains the name of the regions:
 
 ```{r }
 france <- france %>% st_as_sf %>%
@@ -153,6 +148,7 @@ france <- france %>% st_as_sf %>%
 Imported vector data are often large and unnecessary detailed:
 
 ```{r }
+#| collapse: true
 france %>% object.size %>% format("MB")
 ```
 
@@ -162,31 +158,60 @@ simplification ($0.01$ means that we seek to obtain a `sf` 100 times
 lighter than the initial one).
 
 ```{r }
+#| collapse: true
 france <- france %>%
-    rmapshaper::ms_simplify(keep = 0.01, keep_shapes = FALSE)
+    rmapshaper::ms_simplify(keep = 0.01)
 france %>% object.size %>% format("MB", digits = 2)
 ```
 
-`sf` can be ploted using thematic map using **ggplot**, which has a
-`geom_sf` function. For example, to get points with a size
-proportional to the population of the cities, we can use:
+**sf** provides a `plot` method to get quickly a map of the data. Note that a thematic map is plotted for all the series of the `sf` and it is therefore recommended to select first a unique series. If one is only interested in the vectors, they can be extracted before plotting using `st_geometry`:
+
+```{r}
+#| results: hide
+#| eval: false
+france %>% st_geometry %>% plot
+```
+
+For more advanced maps, several specialized packages are available, in particular **tmap** and **mapsf**. In this chapter, we'll only use **ggplot**, which provides a `geom_sf` function. This geom is very special compared to other geoms as the kind of elements that are plotted depends on the geometry column of the `sf`: if `cities` is provided as the data argument, points will be plotted but if `france` is provided, polygons will be drawn. In the following code, we start with `france` as the data argument of `ggplot` and then the call to `geom_sf` results in the drawing of the administrative borders of French regions. Then we use a second time `geom_sf` with this time `cities` as data argument, so that points are drawn for the three cities. We use here `aes(size = pop)` so that the size of the points is related to the population of the cities. The result is presented in @fig-map_france
 
 ```{r }
+#| fig-cap: "Map of France with its three main cities"
+#| label: fig-map_france
 france %>% ggplot() + geom_sf() +
     geom_sf(data = cities, aes(size = pop))
 ```
 
-**sf** provides several function to compute values of interest, like
+**sf** provides several functions to compute values of interest, like
 distance between two points. For example, to get the distance from
 Paris to Lyon and Marseille, we would use:
 
 ```{r }
-st_distance(cities[1, ], cities[2:3, ]) %>% units::set_units(km)
+st_distance(cities[1, ], cities[2:3, ])
 ```
 `st_distance` always returns a matrix, the number of elements of the
 first (second) argument being the number of rows (columns). If only
 one argument is supplied, the result is a square matrix with 0 on the
-diagonal.
+diagonal. Note that the numbers have a unit of measurement, which is here meters. To define a unit and to convert from one unit to another, the **units** package provides the `set_units` function. Consider the following example: we first provide a numeric ($42.195$), we define its unit as being kilometers, and then we convert it to miles:
+
+```{r}
+#| collapse: true
+library(units)
+d <- 42.195
+dkm <- d %>% set_units(km)
+dkm
+dkm %>% set_units(miles)
+```
+
+Even when the conversion is simple, it is advisable to use `set_units` instead of applying the conversion "by hand":
+
+```{r}
+#| collapse: true
+dm <- dkm %>% set_units(m)
+dm
+dkm * 1000
+```
+
+The numerical values are the same, but in the second case the unit hasn't changed and is still kilometer.
 
 `st_area` computes the area of a polygon.
 
@@ -194,14 +219,13 @@ diagonal.
 st_area(france) %>% units::set_units(km ^ 2)
 ```
 
-## Computation on sf objects
+## Computation on sf objects {#sec-sf_computation}
 
 The regression discontinuity framework can be adapted to consider
 geographic discontinuities. Some entities are considered on both sides
-of the border and the forcing variable is then the distance to the
+of a border and the forcing variable is then the distance to the
 border.^[with the convention that the sign of the distance is
-different on both sides of the border.] 
-
+different on both sides of the border.]
 The `us_counties` data set contains the borders of US counties:
 
 ```{r }
@@ -214,8 +238,7 @@ extraction which is specific to Texas on mortgage defaults. He
 measures mortgage default rates in Texas and in the bordering states
 and compares mortgage default rates for counties which are closed to
 the Texas border (on both sides). Let's first plot the map of the
-counties. It is easily done with **ggplot2** which provides a specific
-`geom` called `geom_sf` (see @fig-counties):
+counties, using `ggplot` and `geom_sf` (see @fig-counties):
 
 ```{r }
 #| label: fig-counties
@@ -228,11 +251,10 @@ us_counties %>%
 
 The polygons can be merged using the `group_by` / `summarise`
 functions of **dplyr**. If the `sf` is grouped by states, the
-statistics computed by the `summarise` function are done by state and
+statistics computed by the `summarise` function are performed at the state level and
 the `geometry` now contains the coordinates of the states. With a void
-call to `summarise`, we get only this new `geometry` and can use it to
+call to `summarise`, we get only this new `geometry` and we can use it to
 plot a map of states (see @fig-states):
-
 
 ```{r }
 #| label: fig-states
@@ -245,7 +267,7 @@ states <- us_counties %>%
 states %>% ggplot() + geom_sf()
 ```
 
-To get the border state, we use spacial indexation, ie we use the `[`
+To get the border states of Texas, we use spatial indexation, ie we use the `[`
 operator. The first argument is used to select rows, it is normaly a
 vector of integers (the positions of the lines to extract), a vector
 of characters (the names of the lines to extract) or a logical
@@ -259,7 +281,7 @@ border_states
 ```
 
 We then compute the Texas border. It is defined by the common points
-of the borders of Texas and border states. This is obtained using the
+of the borders of Texas and its border states. This is obtained using the
 `st_intersection` function which return 4 lines (one for each border
 state) and the border is then obtain by merging these 4 lines using
 the `st_union` function. The result is presented on @fig-border.
@@ -268,46 +290,34 @@ the `st_union` function. The result is presented on @fig-border.
 #| fig-cap: Border States and Texas Borders
 #| label: fig-border
 #| warning: false
-border <- st_intersection(st_geometry(filter(border_states, state == "Texas")),
-                          st_geometry(filter(border_states, state != "Texas"))) %>%
-    st_union
+texas <- filter(border_states, state == "Texas") %>% st_geometry
+border <- filter(border_states, state != "Texas") %>% st_geometry
+border <- st_intersection(texas, border) %>%  st_union
 border_states %>% ggplot() +
     geom_sf() +
     geom_sf(data = border, color = "red", linewidth = 1) +
     geom_sf_label(aes(label = state)) 
 ```
 
+Note the use of `geom_sf_label` function which is a specialized version of `geom_label` which is suitable for writing labels on a map.
 We then select the counties that belong to any of these states and
 we compute the distance to the Texas border. It is defined as the
 distance between the centroid of the county and the closest point of
 the border. The centroids are obtained using the `st_centroid`
-function and the distance by the `st_distance` function.
+function. We've already used `st_distance` to compute the distance between two points. It can also be used to compute the (shortest) distance between a point and a line:
 
 ```{r }
 border_counties <- us_counties %>%
     filter(state %in% pull(border_states, state))
 centroids <- border_counties %>% st_geometry %>% st_centroid
-dists <- st_distance(centroids, border)[, 1]
+dists <- st_distance(centroids, border)[, 1] %>% set_units(km)
+border_counties <- border_counties %>% add_column(dists)
 head(dists)
 ```
 
 `st_distance` returns a matrix of distance, each column corresponding
 to a line of the second argument. As here there is only one line, we
-convert this matrix to a vector by taking its first column. Note that
-the returned value have a unit of measurment, meters in our case. We
-can convert these distance in miles like in the original article by
-using `units::set_units`:
-
-```{r }
-dists <- dists %>% units::set_units(miles)
-```
-
-We then add these distances to our `sf`:
-
-```{r }
-border_counties <- border_counties %>% add_column(dists)
-```
-
+convert this matrix to a vector by taking its first column. The unit of the returned values is meter, we convert it in miles, like in the original article and we add this column to the sf.
 As in the original article , we draw on @fig-close_counties_dist counties
 which are less than 25, 50, 75 and 100 miles from the border:
 
@@ -324,8 +334,8 @@ border_counties %>%
     geom_sf(data = border) + theme_minimal()
 ```
 
-Finally, we select the relevant variable from the data set of the
-paper, called `mortgage_default` and we merge it with
+Finally, we select the relevant series from the data set of the
+paper, called `mortgage_default`, and we merge it with
 `border_counties`:
 
 ```{r }
@@ -337,10 +347,7 @@ mortgage_defaults <- mortgage_defaults %>%
 
 Note that the first argument of `dplyr::full_join` is a tibble, so
 that the result is also a tibble. To coerce it to a `sf`, we use the
-`sf::st_sf` which have two arguments: a tibble and a second argument
-called `arg` that should contain the name of the column that contains
-the geographic coordonates.
-
+`sf::st_sf` function. We've already used this function in @sec-simple_features and we provided as argument a data frame and a `sfc`.  Here, the `sfc` is a column of the data frame called `"geometry"`. Then, we provide as the `agr` argument of `st_sf` the character `"geometry"`.
 Finally, we plot the discontinuity on @fig-disc_texas.
 
 ```{r }
@@ -352,10 +359,13 @@ mortgage_defaults %>%
     mutate(state = ifelse(state == "Texas", "Texas", "other")) %>% 
     ggplot(aes(dists, default)) +
     micsr::geom_binmeans(aes(size = after_stat(n)), shape = 21) +
-    geom_smooth(aes(linetype = state, weight = loans), method = "lm", se = FALSE)
+    geom_smooth(aes(linetype = state, weight = loans), 
+                method = "lm", se = FALSE)
 ```
 
-## Spatial correlation
+The intercept is a bit more than 7% outside the border and about 4.5% inside the border, so that the effect of the Texas specific regulation seems significant (a reduction of about 2.5% of the mortgage default rate).
+
+## Spatial correlation {#sec-spatial_correlation}
 
 In order to analyse spatial correlation between units, it is
 essential:
@@ -366,17 +376,19 @@ essential:
 These operations are easily performed using the **spdep** package. 
 
 
-### Two examples
+## Two examples
 
-To illustrate, we'll use two data sets. 
+To illustrate the techniques presented in the subsequent sections, we'll use to data sets. The first one, from @WHEE:03 is called `agglo_growth` and deals with the topic of economies and diseconomies of agglomeration. The second one, called `sp_growth` is from  @ERTU:KOCH:07 and is used to fit an extension of Solow's grothw model.
 
-#### Agglomeration economies and diseconomies
+### Agglomeration economies and diseconomies
 
-The first one is from @WHEE:03.
+The `agglo_growth` contains data about US counties in 1990, identified by their fips code.
 
 ```{r }
 agglo_growth
 ```
+
+`emp_gr` and `pop_gr` are the employment and the population growth in each county between 1980 and 1990 and `emp` and `pop` the level of employement and of the population in 1980. 
 @WHEE:03 investigates the existence of:
 
 - agglomeration economies, which implies that the growth of a given
@@ -385,34 +397,29 @@ agglo_growth
   congestion, crime, pollution, etc.
 
 The hypothesis is therefore that the relation between size and growth
-should inverted U shaped, which means that for small territories, the
+should be inverted U shaped, which means that for small territories, the
 agglomeration economies effect is dominant, as for large territories,
-the agglomeration diseconomies becomes dominant. The data set contains
-3106 US counties, which are identified by their **fips**
-code. @WHEE:03 use either the growth of the population and of the
-labor force between 1980 to 1990 as the response, the main covariate
-being the logarithm of population or labor force in 1980. We'll
-reproduce some of his results using counties of Louisiana. We first
-join the tibble to a `sf` called `us_counties` which contains the
-geometries of the counties. 
+the agglomeration diseconomies becomes dominant. We'll
+reproduce some of his results using the counties of Louisiana. We first
+join the tibble to the `sf` called `us_counties` which contains the
+geometries of the counties that we've already used in the previous section:
 
 ```{r }
 louisiana <- us_counties %>%
     right_join(agglo_growth, by = "fips") %>%
     filter(state == "Louisiana")
 ```
-Note the use of the quite unusual `dplyr::right_join` function. It is relevant
-to use it here because the `###_join` functions return an object of
-the first class of its first argument (a `sf` in our case).
+Note the use of the quite unusual `dplyr::right_join` function. By using `right_join` with `us_counties` as the first argument and `agglo_growth` as the second argument, we get an object of the class of the first argument (therefore a `sf`) and we get all the lines of the `agglo_growth` tibble and only thos of `us_counties` that match.
 
-We first plot a thematic map, with colors for counties related to the
+We first plot a thematic map (@fig-map_louisiana), with colors for counties related to the
 growth of the population (`pop_gr`). It is best create first a
-catogerical variable using `base::cut`:
+categorical variable using `base::cut`, because it is easier to visualize a discrete pallette of colors than a continuous one. We use `scale_fill_brewer` to use one of the palettes provided by the **RColorBrewer** package, which provides sequential, diverging and qualitative palettes. The first two are suitable to represent the values of numeric variables. Sequential palettes use a color, light for low values of the variable and dark for high values. Divergent palettes use two colors, with light colors for middle range values and dark colors for low and high values. All the available palettes can be displayed using `RcolorBrewer::display.brewer.all()`
 
 ```{r }
+#| label: fig-map_louisiana
+#| fig-cap: "Population growth and initial population in Louisiana"
 louisiana %>%
     mutate(pop_gr = cut(pop_gr, (-3:3) / 10)) %>% 
-#    mutate(pop_gr = cut(pop_gr, (0:6) / 10)) %>%
     ggplot() + geom_sf(aes(fill = pop_gr)) +
     scale_fill_brewer(palette = "Oranges")
 ```
@@ -430,30 +437,31 @@ The coefficient of the square term is significant and we get a maximum
 growth for the fitted model as a value of `log(pop)` equal to $0.213
 / 0.0087 / 2 = 12.20$, ie a population of about 200 thousands
 inhabitants. 
-
-This result can be illustrated graphically with a scatterplot with the
-growth of population and the logarithm of the initial population and
-add a fitting line:
+This result is illustrated in @fig-iushaped_louisiana with a scatterplot with the
+growth of population and the logarithm and adding a fitting line with a second degree polynomial:
 
 ```{r }
-louisiana %>% ggplot(aes(log(pop), pop_gr)) +
+#| label: fig-iushaped_louisiana
+#| fig-cap: "Relation between initial population and population growth in Louisiana"
+louisiana %>% ggplot(aes(pop, pop_gr)) +
     geom_point() +
-    geom_smooth(method = "lm", formula = y ~ poly(x, 2, raw = TRUE), se = FALSE)
+    geom_smooth(method = "lm", formula = y ~ poly(x, 2, raw = TRUE), se = FALSE) + 
+  scale_x_continuous(trans = "log10")
 ```
-The inverted U shaped is apparent. This is confirmed by the result of
-the regression:
 
+### Solow model
 
-#### Solow model
+The second example is @ERTU:KOCH:07 who estimated a growth model for
+the countries of the world taking spatial correlation into account:
 
-The second example is @ERTU:KOCH:07 who estimate a growth model for
-the countries of the world taking spatial correlation into account. 
+```{r}
+data("sp_solow", package = "countries")
+sp_solow
+```
 
-Note that this table has two geometry columns, polygons for the
-borders of the countries (`border`) and points for the capitals
-(`center`). Note also that the active geometry column is
-`center`. Following @ERTU:KOCH:07, we compute the relevant variables
-for the estimation of a growth model:
+There are 91 countries in the `sp_solow` data set, the series being the gdp in 1960 and 1995, the saving rate and the growth of the labor force.
+Following @ERTU:KOCH:07, we compute the relevant variables
+for the estimation of the growth model:
 
 - the log of the saving rate,
 - the log of the sum of the growth rate of the labor force, the rate
@@ -464,26 +472,60 @@ for the estimation of a growth model:
   1995 and 1960 divide by 35.
 
 ```{r }
-sp_solow <- sp_solow %>% st_set_geometry("border")
 sp_solow <- sp_solow %>%
     mutate(lns = log(saving), lnngd = log(labgwth + 0.05),
                     growth = (log(gdp95) - log(gdp60)) / 35)
 ```
 
-We can then plot the countries of the world with their capitals, with
-colors depending on the growth rate:
+We then need to join this data frame to a sf containing the administrative boundaries of the countries and the coordinate of their capital. Several packages enables to get a world `sf`. For example the **spData** package has a `world` `sf` which is obtained from Natural Earth, **geodata** has a `world` function that enables to download from the gadm site an object of class `SpatVector` (than can be easily converted to a `sf`). We use here the convenient **countries** package that also use Natural Earth and provides a `countries` function with different arguments to select a subset of countries of the world. By default, `countries` return 199 lines, the 193 United Nations' recognized countries, the 2 observer countries (Palestine and Vatican) and 4 not or not fully recognized countries (Kosovo, Somaliland, Northern Cyprus and Taiwan). Each line includes the geometry of the "main" part of the countries. Some countries have "parts" or "dependencies" that can be included using `part = TRUE` and `dependency = TRUE`. A "part" is an area with the same political status that the rest of the country, but is far from the main part of the countries. Examples of parts include Alaska and Hawaii for the United States, Martinique and Guadeloupe for France and Canaries for Spain. A "dependency" is an area with a specific political status. Examples of dependencies are Greenland for Denmark, New Caledonia for France and Gibraltar for the United Kingdom.
 
-```{r }
-sp_solow %>%
-    mutate(growth = cut(growth, c(-0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08))) %>%
-    ggplot() + geom_sf(aes(fill = growth)) +
-    geom_sf(data = st_set_geometry(sp_solow, "point"), aes(size = gdp60)) +
-    scale_fill_brewer(palette = "RdBu") +
-    scale_size(range = c(0, 1)) + 
-    theme_minimal()
+Either `name` or `code` can be used to joint `sp_solow` with the
+`countries`' object. It is much safer to use `code` as it avoids the
+problem of small differences in countries' names. A lot of
+countries of the world are not present in `sp_solow` (especially most
+of the communist countries). We check whether all the the
+countries of `sp_solow` are present in the `countries` object, with the `check_join` function; the `by` argument indicates the series in the `sp_solow` tibble that identified the country:
+
+```{r eval = TRUE}
+library(countries)
+countries() %>% check_join(sp_solow, by = "code")
 ```
 
-The basic solow model is then estimated:
+The two problems is that the D.R. Congo (`iso3` code `COD`) used to be
+called Zaire (`iso3` code `ZAR`) and that Hong Kong, which is a part
+of a China in `ne_countries` was considered as a sovereign country by
+the time of the study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
+
+```{r eval = TRUE}
+sp_solow <- sp_solow %>% mutate(code = ifelse(code == "ZAR", "COD", code))
+sps <- countries(include = "Hong Kong", exclude = "Antarctica") %>%
+    select(iso3, country, point) %>% 
+    left_join(sp_solow, by = "code") %>% select(- name)
+```
+
+Note that the resulting `sf has two geometry columns, polygons for the
+borders of the countries (`polygon`) and points for the capitals
+(`point`). Note also that the active geometry column is
+`polygon`. 
+
+
+We then draw on @fig-growth_gdp a world map with the color of the countries related to
+the annual growth during the 1960-95 period and a point with a size
+related to the initial (1960) gdp. `countrie` provides a `plot` method which draws a basic map using **ggplot**. A basic thematic map can be drawn using the `fill` argument to fill the areas of the countries and the `centroid` or the `capital` arguments to draw a point at the position of the centroid or the capital of each country. Any **ggplot** functions can be used to customize the graphic:
+
+```{r eval = TRUE}
+#| label: fig-growth_gdp
+#| fig-cap: "Growth and initial gdp, 1960-1995"
+#| out.width: "100%"
+#| fig-width: 14
+sps %>% plot(fill = "growth", centroid = "gdp60") +
+  scale_size_continuous(range = c(0.5, 3)) + 
+  theme(legend.position = "bottom") + 
+  guides(size = guide_legend(reverse = TRUE),
+         fill = guide_legend(nrow = 2, byrow = TRUE))
+```
+
+The basic Solow model is then estimated:
 
 ```{r }
 lm(log(gdp95) ~ I(lns - lnngd), sp_solow) %>% summary
@@ -564,7 +606,7 @@ A `nb` and a `listw` object can be coerced to matrices using the
 
 
 ```{r }
-sp_solow2 <- sp_solow %>% na.omit %>% st_set_geometry("point")
+sp_solow2 <- sps %>% na.omit %>% st_set_geometry("point")
 d <- dnearneigh(st_centroid(st_geometry(sp_solow2)), 0, Inf)
 w <- nb2listwdist(d, st_centroid(st_geometry(sp_solow2)),
              type = "idw", alpha = -1, style = "W") %>% .$weights %>% .[[1]]
@@ -743,8 +785,7 @@ S5 <- (N ^ 2 - N) * S1 - 2 * N * S2 + 6 * S0 ^ 2
 V <- (N * S4 - S3 * S5) / ( (N - 1) * (N - 2) * (N - 3) * S0 ^ 2) - 1 / (N - 1) ^ 2
 ```
 
-## Spatial models
-
+## Spatial models {#sec-spatial_models}
 
 We consider here linear gaussian models that are extended in order to
 integrate the spatial feature of the sample, using the weighting
