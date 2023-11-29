@@ -86,7 +86,7 @@ $$
 $$
 
 At the steady state, the growth rate of capital per unit of effective
-capital is 0. Solving $\dot{k}(t)=0$ we get the steady state value of
+labor is 0. Solving $\dot{k}(t)=0$ we get the steady state value of
 $k(t)$, denoted $k^*$:
 
 $$
@@ -119,7 +119,7 @@ $C=a + gt$, and $v = \ln(n + g + \delta)$, the linear model that we wish to esti
 
 $$
 \ln\frac{Y}{L} = C + \frac{\kappa}{1-\kappa} \ln i - \frac{\kappa}{1 - \kappa} \ln v + \epsilon
-$$
+$$ {#sec-solow_equation}
 
 We therefore get a multiple regression model for which the response is
 the log of GPD per capita, ($\ln \frac{Y}{L})$ and the two covariates are
@@ -1175,7 +1175,7 @@ where $y$ is the per capita gdp, $i$ the investment rate and $v$ the sum of the 
 
 We'll analyse the confidence interval for the couple of coefficients $(\beta_i, \beta_v)$ and we'll test two hypothesis:
 
-- the first one is imposed by the model, we must have $\beta_i + \beta_v = 1$,
+- the first one is imposed by the model, we must have $\beta_i + \beta_v = 0$,
 - the second one correspons to a reasonable value of the share of profits, which is approximatively one third; therefore we'll test the hypothesis that $\kappa = 1/3$, which implies that $\beta_i = 0.5$.
 
 Note that these two hypothesis implies that $\beta_v=-0.5$.

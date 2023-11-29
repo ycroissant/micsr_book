@@ -17,7 +17,7 @@ book:
   #   chapters:
   #     - ./chapters/simple_regression.qmd
   #     - ./chapters/simple_regression_properties.qmd
-  #     - ./chapters/multiple_regression.qmd
+  # - ./chapters/multiple_regression.qmd
   #     - ./chapters/coefficients.qmd
   # - part: Beyound the OLS estimator
   #   chapters:

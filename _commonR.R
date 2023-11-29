@@ -6,7 +6,7 @@ knitr::opts_chunk$set(message = FALSE,
 options(
     htmltools.dir.version = FALSE,
     formatR.indent = 2,
-    width = 65,
+    width = 70,#65,
     digits = 4,
     tibble.print_max = 5,
     tibble.print_min = 5

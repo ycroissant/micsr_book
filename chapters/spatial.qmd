@@ -1,17 +1,3 @@
-<!-- Spatial correlation occurs when one can define a distance relationship -->
-<!-- between observations. The notion of distance is broad, but we'll -->
-<!-- consider in this section only geographical distance. For each -->
-<!-- observation, one can in this case define a set of neighboors. If the -->
-<!-- geographical representation of an observation is a **polygon** (which -->
-<!-- is the relevant choice for countries or region), two observations can -->
-<!-- for example said to be neighboors if they have a common border. If the -->
-<!-- geographical representation of an observation is a **point** (for -->
-<!-- example for a city), two observations are neighboors if the distance -->
-<!-- between them is less than, say, 100 kilometers. Once the set of -->
-<!-- neighboors have been defined for every observations, weights can be -->
-<!-- computed. The weights can be equal or may depend on the distance -->
-<!-- between the observation and its neighboors.  -->
-
 ```{r}
 #| echo: false
 source("../_commonR.R")
@@ -20,12 +6,6 @@ st_nb <- function(x, queen = TRUE){
     .crs <- st_crs(x)
     .nb <- poly2nb(x, queen = queen)
     as(nb2lines(.nb, coords = st_centroid(st_geometry(x))), "sf")
-}
-glance.htest <- function(x, ...){
-    .stat <- x$statistic %>% unname
-    .pval <- x$p.value
-    .estimate <- x$estimate[1] %>% unname
-    c(estimate = .estimate, statistic = .stat, pvalue = .pval)
 }
 ```
 
@@ -40,8 +20,11 @@ The first two sections are devote to simple features, @sec-simple_features prese
 In a spatial statistical analysis, the first task is to get geographical information about the
 observations. This is usually done by importing external files in
 **R**, for example shapefiles. This task is performed by the **sf**
-library and the result is a `sf`
-object. To understand what a simple feature is, it is best to
+library and the result is a `sf` object. 
+
+### Structure of a simple feature
+
+To understand what a simple feature is, it is best to
 construct a simple one "by hand". The geographical representation of
 an observation is a `sfg` for simple feature geometry. It can be a
 point, a set of points that forms a line or a polygon if the line ends
@@ -219,7 +202,7 @@ The numerical values are the same, but in the second case the unit hasn't change
 st_area(france) %>% units::set_units(km ^ 2)
 ```
 
-## Computation on sf objects {#sec-sf_computation}
+### Computation on sf objects {#sec-sf_computation}
 
 The regression discontinuity framework can be adapted to consider
 geographic discontinuities. Some entities are considered on both sides
@@ -365,17 +348,6 @@ mortgage_defaults %>%
 
 The intercept is a bit more than 7% outside the border and about 4.5% inside the border, so that the effect of the Texas specific regulation seems significant (a reduction of about 2.5% of the mortgage default rate).
 
-## Spatial correlation {#sec-spatial_correlation}
-
-In order to analyse spatial correlation between units, it is
-essential:
-
-- first to identify other units that will considered as neighbours,
-- second to give a weight to each neighbour.
-
-These operations are easily performed using the **spdep** package. 
-
-
 ## Two examples
 
 To illustrate the techniques presented in the subsequent sections, we'll use to data sets. The first one, from @WHEE:03 is called `agglo_growth` and deals with the topic of economies and diseconomies of agglomeration. The second one, called `sp_growth` is from  @ERTU:KOCH:07 and is used to fit an extension of Solow's grothw model.
@@ -431,11 +403,20 @@ negative.
 
 ```{r }
 mod1 <- lm(pop_gr ~ poly(log(pop), 2, raw = TRUE), louisiana)
-summary(mod1)
+mod1 %>% sight
 ```
+
+```{r}
+#| echo: false
+b1 <- coef(mod1)[2]
+b2 <- coef(mod1)[3]
+lpops <- - b1 / 2 / b2
+pops <- exp(lpops)
+```
+
 The coefficient of the square term is significant and we get a maximum
-growth for the fitted model as a value of `log(pop)` equal to $0.213
-/ 0.0087 / 2 = 12.20$, ie a population of about 200 thousands
+growth for the fitted model as a value of `log(pop)` equal to $`r round(b1, 4)`
+/ `r round(b2, 4)` / 2 = `r round(lpops, 4)`$, ie a population of about `r round(pops / 1E03)`  thousands
 inhabitants. 
 This result is illustrated in @fig-iushaped_louisiana with a scatterplot with the
 growth of population and the logarithm and adding a fitting line with a second degree polynomial:
@@ -445,7 +426,8 @@ growth of population and the logarithm and adding a fitting line with a second d
 #| fig-cap: "Relation between initial population and population growth in Louisiana"
 louisiana %>% ggplot(aes(pop, pop_gr)) +
     geom_point() +
-    geom_smooth(method = "lm", formula = y ~ poly(x, 2, raw = TRUE), se = FALSE) + 
+    geom_smooth(method = "lm", formula = y ~ poly(x, 2, raw = TRUE), 
+                se = FALSE) + 
   scale_x_continuous(trans = "log10")
 ```
 
@@ -459,17 +441,17 @@ data("sp_solow", package = "countries")
 sp_solow
 ```
 
-There are 91 countries in the `sp_solow` data set, the series being the gdp in 1960 and 1995, the saving rate and the growth of the labor force.
+There are 91 countries in the `sp_solow` data set, the series being the gdp in 1960 and 1995, the saving rate (`saving`) and the growth of the labor force (`labgwth`).
 Following @ERTU:KOCH:07, we compute the relevant variables
 for the estimation of the growth model:
 
-- the log of the saving rate,
+- the log of the saving rate (`lns`),
 - the log of the sum of the growth rate of the labor force, the rate
   of depreciation and the rate of technical progress; as the later two
   variables are difficult to measure, it is assume that their sum is
-  equal to 0.05 for all the countries.
+  equal to 0.05 for all the countries (`lnngd`),
 - the annual growth rate, the difference of the logs of the gdp for
-  1995 and 1960 divide by 35.
+  1995 and 1960 divide by 35 (`growth`).
 
 ```{r }
 sp_solow <- sp_solow %>%
@@ -486,29 +468,29 @@ countries of the world are not present in `sp_solow` (especially most
 of the communist countries). We check whether all the the
 countries of `sp_solow` are present in the `countries` object, with the `check_join` function; the `by` argument indicates the series in the `sp_solow` tibble that identified the country:
 
-```{r eval = TRUE}
+```{r }
+#| collapse: true
 library(countries)
 countries() %>% check_join(sp_solow, by = "code")
 ```
 
-The two problems is that the D.R. Congo (`iso3` code `COD`) used to be
+The two problems are that the D.R. Congo (`iso3` code `COD`) used to be
 called Zaire (`iso3` code `ZAR`) and that Hong Kong, which is a part
 of a China in `ne_countries` was considered as a sovereign country by
 the time of the study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
 
 ```{r eval = TRUE}
-sp_solow <- sp_solow %>% mutate(code = ifelse(code == "ZAR", "COD", code))
+sp_solow <- sp_solow %>% 
+  mutate(code = ifelse(code == "ZAR", "COD", code))
 sps <- countries(include = "Hong Kong", exclude = "Antarctica") %>%
     select(iso3, country, point) %>% 
     left_join(sp_solow, by = "code") %>% select(- name)
 ```
 
-Note that the resulting `sf has two geometry columns, polygons for the
+Note that the resulting `sf` has two geometry columns, polygons for the
 borders of the countries (`polygon`) and points for the capitals
 (`point`). Note also that the active geometry column is
 `polygon`. 
-
-
 We then draw on @fig-growth_gdp a world map with the color of the countries related to
 the annual growth during the 1960-95 period and a point with a size
 related to the initial (1960) gdp. `countrie` provides a `plot` method which draws a basic map using **ggplot**. A basic thematic map can be drawn using the `fill` argument to fill the areas of the countries and the `centroid` or the `capital` arguments to draw a point at the position of the centroid or the capital of each country. Any **ggplot** functions can be used to customize the graphic:
@@ -516,8 +498,8 @@ related to the initial (1960) gdp. `countrie` provides a `plot` method which dra
 ```{r eval = TRUE}
 #| label: fig-growth_gdp
 #| fig-cap: "Growth and initial gdp, 1960-1995"
-#| out.width: "100%"
-#| fig-width: 14
+#| out-width: "100%"
+#| fig-width: 7
 sps %>% plot(fill = "growth", centroid = "gdp60") +
   scale_size_continuous(range = c(0.5, 3)) + 
   theme(legend.position = "bottom") + 
@@ -525,11 +507,49 @@ sps %>% plot(fill = "growth", centroid = "gdp60") +
          fill = guide_legend(nrow = 2, byrow = TRUE))
 ```
 
-The basic Solow model is then estimated:
+The basic Solow model, which was given in @sec-solow_equation is then estimated:
 
 ```{r }
-lm(log(gdp95) ~ I(lns - lnngd), sp_solow) %>% summary
+lm(log(gdp95) ~ lns + lnngd, sp_solow) %>% sight
 ```
+
+Remind that the structural model implies that $\beta_s = - \beta_v = \kappa / (1 - \kappa)$. This hypothesis can be tested using a reparametrization of the model:
+
+```{r}
+lm(log(gdp95) ~ I(lns - lnngd) + lnngd, sp_solow) %>% sight
+```
+for which the hypothesis is that the coefficient of `lnngd` equals 0. This hypothesis is rejected at the 5% level (but not at the 1% level). Imposing this hypothesis, we get:
+
+```{r}
+#| echo: false
+z <- lm(log(gdp95) ~ I(lns - lnngd), sp_solow)
+b <- unname(coef(z)[2])
+kappa <- b / (1 + b)
+```
+
+```{r}
+lm(log(gdp95) ~ I(lns - lnngd), sp_solow) %>% sight
+```
+
+which implies a value of $\kappa$ (the share of the capital in the gdp) equal to $\hat{\beta}_s / (1 + \hat{\beta}_s) = `r round(kappa, 2)`$ which is implausibly high.
+
+## Spatial correlation {#sec-spatial_correlation}
+
+Spatial correlation occurs when one can define a distance relationship
+between observations. The notion of distance is broad, but we'll
+consider in this section only geographical distance. For each
+observation, one can in this case define a set of neighboors. If the
+geographical representation of an observation is a **polygon** (which
+is the relevant choice for countries or region), two observations can
+for example said to be neighboors if they have a common border. If the
+geographical representation of an observation is a **point** (for
+example for a city), two observations are neighboors if the distance
+between them is less than, say, 100 kilometers. Once the set of
+neighboors have been defined for every observations, weights can be
+computed. The weights can be equal or may depend on the distance
+between the observation and its neighbors.
+
+These two operations of defining the set of neighbors and their weights are performed by the **spdep** package. 
 
 ### Contiguity and weights
 
@@ -541,12 +561,19 @@ library(spdep)
 nb_louis <- poly2nb(louisiana)
 nb_louis
 ```
+
+```{r}
+#| echo: false
+nlinks <- sapply(nb_louis, length) %>% sum
+ncount <- length(nb_louis)
+```
+
 The print method indicates the number of contiguity links
-(276). Instead of storing this links in a full matrix (with 1 for
-contiguis counties and 0 otherwise) which would have 58 ^ 2 = 3364$
-cells with only 276 of them with a value of 1 (about 8%), a `nb`
-object is returned. It is a list of 58 vectors which contain, for each
-observation the positions of its neighboors. For example
+(`r nlinks`). Instead of storing this links in a full matrix (with 1 for
+contigus counties and 0 otherwise) which would have $`r ncount`^2 = `r ncount^2`$
+cells with only `r nlinks` of them with a value of 1 (about `r round(nlinks / ncount ^ 2 * 100, 1)`%), a `nb`
+object is returned. It is a list of `r ncount` vectors which contain, for each
+observation the positions of its neighboors. For example:
 
 ```{r }
 nb_louis %>% head(3)
@@ -558,18 +585,23 @@ polygons which have one common point are neighboors. Setting `queen`
 to `FALSE` implies that rook continuity is used. In this case, only
 counties which have a common border are neighboors. 
 
-
 ```{r }
 nb_louis_rook <- poly2nb(louisiana, queen = FALSE)
 ```
 
-Printing `nb_nc_rook`, one can check that the number of contiguity
-links (268) is slightly lower than previously (276). `nb` objects
-can't be ploted as is with **ggplot**. We provide a convenient `st_nb`
-function which perform this task, as it returns a `sf` object:
+```{r}
+#| echo: false
+nlinks_rook <- sapply(nb_louis_rook, length) %>% sum
+```
 
+Printing `nb_nc_rook`, one can check that the number of contiguity
+links (`r nlinks_rook`) is slightly lower than previously (`r nlinks`). `nb` objects
+can't be plotted as is with **ggplot**. We provide a convenient `st_nb`
+function which perform this task, as it returns a `sf` object (see @fig-links):
 
 ```{r }
+#| label: fig-links
+#| fig-cap: "Queen and rook links for the counties of Louisiana"
 louisiana %>%
     ggplot() +
     geom_sf(fill = NA) +
@@ -581,80 +613,141 @@ louisiana %>%
 We first plot queen contiguity links in red and then rook contiguity
 links in blue, so that the specific queen contiguity links appears in
 red.
-
 A matrix of weight is obtained by using the `nb2listw` function:
 
 ```{r }
-W <- nb_louis %>% nb2listw
+W_louis <- nb_louis %>% nb2listw
 ```
-which returns a `listw` object which contains two lists: the first one
+A `listw` object is returned, which contains two lists: the first one
 (`neighbours`) is the same as the one of the `nb` object. The second
 one contains weights:
 
 ```{r }
-W$weights %>% head(2)
+W_louis$weights %>% head(3)
 ```
 
-We can see that weights of neighbours for a given observation are all
-equal and sum to one (for example 0.25 for the first observation which
-has 4 neighbours). Therefore, premultiplying a vector $(y - \bar{y})$ by $W$
-results in a vector with typical value $\sum_j w_{ij}
-y_j - \bar{y} = \tilde{y}_i - \bar{y}$
-
-A `nb` and a `listw` object can be coerced to matrices using the
+We can see that weights of neighbors for a given observation are all
+equal and sum to one (0.2 for the first two observations which have 5 neighbors and $1/6$ for the third one which has 6 neighbours). Therefore, premultiplying a vector $(y - \bar{y})$ by $W$
+results in a vector with typical value $\sum_m w_{nm}
+y_m - \bar{y} = \tilde{y}_n - \bar{y}$
+`nb` and a `listw` objects can be coerced to matrices using the
 `nb2mat` and `listw2mat` functions.
 
+Instead of defining the neighborhood as common borders, one can consider distance between points, for example the capitals or the centroids of the countries. Remind that `sps` contains two `sf`, `polygon` and `point` and that the active geometry is `polygon`. We first specify `point` as being the active geometry, using the `st_set_geometry` function and we remove all countries for which the data are not available:
 
 ```{r }
 sp_solow2 <- sps %>% na.omit %>% st_set_geometry("point")
-d <- dnearneigh(st_centroid(st_geometry(sp_solow2)), 0, Inf)
-w <- nb2listwdist(d, st_centroid(st_geometry(sp_solow2)),
-             type = "idw", alpha = -1, style = "W") %>% .$weights %>% .[[1]]
+```
+
+Then, we use `dnearneigh` function to compute the set of neighbors for each country: the first argument is the `sf` and the next two arguments, called `d1` and `d2` are mandatory and should be set to the minimum and the maximum distances that should be used to define the neighbors. Note that this distance should be indicated in kilometers if the CRS is geographical, which is the case here.
+
+```{r}
+d <- dnearneigh(sp_solow2, 0, 1000)
+d
+```
+
+```{r}
+#| echo: false
+nlinks <- sum(sapply(d, function(x) ifelse(length(x) == 1 && x == 0, 0, length(x))))
+ncount <- length(d)
+```
+
+With a distance of 1000 km, there are `r nlinks` links, an average of `r round(nlinks / ncount, 2)` neighbors per country. Note that 18 countries have no neighbors. We then compute the weights, using `nb2listwdist`. The first two argument are a `nb` and a `sf` objects. The `type` argument indicates how the weights should be computed. Denoting $d_{ij}$ the distance between the two unit $i$ and $j$, with `type = "idw"`, we get $w_{ij} = d_{ij} ^ {- \alpha}$. With `type = "exp"`, the weights are $w_{ij} = \mbox{exp}(- \alpha d_{ij})$. The `alpha` argument controls the value of $\alpha$ which is 1 by default. For example, if `type = "idw"` and `alpha = 2`, the weights are the inverse of the square of the distance. Once the weights have been computed, they can be normalized in different ways, using the `style` argument. It `stype = "raw"` (the default), no normalization is performed. A usual choice is `"W"` where the weights of a unit are normalized so that they sum to 1:
+
+```{r}
+w <- nb2listwdist(d, sp_solow2, type = "idw", alpha = 1, 
+                  style = "W", zero.policy = TRUE)
+```
+
+
+```{r}
+#| include: false
+sp_solow2[d[[6]], ]
+w$weights[[11]]
+w$neighbours[[11]]
+```
+
+```{r}
+#| include: false
+#| eval: false
+wa <- countries("Western Africa", crs = 32630, extend = 2, capital  =TRUE, towns = 2E06, lang = "es")
+burk <- wa %>% filter(country == "Burkina Faso") %>% pull(point)
+burk_buffer <- st_buffer(burk, set_units(1000, km))
+wa %>% plot(labels = c("country", "capital", "towns")) + geom_sf(data = burk_buffer, fill = NA)
+st_set_geometry(wa, "point")[burk_buffer, ]
+
+
+
+west_africa <- countries("Western Africa") %>% st_transform(32630)
+west_africa <- countries("Western Africa") %>% st_transform(32630)
+west_africa <- west_africa %>% st_set_geometry("point") %>% st_transform(32630)
+p1 <- west_africa %>% ggplot + 
+  geom_sf(data = st_set_geometry(west_africa, "polygon")) +
+  geom_sf(data = west_africa)
+burkina <- west_africa %>% 
+  filter(country == "Burkina Faso") %>% st_geometry
+burkina_buffer <- st_buffer(burkina, set_units(1000, km))
+p1 + geom_sf(data = burkina_buffer, fill = NA) + ggrepel::geom_label_repel(aes(label = country, geometry = west_africa$point), stat = "sf_coordinates")
+#burkina: 11
+
+burk <- sp_solow2 %>% filter(country == "Burkina Faso")
+sf_use_s2(FALSE)
+dists <- st_distance(sp_solow2, burk) %>% drop %>% set_units(km)
+neigh <- (dists < set_units(1000, km) & dists > set_units(0, km))
+which(neigh)
+dn <- dists[neigh]
+wn <-  1 /dn
+s2f <- wn / sum(wn)
 ```
 
 ### Tests for spatial correlation
 
 The spatial correlation hypothesis can be tested either for a specific
 variable or using the residuals of a linear model regression. Two
-principal tests have been proposed. The first one is the Moran test,
-the statistic being defined as:
+principal tests have been proposed. The first one is the Moran test: denoting $W$ the weights matrix where the weights sum to one for a given line, the statistic is defined as:
 
 $$
-\frac{(y - \bar{y})^\top W (y - \bar{y})}{(y - \bar{y})^\top (y - \bar{y})} =
-\frac{\sum_i (y_i  - \bar{y})(\tilde{y}_i - \bar{y})}{\sum_i (y_i  - \bar{y})^2}
+I = \frac{(y - \bar{y})^\top W (y - \bar{y})}{(y - \bar{y})^\top (y - \bar{y})} =
+\frac{\sum_n (y_n  - \bar{y})(\tilde{y}_n - \bar{y})}{\sum_n (y_n  - \bar{y})^2}
 $$
 
 which is simply the ratio of the covariance between $y$ and
 $\tilde{y}$ and the variance of $y$. It therefore can be obtained as
 the coefficient of $y$ in a linear regression of $\tilde{y}$ on
 $y$. If the variance of $\tilde{y}$ and $y$ were equal, it would also
-be the coefficient of correlation and can therefore be interpreted as
-such, even it is not guarentee to lies in the -1 +1 interval.
-
+be the coefficient of correlation between the value of $y$ for units and their neighbors.
 The Moran test is computed using the `spdep::moran.test` function
 which takes as argument a series and a `listw` object:
 
 ```{r }
-moran.test(louisiana$pop_gr, W) %>% glance
+#| collapse: true
+moran.test(louisiana$pop_gr, W_louis) %>% sight
+```
+
+```{r }
+#| include: false
+mor <- moran.test(louisiana$pop_gr, W_louis)
+stat_mor <- mor$estimate[1] %>% unname
+mu_mor <- mor$estimate[2] %>% unname
+sd_mor <- mor$estimate[3] %>% unname %>% sqrt
 ```
 
 ```{r include = FALSE}
 Y <- louisiana$pop_gr
 N <- length(Y)
-Wmat <- W %>% listw2mat
+Wmat <- W_louis %>% listw2mat
 DX <- outer(Y, Y, "-") ^ 2
 (sum(Wmat * DX) / N) / (sum((Y - mean(Y)) ^ 2) / (N - 1)) / 2 
-geary.test(louisiana$pop_gr, W) %>% .[["estimate"]] %>% unname %>% .[1]
-mrn <- moran.test(louisiana$pop_gr, W) %>% .[["estimate"]] %>% unname %>% .[1]
+geary.test(louisiana$pop_gr, W_louis) %>% .[["estimate"]] %>% unname %>% .[1]
+mrn <- moran.test(louisiana$pop_gr, W_louis) %>% .[["estimate"]] %>% unname %>% .[1]
 (N - 1) / N / 2 * (1 - 2 * mrn + sum( (Y - mean(Y)) ^ 2 * apply(Wmat, 2, sum)) / sum( (Y - mean(Y)) ^ 2))
 ```
 
-The value of the statistic is $0.136$ in our example.  Under the
+The value of the statistic is $`r round(stat_mor, 3)`$ in our example.  Under the
 hypothesis of no correlation, the expected value of this statistic is
-$- 1 / (N-1)$ and the expression of the variance can be found in
-@BIVA:WONG:18. The standardized statistic is asymptotically normal.
-
-An alternative to the $I$ Moran's test is Geary's $C$ test, which is
+$- 1 / (N-1) = `r round(mu_mor, 3)`$ and the standard deviation is $`r round(sd_mor, 3)`$.^[The expression of the variance of the Moran statistic can be found in
+@BIVA:WONG:18] The standardized statistic ($`r round((stat_mor - mu_mor) / sd_mor, 3)`$) is asymptotically normal and the hypothesis of no spatial correlation is rejected.
+An alternative to Moran's $I$ test is Geary's $C$ test, which is
 defined as:
 
 $$
@@ -662,8 +755,7 @@ C = \frac{N - 1}{2N}\frac{\sum_n \sum_m w_{nm} (y_n - y_m) ^ 2}{\sum_n
 (y_n - \bar{y})^ 2}
 $$
 
-Introducing deviations from mean in the previous expression and developping, we
-get:
+Introducing deviations from mean in the previous expression and developing, we get:
 
 $$
 C = \frac{1}{2}\frac{N - 1}{N} \left(1 - 2 I + \frac{\sum_n (y_m-
@@ -676,19 +768,47 @@ would have $\sum_m w_{mn} = 1$, so that the last term is one and $C =
 $(1 - I)$. Geary's test is implemented in the `spdep::geary.test` function
 
 ```{r }
-geary.test(louisiana$pop_gr, W) %>% glance
+#| collapse: true
+geary.test(louisiana$pop_gr, W_louis) %>% sight
 ```
 These tests are unconditional tests of spatial correlation. The same
 tests can be performed on the residuals of least squares models.
 
 ```{r }
+#| collapse: true
 model_louisiana <- lm(pop_gr~poly(log(pop),2,raw =TRUE), louisiana)
-lm.morantest(model_louisiana, W) %>% glance
+lm.morantest(model_louisiana, W_louis) %>% sight
 ```
 The hypothesis of no spatial correlation is still rejected at the 5%
 level, but the p-value is much higher than the one associated with the
-unconditionnal test. 
+unconditional test. 
 
+@ERTU:KOCH:07 compute the Moran test for the residuals of the OLS estimation of the standard Solow's growth model. The set of neighbors is obtained without setting any maximum distance, so that all countries are neighbors to each other. Two matrices of weights are computed: one with $w_{nm} = d_{nm}^{-2}$ ($W1$) and the other with $w_{nm} = \mbox{exp}(-2 d_{nm})$ ($W2$):
+
+```{r}
+#| collapse: true
+loglm_solow <- loglm(gdp95 ~ lns + lnngd, sp_solow2)
+class(loglm_solow) <- c("micsr", "lm")
+lm_solow <- lm(log(gdp95) ~ lns + lnngd, sp_solow2)
+d <- dnearneigh(sp_solow2, 0, Inf)
+W1 <- nb2listwdist(d, sp_solow2, type = "idw", alpha = 2,
+                   style = "W", zero.policy = TRUE)
+W2 <- nb2listwdist(d, sp_solow2, type = "exp", alpha = 2,
+                   style = "W", zero.policy = TRUE)
+lm.morantest(lm_solow, W1) %>% sight
+lm.morantest(lm_solow, W2) %>% sight
+```
+
+Whatever the weighting matrix, the hypothesis of no spatial correlation is rejected.
+
+```{r}
+#| include: false
+#| eval: false
+locmor <- localmoran(resid(lm_solow), W1)
+z_locmor <- locmor %>% as_tibble %>% pull(Ii) %>% as.numeric
+z_locmor <- z_locmor %>% cut(c(-1, - 0.5, 0, 0.5, 1, 1.5, 2, 2.5, Inf))
+sp_solow2 %>% st_set_geometry("polygon") %>% add_column(z = z_locmor) %>% ggplot + geom_sf(aes(fill = z)) + scale_fill_brewer(palette = "Blues")
+```
 
 ### Local spatial correlation
 
@@ -696,12 +816,12 @@ A first glance of local spatial correlation can be obtained using the
 Moran's plot, implemented in the `spdep::moran.plot` function, where
 $y_n - \bar{y}$ is on the $x$ axis and $\tilde{y}_n - \bar{y}$ on the
 $y$ axis. Therefore, both variables have zero mean and the intercept
-of the fitting line is therefore 0, the slope being the Moran test.
+of the fitting line is therefore 0, the slope being Moran's $I$ statistic:
 
 ```{r }
-moran.plot(louisiana$pop_gr, W)
+moran.plot(louisiana$pop_gr, W_louis)
 ```
-Each observation is situated in one of the 4 quarter of
+Each observation is situated in one of the 4 quarters of
 plane. Observations in the:
 
 - the upper-right quarter are *"high-high"* observations, which means
@@ -723,29 +843,29 @@ be 0. On the contrary, in case of positive spatial correlation, a
 majority of points should be of the *"low-low"* or *"high-high"*
 cathegory and the regression line should have a positive slope. 
 
-@ANSE:95 proposed local versions of Moran and Geary's test. We then
+@ANSE:95 proposed local versions of Moran's $I$ and Geary's $C$ statistics. We then
 have for each observation $I_n$ and $G_n$ so that $\sum_n I_n$ and
-$\sum_n G_n$ are respectivelly proportionnal to the global Moran and
-Geary test. Local Moran is defined as:
+$\sum_n G_n$ are respectively proportional to the global Moran and
+Geary statistics. Local Moran's statistics are defined as:
 
 $$
 I_n = (y_n - \bar{y}) \sum_m w_{nm} (y_m - \bar{y}) = (y_n - \bar{y})(\tilde{y}_n - \bar{y})
 $$
 
 and their sum is $(y_n - \bar{y})(\tilde{y}_n - \bar{y})$, which is
-the numerator of the Moran test. Therefore, we have:
+the numerator of the Moran's $I$ statistic. Therefore, we have:
 
 $$
 I = \frac{\sum_n I_n}{\sum_n (y_n - \bar{y}) ^ 2}
 $$
 
-The local Moran is obtained using the `spdep::localmoran` function:
+Local Moran's statistics are obtained using the `spdep::localmoran` function:
 
 ```{r }
-locmor <- localmoran(louisiana$pop_gr, W)
+locmor <- localmoran(louisiana$pop_gr, W_louis)
 ```
 which returns a matrix, with a line for every observations and columns
-containing the local Moran values, their expectation, variance, the
+containing the local Moran values, their expectation, variance, the standardized
 statistic and the p-value. It's easier to coerce this matrix to a
 tibble in order to extract extreme values of the statistic:
 
@@ -753,7 +873,7 @@ tibble in order to extract extreme values of the statistic:
 locmor %>% as_tibble %>% filter(`Pr(z != E(Ii))` < 0.01)
 ```
 There are therefore 11 out of 64 (17%) observations for which the p-value is lower
-than 1%, which confirm the presence of spatial correlation. The local
+than 1%, which confirms the presence of spatial correlation. The local
 Moran statistic can also be represented in a map, in order to identify
 the "hot spots":
 
@@ -766,7 +886,6 @@ louisiana %>% add_column(z = z_locmor) %>%
 
 Two hot spots are then identified, in the north-west and the
 south-west of the state.
-
 
 ```{r include = FALSE, eval = FALSE}
 crossproduct <- function(x, y){
@@ -785,66 +904,66 @@ S5 <- (N ^ 2 - N) * S1 - 2 * N * S2 + 6 * S0 ^ 2
 V <- (N * S4 - S3 * S5) / ( (N - 1) * (N - 2) * (N - 3) * S0 ^ 2) - 1 / (N - 1) ^ 2
 ```
 
-## Spatial models {#sec-spatial_models}
+## Spatial econometrics {#sec-spatial_models}
+
+
+#### Spatial models and tests
 
 We consider here linear gaussian models that are extended in order to
 integrate the spatial feature of the sample, using the weighting
 matrix described in the previous section. Two main models can be
 considered. The first one is the **SEM** for spatial error model which
-can be writen in matrix form as:
+can be written in matrix form as:
 
 $$
-y = X \beta + \epsilon \; \mbox{with} \; \epsilon = \rho W \epsilon + \eta
+y = X \beta + \epsilon \; \mbox{with} \; \epsilon = \lambda W \epsilon + \eta
 $$ {#eq-sem}
 
 Therefore, the error for observation $n$ is linearly related to the
-errors of its neighboors $\tilde{\epsilon}_n$. **OLS** estimation
+errors of its neighbors $\tilde{\epsilon}_n$. **OLS** estimation
 gives unbiased and consistent estimators but, as always with
 non-spherical errors, it is inefficient and the simple formula of the
-covariance matrix of the coefficients ($\sigma ^ 2 (X\top X) ^ {-1}$)
+covariance matrix of the coefficients ($\sigma ^ 2 (X^\top X) ^ {-1}$)
 leads to a biased estimator.
 
 The second model is either called **SAR** (spatial autoregressive
 model) or **SLM** (spatial lag model). It extends the basic gaussian
 linear model by adding as a regressor the mean value of the response
-for the neighboor units. For one observation, the model writes $y_n =
-\beta ^ \top x_n + \lambda \tilde{y}_n + \epsilon_n$ or, in matrix
+for the neighbor units. For one observation, the model writes $y_n =
+\beta ^ \top x_n + \rho \tilde{y}_n + \epsilon_n$ or, in matrix
 form:
 
 $$
-y = X \beta + \lambda W y + \epsilon
+y = X \beta + \rho W y + \epsilon
 $$
-
 The reduced form of the model is:
 
 $$
-y = (I - \lambda W) ^ {-1} X \beta + (I - \lambda W) ^ {-1}\epsilon
+y = (I - \rho W) ^ {-1} X \beta + (I - \rho W) ^ {-1}\epsilon
 $$  {#eq-sar}
 
 Therefore, the values of $y$ depends on all the values of $\epsilon$
 and $\tilde{y}_{n}$ is therefore correlated with $\epsilon_n$. The
-**OLS** estimator is therefore biased and unconsistent. Moreover, in
-@eq-sar$, the spatial dependence in the parameter $\lambda$ feeds back
+**OLS** estimator is therefore biased and inconsistent. Moreover, in
+@eq-sar, the spatial dependence in the parameter $\lambda$ feeds back
 [@BIVA:MILL:PIRA:21], which is not the case for @eq-sem. This means
 that for the **SEM** model, the marginal effect of a covariate is the
 corresponding coefficient. This is not the case for the **SAR** model.
-
 Moreover, the matrix $(I - \lambda W) ^ {-1}$ can be written as an
 infinite series:
 
 $$
-(I - \lambda W) ^ {-1} = I + \lambda W + \lambda^2 W^2 + \lambda^3
+(I - \rho W) ^ {-1} = I + \rho W + \rho^2 W^2 + \rho^3
 W^3 + \ldots
 $$
 
-Spatial models were initially estimated by maximum likelihood, by
+Spatial models are usually estimated by maximum likelihood, by
 assuming a multivariate normal distribution for the iid errors. For
-the **SEM** model, the idiosyncratic errors can be writen as a
+the **SEM** model, the idiosyncratic errors can be written as a
 function of the response:
 
-
 $$
-\eta = (I - \rho W) y - (I - \rho W) X\beta
+\eta = (I - \lambda W) y - (I - \lambda W) X\beta
 $$ {#eq-etasem}
 
 so that the Jacobian of the transformation is 
@@ -854,16 +973,15 @@ $$\left| \frac{\partial \eta}{\partial y} \right| =
 
 the likelihood is similar to the one of the linear
 gaussian model except that an extra term, which is the log of the
-Jacobian should be added:
+Jacobian, should be added:
 
 $$
--N/2 (\ln 2\pi + \ln \sigma ^ 2) + \ln \left| I - \rho W \right|  -
+-N/2 (\ln 2\pi + \ln \sigma ^ 2) + \ln \left| I - \lambda W \right|  -
 \frac{1}{\sigma ^ 2} \eta^\top \eta
 ^ 2
 $$
 
 where $\eta$ is given by @eq-etasem.
-
 For the **SAR** model, @eq-sar indicates that the Jacobian is the
 same, so that the log-likelihood is:
 
@@ -873,10 +991,184 @@ $$
 ^ 2
 $$
 
-with $y - X \beta - \lambda Wy$. 
+with $y - X \beta - \rho Wy$. 
 
 The log likelihood function can be concentrated on $\beta$ and $\sigma
 ^ 2$ so that it can be expressed as a function of one parameter
 ($\lambda$ for the **SAR** model and $\rho$ for the **SEM** model).
+These two models can be augmented by spatial lags of the covariates, they are in this case called Durbin's models. There is an interseting relationship between the Durbin's SAR model and the SEM model. The former can be written:
+
+$$
+y = \rho W y + X\beta +  X W \theta + \epsilon
+$$
+
+with $\epsilon$ iid. The **common factor** hypothesis is that $\theta = - \rho \beta$. In this case, we have:
+
+
+$$
+(I - \rho W) y =  (I - \rho W) X\beta + \epsilon
+$$
+Or finally:
+
+$$
+y =  X\beta + (I - \rho W) ^{-1} \epsilon
+$$
+which is the SEM model, as denoting $\nu = (I -\rho W) ^ {-1} \epsilon$ implies that $\nu = \rho W \nu + \epsilon$. 
+
+Once it has been established that there is spatial correlation, on has to choose the "right" specification. Several tests have been proposed, based on the three tests principle. Lagrange multiplier tests proposed by ANSE:BERA:FLOR:YOON:96, are popular as they only require the OLS estimation. Different flavors of tests have been proposed, testing $\rho = 0$, \lambda = 0$ or $\rho = \lambda = 0$. The basic version of, for example the first test ($\mbox{H}_{0}: \rho = 0$) has, as a maintained hypothesis that $\lambda = 0$. A robust version of the test has been proposed which don't impose this maintained hypothesis. The common factor hypothesis can easily be tested using a likelihood ratio. The Wald statistic is less easy to compute, has a set of non-linear hypothesis $\theta = - \rho \beta$ is tested.
+
+### Application to the growth model
+
+To overcome the irrelevant results of the standard Solow model, @ERTU:KOCH:07 consider an endogenous growth model with spillovers. The production function is as usual a Cobb-Douglas:
+
+$$
+Y_n(t) = A_n(t) K_n ^ \kappa(t) L_n ^ {1 -\kappa}(t)
+$$
+$\kappa$ being the elasticity of the production with the capital and also the share of the profits in the national product. The level of technology is given by:
+
+$$
+A_n(t) = \Omega(0) e ^ {\mu t} k_n ^ \phi(t) \prod_{m \neq n} ^ N A_n^{\gamma w_{nm}}(t)
+$$
+where $k_n(t) = K_n(t) / L_n(t)$ is the physical capital per worker, $\Omega(0)$ is the initial level of the technology and $\mu$ is a constant rate of technological growth, as in the Solow model. The next term takes into account the spillover effect from capital investment, following @ROME:86 and the strength of this spillover effect is measured by $\phi$. The last term is specific the model of @ERTU:KOCH:07, for which the spillovers are not restricted to domestic investment, but concerns also the technology of neighbors countries. The effect of the technology of country $m$ on the technology of country $n$ is the product of a constant parameter $\gamma$ and a specific weight, $w_{nm}$, which is a decreasing function of the distance between both countries. @ERTU:KOCH:07 showed (equation 10, page 1038) that, at the steady state, the output per capita is:
+
+$$
+\begin{array}{rcl}
+\ln y_n ^ * &=& \frac{1}{1 - \kappa - \phi} \ln \Omega + 
+\frac{\kappa + \phi}{1 - \kappa - \phi} \ln s_n -
+\frac{\kappa + \phi}{1 - \kappa - \phi} \ln (n_n + g + \gamma) \\
+&-& \frac{\kappa  \gamma}{1 - \kappa - \phi} \sum_{m\neq n}^ N w_{nm} \ln s_m + \frac{\kappa  \gamma}{1 - \kappa - \phi} \sum_{m\neq n}^ N w_{nm} \ln (n_n + g + \gamma) \\
+&+& \frac{\gamma(1 - \kappa)}{1 - \kappa - \phi} \sum_{m\neq n}^ N w_{nm} \ln y_m ^ *
+\end{array}
+$$
+In matrix form, denoting $y = \ln y^*$, $X = (\ln s \ln v)$, $\beta = \left(\begin{array}{c} (\kappa + \phi) / (1 - \kappa - \phi)\\ - (\kappa + \phi) / (1 - \kappa - \phi)\end{array}\right)$, $\theta = \left(\begin{array}{c} \gamma \kappa / (1 - \kappa - \phi)\\ - \gamma  \kappa  / (1 - \kappa - \phi)\end{array}\right)$ and $\delta = \gamma (1 - \kappa) / (1 - \kappa - \phi)$:
+
+$$
+y = \alpha i + X \beta + WX \theta + \delta Wy + \epsilon
+$$
+
+if $\gamma = 0$, the model reduces to the model of @ROME:86 and the last three terms disappear. Note that in this case $\kappa$ and $\phi$ are not identified, but only their sum. Moreover, if $\phi$ is also 0, we get the Solow model. An interesting feature of the model of @ERTU:KOCH:07 is that their specification enables the identification of all the structural parameters of the model, $\kappa$, $\phi$ and $\gamma$. 
+
+If $\phi = 0$, $\theta = \gamma \beta$ and $\delta = \gamma$, so that: $y = C + (I - \gamma W)X\beta + \gamma y + \epsilon$ so that the reduce form is:
+
+$$
+y = \alpha'i + X \beta + (I - \gamma W) ^ {-1} \epsilon
+$$
+which is a SEM model without Durbin terms. Therefore, the hypothesis that $\phi = 0$ is in the context of this model the hypothesis of common factors.
+
+The structural growth model imposes that the coefficient of $\ln s_n$ is the opposite of the coefficient of $\ln v_n$. Therefore, to impose this constraint, we can use as a unique covariate $\ln s_n - \ln v_n$.
+
+**spatialreg** provides functions to estimate these flavors of spatial model: `lagsarlm` for SAR models, `sacsarlm` for SEM model and `errorsarlm` for SAR-SEM models. The three first arguments are `formula`, `data` and `listw` which should be a `listw` object containing the weights. The `Durbin` argument enables to estimate the Durbin's versions of the model; this can be done either by setting it to `TRUE` (a spatial lag is then added for all the covariates) or a formula indicating the subset of covariates for which spatial lags had to be added.
+
+```{r}
+library(spatialreg)
+ols <- loglm(gdp95 ~ lns + lnngd, sp_solow2)
+sp_solow3 <- sp_solow2 %>% mutate(lns = lns - lnngd)
+olsc <- update(ols, . ~ . - lnngd)
+m1 <- lagsarlm(log(gdp95) ~ lns + lnngd, sp_solow2, W1, Durbin = TRUE)
+m2 <- errorsarlm(log(gdp95) ~ lns + lnngd, sp_solow2, W1, Durbin = FALSE)
+m3 <- sacsarlm(log(gdp95) ~ lns + lnngd, sp_solow2, W1, Durbin = TRUE)
+m1c <- update(m1, . ~ . - lnngd, data = sp_solow3)
+m2c <- update(m2, . ~ . - lnngd, data = sp_solow3)
+m3c <- update(m3, . ~ . - lnngd, data = sp_solow3)
+class(ols) <- class(olsc) <- c("micsr", "lm")
+```
+
+```{r}
+#| echo: false
+#| label: tbl-results_ertu_koch
+#| tbl-cap: "Results of the growth models"
+rawols <- lm(log(gdp95) ~ lns + lnngd, sp_solow2)
+rawolsc <- lm(log(gdp95) ~ lns, sp_solow3)
+library(modelsummary)
+options(modelsummary_get = "broom")
+modelsummary(list(OLS = ols, SAR = m1, SEM = m2, SARMA = m3, OLSc = olsc, SARc = m1c, SEMc = m2c, SARMAc = m3c),
+             coef_omit = "Intercept",
+             coef_map = c("lns" = "$\\ln s$", 
+                          "lnngd" = "$\\ln n + g + \\delta$", 
+                          "lag.lns" = "$W \\ln s$", 
+                          "lag.lnngd" = "$W\\ln (n + g + \\delta)$", 
+                          rho = "$\\rho$", 
+                          lambda = "$\\lambda$"),
+             gof_omit = "R2|AIC|BIC",
+             escape = FALSE)
+```
+
+The results are presented in @tbl-results_ertu_koch. Starting from the OLS model, the hypothesis of no spatial correlation can be tested using Lagrange multiplier tests. `spdep::lm.LMtests` provides different flavors of these tests. 
+
+```{r}
+#| collapse: true
+loglm_solow <- rawols
+lm.LMtests(loglm_solow, W1, test = "LMerr") %>% sight
+lm.LMtests(loglm_solow, W1, test = "RLMerr") %>% sight
+lm.LMtests(loglm_solow, W1, test = "LMlag") %>% sight
+lm.LMtests(loglm_solow, W1, test = "RLMlag") %>% sight
+lm.LMtests(loglm_solow, W1, test = "SARMA") %>% sight
+```
+
+
+
+```{r}
+#| eval: false
+#| echo: false
+lmtest::lrtest(m1c, m1)
+lmtest::lrtest(m2c, m2)
+lmtest::lrtest(m3c, m3)
+lmtest::lrtest(rawols, rawolsc)
+lm.LMtests(rawols, W1, test = "all")
+loglm_solow <- loglm(gdp95 ~ lns + lnngd, sp_solow2)
+lm_solow <- lm(log(gdp95) ~ lns + lnngd, sp_solow2)
+lm.LMtests(lm_solow, W1, test = "LMerr") %>% class
+save(lm_solow, W1, file = "~/Bureau/lm_solow.rda")
+lmtest::lrtest(m1c, m2c)
+```
+
+The reduced form parameters $r$ are:
+
+$$
+r ^ \top = (\beta, \theta, \rho) =
+\left(\frac{\kappa + \phi}{1 - \kappa - \phi}, - \gamma \frac{\kappa}{1 - \kappa - \phi}, \gamma \frac{1 - \kappa}{1 - \kappa - \phi}\right)
+$$
+The structural parameters $s$ can be expressed as a function of the reduced form parameters:
+
+$$
+s ^ \top = (\kappa, \phi, \gamma) = \left(\frac{\theta}{\theta - \rho}, \frac{\beta}{1 + \beta} - \frac{\theta}{\theta - \rho}, \frac{\rho - \theta}{1 + \beta}\right)
+$$
+To apply the delta method, we compute the matrix of derivatives of $s$ with respect to $r$:
+
+
+$$
+\Gamma(r) = \frac{\partial s}{\partial r ^ \top}(r)=
+\left(
+\begin{array}{rcl}
+0                                       & - \frac{\rho}{(\theta - \rho) ^ 2} & \frac{\theta}{(\theta - \rho) ^ 2} \\
+\frac{1}{(1 + \beta) ^ 2}               & \frac{\rho}{(\theta - \rho) ^ 2}   & - \frac{\theta}{(\theta - \rho) ^ 2} \\
+- \frac{\theta - \rho}{(1 + \beta) ^ 2} & - \frac{1}{1 + \beta}                 & \frac{1}{1 + \beta}
+\end{array}
+\right)
+$$
+and the asymptotic variance of $s$ is:
+
+$$
+\hat{V}(\hat{r}) = \Gamma(\hat{r}) \hat{V}(\hat{s})\Gamma(\hat{r}) ^ \top
+$$
+We first compute the vector of the estimated structural parameters:
+
+```{r}
+beta <- unname(coef(m1c)["lns"])
+theta <- unname(coef(m1c)["lag.lns"])
+rho <- unname(coef(m1c)["rho"])
+kappa <- theta / (theta - rho)
+phi <- beta / (1 + beta) - theta / (theta - rho)
+gamma <- (rho - theta) / (1 + beta)
+s <- c(kappa, phi, gamma)
+Vr <- vcov(m1c)[c("lns", "lag.lns", "rho"), c("lns", "lag.lns", "rho")]
+G <- c(0, - rho / (theta - rho) ^ 2, theta / (theta - rho) ^ 2,
+       1 / (1 + beta) ^ 2, rho / (theta - rho) ^ 2, - theta / (theta - rho) ^ 2,
+       (theta - rho) / (1 + beta) ^ 2, - 1 / (1 + beta), 1 / (1 + beta))
+G <- matrix(G, nrow = 3, byrow = TRUE)
+V <- G %*% Vr %*% t(G)
+stdev <- V %>% diag %>% sqrt
+cbind(s, stdev) %>% round(5)
+```
 
 
