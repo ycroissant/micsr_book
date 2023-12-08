@@ -1373,7 +1373,7 @@ tibble(ols = std_ols, wls = std_wls, ratio = wls / ols)
 
 The efficiency gain of using WLS is consequent, as the standard deviations of the estimates reduce by about 25/50% depending on the coefficient.
 
-### Error component model
+### Error component model {#sec-error_component_gls}
 
 Remind that for the error component model, @eq-poweromegaec is a general
 formula that can be used to compute any power of $\Omega$ and $C$ is in
@@ -1552,7 +1552,7 @@ It seems here that GLS is much more efficient that OLS as the standard error of 
 
 
 
-### Seemingly unrelated regression
+### Seemingly unrelated regression {#sec-sur}
 
 Because of the inter-equations correlations, the efficient estimator is
 the GLS estimator:

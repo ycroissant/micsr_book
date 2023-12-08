@@ -1824,7 +1824,7 @@ behavior of a producer is described by a minimum cost equation along
 with equations of factor demand and the behavior of a consumer is
 described by a set of demand equations. 
 
-### System of equations
+### System of equations {#sec-sys_eq_ols}
 
 We consider therefore a system of $L$ equations denoted
 $y_l=X_l\beta_l+\epsilon_l$, with $l=1\ldots L$. In matrix form, the
