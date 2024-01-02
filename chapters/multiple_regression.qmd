@@ -2195,7 +2195,7 @@ ols_const <- clm(ols_unconst, R)
 ```
 and returns a `lm` object.
 
-Finally, the **systemfit** library is devoted to system
+Finally, the **systemfit** package [@HENN:HAMA:07] is devoted to system
 estimation and provide a `systemfit` function. Its main arguments are a list of equations and a data
 frame, but it also has a `restrict.matrix` and a `restrict.rhs`
 arguments to provide respectively $R$ and $q$.

@@ -1675,7 +1675,7 @@ sur <- lm(ys ~ Zs - 1) %>% clm(R = R)
 sur
 ```
 
-More simply, the `systemfit::systemfit function can be used, with the `method` argument set to `"SUR"`:
+More simply, the `systemfit::systemfit` function can be used, with the `method` argument set to `"SUR"`:
 
 ```{r }
 library(systemfit)

@@ -12,26 +12,26 @@ book:
   date: "17/11/2023"
   chapters:
   - index.qmd
-  - part: The ordinary least square estimator
-    chapters:
-      - ./chapters/simple_regression.qmd
-      - ./chapters/simple_regression_properties.qmd
-      - ./chapters/multiple_regression.qmd
-      - ./chapters/coefficients.qmd
-  - part: Beyound the OLS estimator
-    chapters:
-      - ./chapters/maximum_likelihood.qmd
-      - ./chapters/non_spherical.qmd
-      - ./chapters/endogeneity.qmd
-      - ./chapters/treateff.qmd
-      - ./chapters/spatial.qmd
+  # - part: The ordinary least square estimator
+  #   chapters:
+  #     - ./chapters/simple_regression.qmd
+  #     - ./chapters/simple_regression_properties.qmd
+  #     - ./chapters/multiple_regression.qmd
+  #     - ./chapters/coefficients.qmd
+  # - part: Beyound the OLS estimator
+  #   chapters:
+  #     - ./chapters/maximum_likelihood.qmd
+  #     - ./chapters/non_spherical.qmd
+  #     - ./chapters/endogeneity.qmd
+  #     - ./chapters/treateff.qmd
+  #     - ./chapters/spatial.qmd
   - part: Special responses
     chapters:
       - ./chapters/binomial.qmd
-      - ./chapters/count.qmd
-      - ./chapters/tobit.qmd
-      - ./chapters/duration.qmd
-      - ./chapters/rum.qmd
+  #     - ./chapters/count.qmd
+  #     - ./chapters/tobit.qmd
+  #     - ./chapters/duration.qmd
+  #     - ./chapters/rum.qmd
   - ./chapters/references.qmd
 
 bibliography: references.bib
@@ -47,7 +47,7 @@ format:
     theme: cosmo
   pdf:
     documentclass: krantz 
-    classoption: [krantz2]
+    classoption: [krantz2, a4paper, pdf]
 #    documentclass: scrreprt
 #    template: ./latex/eisvogel.tex
 #    toc-own-page: true

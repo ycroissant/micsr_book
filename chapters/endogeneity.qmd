@@ -1654,7 +1654,7 @@ W <- model.matrix(eq_inst, wm)
 X1 <- model.matrix(eq_c, wm)
 X2 <- model.matrix(eq_s, wm)
 X3 <- model.matrix(eq_d, wm)
-N <- nrow(Z)
+N <- nrow(W)
 Y <- select(wm, q, h, p) %>% as.matrix
 ```
 
@@ -1702,7 +1702,7 @@ a Kronecker product:
 
 ```{r }
 #| label: instrument_matrix_watermelon
-Zt <- t(solve(V)) %x% Z
+Wt <- t(solve(V)) %x% W
 ```
 
 Then, 2SLS is performed by first regressing `Zt` on `Xt`:
@@ -1710,7 +1710,7 @@ Then, 2SLS is performed by first regressing `Zt` on `Xt`:
 
 ```{r }
 #| label: first_stage_watermelon
-first <- lm(Xt ~ Zt - 1)
+first <- lm(Xt ~ Wt - 1)
 ```
 
 and then by regressing the fitted values of this first step regression
@@ -1757,8 +1757,8 @@ entity. A leading example is the case where the unit of
 observation is the individual, but siblings (or more specifically
 twins are observed). In this case, each observation is doubly indexed,
 the first index being the entity and the second one the index of the
-observation in the entity. A special case is when the same individual
-(in a wide sense, it can be an household, a firm, a country, ...) is
+observation in the entity. A special case is when the same individuals
+(in a wide sense, it can be households, firms, countries, ...) are
 observed several times, for example for different periods like years
 or months. Such a data set is called a **panel data**. We'll use the
 same notation in both cases, with $n = 1, 2, \ldots N$ the entity /
@@ -1769,11 +1769,11 @@ components: an entity / individual effect $\eta_n$ and an idiosyncratic effect $
 $x$ is endogenous and the OLS estimator is biased and inconsistent
 if there is some unobserved covariates (correlated with the
 response) that are correlated with the observed covariate. The effect
-of this missing covariates are in the error term and the correlation
-with the observed covariate induce a correlation between $x$ and
+of this missing covariates is in the error term and the correlation
+with the observed covariate induces a correlation between $x$ and
 $\epsilon$ ($\mbox{E}(\epsilon \mid x) \neq 0$). Consider now the case
-when $\mbox{E}(\eta \mid x) \neq 0$ but $\mbox{E}(\nu \mid x) = 0$. In
-this case, unbiased and consistent **OLS** estimators can be obtained
+where $\mbox{E}(\eta \mid x) \neq 0$ but $\mbox{E}(\nu \mid x) = 0$. In
+this case, unbiased and consistent OLS estimators can be obtained
 when the individual effect $\eta$ is either estimated or if the
 estimation is performed on a transformation of the covariate and the
 response that removes the individual effect. This is called the **fixed
@@ -1782,7 +1782,7 @@ effect** estimator.
 ### Computation of the fixed effect estimator
 
 
-The linear model: $y_{nt} = \beta^\top x_{nt} + \mu_n + \nu_{nt}$ can be written in matrix form as:
+The linear model: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$ can be written in matrix form as:
 
 $$
 \left(
@@ -1869,10 +1869,11 @@ or:
 $$
 y = X \beta + D \eta + \nu
 $$
+Note that this model doesn't contain an intercept: as $\eta$ are considered as parameters to be estimated, with an intercept $\alpha$, only $N$ parameters like $\alpha + \eta_n$ can be estimated and therefore, $\alpha$ can safely be set to 0.
 
 where $D = j_T \otimes I_N$ is a $NT\times N$ matrix where each column contains a dummy variable for one individual. The **least squares dummy variable** estimator (**LSDV** in short) consists on estimating by least squares $\beta$ and $\eta$. Instead of estimating the $N$ $\eta$ parameters, it is simpler and more efficient to use the Frish-Waugh theorem: first $X$ and $y$ are regressed on $D$, then the residuals of the first regression of $y$ are regressed on those of $X$.
 
-The OLS estimate of a variable $z$ on $D$ is: $\hat{\eta} = (D ^ \top D) ^ {-1} D^\top z$. But $D^\top D = (j_T^\top j_T) \otimes I = T \otimes I = T I$, so that $(D ^ \top D) ^ {-1} = I / T$. Moreover:
+The OLS estimate of a variable $z$ on $D$ is: $\hat{\delta} = (D ^ \top D) ^ {-1} D^\top z$. But $D^\top D =  T I$, so that $(D ^ \top D) ^ {-1} = I / T$. Moreover:
 
 $$
 D^\top z = \left(
@@ -1884,7 +1885,7 @@ D^\top z = \left(
 \end{array}
 \right)
 $$
-and therefore $\hat{\eta}$ is a vector of individual mean of $z$, with typical element $\hat{\eta}_n = \bar{z}_{n.} = \sum_t z_{nt} / T$. Therefore, applying the Frish-Waugh theorem implies that regressing $y$ on $X$ and $D$ is equivalent to regress $y$ on $X$ with both the response and the covariates measured in deviations from their individual means. For one observation, we have: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$. Taking the individual mean of this equation, we get: $\bar{y}_{n.} = \beta^\top \bar{x}_{n.} + \eta_n + \bar{\nu}_{n.}$. Taking deviations from the individual means, the model to estimate is then:
+and therefore $\hat{\delta}$ is a vector of individual mean of $z$, with typical element $\hat{\delta}_n = \bar{z}_{n.} = \sum_t z_{nt} / T$. Therefore, applying the Frish-Waugh theorem implies that regressing $y$ on $X$ and $D$ is equivalent to regress $y$ on $X$ with both the response and the covariates measured in deviations from their individual means. For one observation, we have: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$. Taking the individual mean of this equation, we get: $\bar{y}_{n.} = \beta^\top \bar{x}_{n.} + \eta_n + \bar{\nu}_{n.}$. Taking deviations from the individual means, the model to estimate is then:
 
 $$
 y_{nt} - \bar{y}_{n.} = \beta ^ \top (x_{nt} - \bar{x}_{n.}) + (\nu_{nt} - \bar{\nu}_{n.})
@@ -1923,17 +1924,15 @@ which is in this case identical to the **within** estimator. To see that, remark
 $$
 (y_{n1} - \bar{y}_{n.})(x_{n1} - \bar{x}_{n.})+(y_{n2} - \bar{y}_{n.})(x_{n2} - \bar{x}_{n.})
 $$
-But $z_{n1} - \bar{z}_{n.} = z_{n1} - \frac{1}{2}(z_{n1} + z_{n2}) = \frac{1}{2}(z_{n1} - z_{n2})$. Similarly, $z_{n2} - \bar{z}_{n.} = -\frac{1}{2}(z_{n1} - z_{n2})$. Therefore, each term in the numerator of @eq-within_est reduces to $(y_{n1} - y_{n2})(x_{n1} - x_{n2})$ and similarly, each term in the denominator reduce to $(x_{n1} - x_{n2}) ^ 2$ which proves the equivalence between the first-difference and the within estimator. When $T > 2$ the within and the first-difference estimators differ:
+But $z_{n1} - \bar{z}_{n.} = z_{n1} - \frac{1}{2}(z_{n1} + z_{n2}) = \frac{1}{2}(z_{n1} - z_{n2})$. Similarly, $z_{n2} - \bar{z}_{n.} = -\frac{1}{2}(z_{n1} - z_{n2})$. Therefore, each term in the numerator of @eq-within_est reduces to $\frac{1}{2} (y_{n1} - y_{n2})(x_{n1} - x_{n2})$ and similarly, each term in the denominator reduce to $\frac{1}{2}(x_{n1} - x_{n2}) ^ 2$ which proves the equivalence between the first-difference and the within estimator. When $T > 2$ the within and the first-difference estimators differ:
 
 - the within estimator is more efficient, as it uses all the observations; on the contrary, while performing the first difference, the first observation for every individual is lost,
-- the error of the within estimator is $\nu_{nt} - \bar{\nu}_{n.}$ and therefore contains the whole series of $\nu_n$; on the contrary, the error of the first-difference is $\nu_{n1} - \nu_{n2}$ and therefore contains the values of $\nu_n$ for only two periods.
+- the error of the within estimator is $\nu_{nt} - \bar{\nu}_{n.}$ and therefore contains the whole series of $\nu_n$; on the contrary, the error of the first-difference is $\nu_{n1} - \nu_{n2}$ and therefore contains the values of $\nu_n$ for only the current and the previous period
 
 ### Application: Mincer earning function using a sample of twins
 
 @BONJ:CHERK:KASK:03 used a sample of British identical twins to
-estimate the return to education. The estimation of such equations
-(called the Mincer equation) typically regress log of earning on
-education, potential experience and its square. In the following
+estimate the return to education, using a Mincer earning function. In the following
 regression, potential experience is measured by age:
 
 ```{r }
@@ -1960,10 +1959,11 @@ lsdv <- lm(log(earning) ~ educ + factor(family), twins)
 lsdv %>% coef %>% head
 lsdv %>% coef %>% length
 ```
+
 The estimated return of education is much lower (3.9%) than the
 OLS estimator. Note that numerous parameters are estimated (215)
 and the computation can be unfeasible if the number of entities is very
-large. However, it is simpler and more efficient to use OLS on the
+large. Whatever the size of the sample, it is simpler and more efficient to use OLS on the
 transformed data, either using the within or the first difference
 estimator. This can easily be done using:
 
@@ -2059,7 +2059,7 @@ consistent if some covariates are actually endogenous although other
 estimators like OLS or GLS are not. However, if endogeneity is
 actually not a problem, this latter estimators are also consistent and
 are moreover more efficient. The Hausman test is based on the
-comparison of these two estimators:
+comparison of these two estimators and on the null hypothesis of the absence of endogeneity:
 
 - $\hat{\beta}_0$, with variance $\hat{V}_0$ is only consistent if the hypothesis is
 true and is in this case efficient,
@@ -2083,7 +2083,7 @@ $$
 $$
 
 and therefore @eq-var_difference simplifies to: $\mbox{V}(\hat{q}) =
-\mbox{V}(\hat{\beta}_1) - \mbox{V}(\hat{\beta}_0)$). The asymptotic
+\mbox{V}(\hat{\beta}_1) - \mbox{V}(\hat{\beta}_0)$. The asymptotic
 distribution of the difference of the two vectors of estimates is,
 under H~0~:
 
@@ -2113,10 +2113,10 @@ number of instruments is at least 2 and in this case, it can be shown
 that the bias of the IV estimator is approximately inversely
 proportional to the F statistic of the regression of the endogenous
 variable on the instruments.^[See @CAME:TRIV:05 pages 108-109 for a
-discussion and references.]. Therefore, if the correlation between the
+discussion and references.] Therefore, if the correlation between the
 endogenous variable and the instruments is weak, ie if the IV is
 performed using **weak instruments**, the estimator will not only be
-highly imprecise estimators, but it will also be seriously biased, in
+highly imprecise, but it will also be seriously biased, in
 the direction of the OLS estimator. While performing IV
 estimation it is therefore important to check that the instruments are
 sufficiently correlated with the endogenous covariate. This can be
@@ -2185,8 +2185,9 @@ relevant specification tests.
 #| label: ivreg_slave
 sltd <- countries::slave_trade %>%
     mutate(slarea = pmax(slaves * 1E3 / area, 0.1))
-sltd_iv <- ivreg::ivreg(log(gdp) ~ log(slarea) |
-                            redsea + atlantic + sahara + indian, data = sltd)
+sltd_iv <- ivreg::ivreg(log(gdp) ~ log(slarea) | 
+                          redsea + atlantic + sahara + indian, 
+                        data = sltd)
 summary(sltd_iv)
 ```
 

@@ -1386,7 +1386,7 @@ large model are assumed to be the "true" model,
   test have the interesting feature that the two models are compared
   without hypothesizing that one of them is the true model.
 
-### Tests for nested models: the three classical tests
+### Tests for nested models: the three classical tests {#sec-three_tests_ml}
 
 We have seen in @sec-three_tests that a set of hypothesis defines constrains on the parameters and therefore
 leads to two models. The first one, called the unconstrained (or the
