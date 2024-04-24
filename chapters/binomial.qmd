@@ -4,12 +4,12 @@
 source("../_commonR.R")
 ```
 
-# Binomial models
+# Binomial models {#sec-binomial}
 
 Binomial responses can take only two mutually
 exclusive values that can be, without loss of generality coded as 1
 and 0. Common examples are transport mode choice (car vs public
-transit), working force participation for women, unionship membership,
+transit), working force participation for women, union membership,
 ...
 For this kind of responses, the statistical distribution is obviously a binomial distribution with one trial. This is a major difference with the estimators that will be reviewed in the other chapters of this part, for which assuming a distribution function for the response is a crucial choice. Denoting 1 by "a success" and 0 by "a fail", this distribution
 is fully characterized by a unique parameter, $\mu$, which is the
@@ -23,14 +23,14 @@ values in a given sample will be either equal to 0 or 1.
 
 To get a regression model for a binomial response, we first define an **index function**, also called the **linear predictor**: $\eta_n = \gamma ^ \top z_n = \alpha + \beta ^ \top x_n$. Then, a function $F$ is chosen that relates this index function to the unique parameter of the binomial distribution: $\mu_n =F(\eta_n)$. Different choices of $F$ leads to different binomial models. 
 
-The first section will present the three most common choices for $F$
-which result in the linear probability, the logit and the probit models. The second section will present two distinct structural models that
-can justify the use of these models. The third section presents the generalized linear models from which the binomial model is a special case. The fourth section is devoted to estimation, evaluation and testing of binomial models. Finally, the last section presents relevant estimators when some covariates are endogenous.
+@sec-func_form_binom will present the three most common choices for $F$
+which result in the linear probability, the logit and the probit models. @sec-struct_binom will present two distinct structural models that
+can justify the use of these models. @sec-glm presents the generalized linear models from which the binomial model is a special case. @sec-binom_evaluation is devoted to estimation, evaluation and testing of binomial models. Finally, @sec-endog_probit presents relevant estimators when some covariates are endogenous.
 
-## Functional form and the linear-probability, probit and logit model
+## Functional form and the linear-probability, probit and logit model {#sec-func_form_binom}
 
 The most obvious choice for $F$ is the identity function, so that
-$\mu_n = \eta_n = \alpha + \beta ^ \top x_n$. Therefore the parameter of the binomial 
+$\mu_n = \eta_n = \alpha + \beta ^ \top x_n$. Therefore, the parameter of the binomial 
 distribution is assumed to be a linear function of the covariates. 
 On the one hand, this choice has several interesting features. It is
 very simple to estimate as it is a linear model and, moreover,
@@ -40,10 +40,9 @@ residuals are $y_n - \hat{\mu}_n$ but, as $y_n$ is either 0
 or 1, the residuals are respectively $- (\hat{\alpha}+ \hat{\beta} ^ \top x_n)$ or
 $1 - (\hat{\alpha} + \hat{\beta} ^ \top x_n)$ and therefore depends on the values of
 $x_n$. The linear-probability model, estimated by least-squares is
-therefore inefficient as the residuals are heteroscedastic and the standard deviations reported by a least
+therefore inefficient as the residuals are heteroskedastic and the standard deviations reported by a least
 square program are biased. As usual, the solution would be either to
-estimate the linear-probability model by GLS or to keep the OLS
-estimator but to use heteroscedasticity-robust estimator for the
+estimate the linear-probability model by GLS or to use heteroskedasticity-robust estimator for the
 covariance matrix of the estimators. Secondly, as the fitted
 probabilities of success are linear functions of the covariates, they
 are not bounded by 0 and 1 and, therefore, it is possible that the
@@ -76,21 +75,19 @@ density function for the logistic distribution (obtained by taking the derivativ
 
 - the variance of the standard normal distribution is 1 as it is equal
   to $\pi ^ 2/3$ for the logistic distribution,
-- the logistic distribution has much heavyer tails than the normal density
-  (its shape is quite similar to a Student t with 7 degrees of freedom).
-  
+- the logistic distribution has much heavier tails than the normal density.
+
+
 ```{r}
 #| label: fig-normal_logistic
 #| fig-cap: "Logistic and normal densities"
 #| echo: false
-ggplot() + 
-  geom_function(fun = dlogis, linetype = "dotted") + 
-  scale_x_continuous(limits = c(-4, 4)) + 
-  geom_function(fun = dnorm) + 
-  geom_function(fun = dt, args = list(df = 7), linetype = "dashed") + 
-  labs(y = NULL)
+datas <- tibble(x = seq(-4, 4, .1), normal = dnorm(x), logistic = dlogis(x)) %>% 
+  pivot_longer(- x)
+ggplot(datas, aes(x, value, linetype = name)) + 
+  geom_line() + 
+  labs(y = NULL, linetype = "Distribution")
 ```
-  
   
 As $\mu_n=F(\eta_n)$ (with $\eta_n = \alpha + \beta ^ \top x_n$), the marginal effect of the k^th^ covariate on the probability is:
 
@@ -105,8 +102,8 @@ the value of the covariates for a given observation. Therefore, the
 marginal effect is observation-dependent, but the ratio of two
 marginal effects for two covariates is not, as it is obviously, from @eq-meffect_binomial, equal
 to the ratio of the two corresponding coefficients. As the coefficient of
-proportionality is the normal/logistic density, it is maximum for
-$\eta_n = 0$, which result in a probability of success of
+proportionality is the normal/logistic density, the maximum marginal effect is for
+$\eta_n = 0$, which results in a probability of success of
 0.5. The corresponding values of the densities are 0.4 and 0.25 for
 the normal and for the logistic densities. Therefore, a rule of thumb to
 interpret coefficients is to multiply them respectively by 0.4 and
@@ -131,17 +128,17 @@ mode_choice <- mode_choice %>%
 ```
 
 As an example, we consider the data set used by @HORO:93 which
-concern the transport mode chosen for work trips by a sample 842 individuals in
+concern the transport mode chosen for work trips by a sample of 842 individuals in
 Washington DC in the late 60's. The response `mode` is 1 for car and 0
 for transit. The covariates are the in and out-vehicle times
 (`ivtime` and `ovtime`) and the cost difference between car and
-transit. Therefore, a positive value indicates that the trip is
-longer/more expensive in car than the corresponding trip using public
+transit. Therefore, a positive value indicates that car trip is
+longer/more expensive than the corresponding trip using public
 transit. We multiply the cost by 8.42 to obtain 2022 US$ (the CPI for
 2022 is 842 with a 100 base in 1967).
 The generalized cost of a trip is the sum of the monetary cost and the
 value of the time spent in the transport. We use 2/3 of the minimum
-hourly wage (about 1.5$ in the US in the late 60's, which is about 8.42 2022
+hourly wage (about 1.4$ in the US in the late 60's, which is about 8 2022
 US$) to valuate an hour of transport:
 
 ```{r }
@@ -157,9 +154,9 @@ has a `link` argument which enables to estimate the three models.
 lp_m <- binomreg(mode ~ gcost, mode_choice, link = "identity")
 pt_m <- update(lp_m, link = "probit")
 lt_m <- update(lp_m, link = "logit")
-sight(lp_m)
-sight(pt_m)
-sight(lt_m)
+gaze(lp_m)
+gaze(pt_m)
+gaze(lt_m)
 ```
 
 ```{r }
@@ -204,15 +201,16 @@ The scatterplot and the fitted probability curves are presented on
 #| echo: false
 mode_choice %>% ggplot(aes(gcost, mode)) +
     geom_jitter(alpha = 0.5, size = 0.2, height = 0.02) +
-    geom_function(fun = function(x) coef(lp_m)[1] + coef(lp_m)[2] * x) + 
-    geom_function(fun = function(x) pnorm(coef(pt_m)[1] + coef(pt_m)[2] * x),
-                  linetype = "dashed", color = "blue") +
-    geom_function(fun = function(x) plogis(coef(lt_m)[1] + coef(lt_m)[2] * x),
-                  linetype = "dotted", color ="red") +
+    geom_function(fun = function(x) coef(lp_m)[1] + coef(lp_m)[2] * x, 
+                  aes(linetype = "linear")) + 
+    geom_function(fun = function(x) pnorm(coef(pt_m)[1] + coef(pt_m)[2] * x), 
+                                          aes(linetype = "probit")) + 
+    geom_function(fun = function(x) plogis(coef(lt_m)[1] + coef(lt_m)[2] * x), 
+                                           aes(linetype = "logit")) + 
     scale_x_continuous(limits = c(-30, 30))
 ```
 
-The fitted probabilies are given by
+The fitted probabilities are given by
 a straight line for the linear probability model and by an S curve for
 the probit and the logit models. These last two curves are very similar
 except for low values of the covariate. Note also that at the sample
@@ -233,20 +231,20 @@ $`r round(coef(lt_m)[2], 3)` /
 which is a bit larger than the value of 1.6 suggested by @AMEM:81.
 
 We now consider a second data set called `airbnb`, used by
-@EDEL:LUCA:SVIR:17. The aim of their study is to analyse the presence
+@EDEL:LUCA:SVIR:17. The aim of their study is to analyze the presence
 of racial discrimination on the Airbnb platform. The authors create
 guest accounts that differ by the first name chosen. More
 specifically, the race of the applicant is suggested by the choice of
 the first name, either a "white" (as Emily, Sarah, Greg) or an
-"afro-american" (like Lakisha or Kareem) first name. The response is
+"Afro-American" (like Lakisha or Kareem) first name. The response is
 acceptance and is 1 if the host gave a positive response and 0
 otherwise. In our simplified example, we use only three covariates,
 guest's race suggested by its first name `guest_race`, the price
-`price` (that we introduce in logs) and the cities where the experience took place (Baltimore, Dallas, Los-Angeles, Saint-Louis and Washington). Note that the mean of
+`price` (in logs) and `city`, the cities where the experience took place (Baltimore, Dallas, Los-Angeles, Saint-Louis and Washington). Note that the mean of
 the response is $0.45$ which is a distinctive feature of this data set
 compared to the previous one. As the mean value of the probability of
 success is close to 50% we can expect that the rule of the thumb which
-consist on multiplying the logit/probit coefficients by 0.25/0.4 would
+consists on multiplying the logit/probit coefficients by 0.25/0.4 would
 give an estimated value for the marginal effect close to the one
 directly obtained in the linear probability model.
 
@@ -260,7 +258,7 @@ pt_a <- update(lp_a, link = "probit")
 lt_a <- update(lp_a, link = "logit")
 ``` 
 
-To summarise the results, we print in @tbl-compabb the
+To summarize the results, we print in @tbl-compabb the
 coefficients of the linear probability model, those of the logit
 multiplied by 0.25, those of the probit multiplied by 0.4 and the
 ratio of the logit and the probit coefficients.
@@ -286,21 +284,21 @@ dummy. We should therefore better compute the difference between the
 probabilities of acceptance, everything other equal, which means here
 for a given price of the property and for the reference city, which is Baltimore. The average price being equal to
 182$ in our sample, we have, for the probit model: $\Phi(0.497 -
-0.213 - 0.107 \ln 182) - \Phi(0.497 - 0.213 - 0.107 \ln 182) = -0.084$
-and for the logit model: $\Lambda(0.796 - 0.341 - 0.171 \ln 182) -
-\Lambda(0.796 - 0.171\ln 182) = -0.084$, which means that, at least in
+0.213 - 0.107 \times \ln 182) - \Phi(0.497 - 0.213 - 0.107 \times \ln 182) = -0.084$
+and for the logit model: $\Lambda(0.796 - 0.341 - 0.171 \times\ln 182) -
+\Lambda(0.796 - 0.171\times\ln 182) = -0.084$, which means that, at least in
 this example, the previous computation of the derivative gives an
-extremely good approximation of the effect of this dummy
+extremely accurate approximation of the effect of this dummy
 covariate. Finally, note that the ratio of the logit and the probit
 coefficients is actually very close to the value of 1.6 advocated by
 @AMEM:81.
 
-## Structural models for binomial responses
+## Structural models for binomial responses {#sec-struct_binom}
 
-Two structural models have been proposed to give a theoritical
-fundation to the probit/logit models. Without loss of generality, we'll present these two models for the case where there is a unique covariate.
+Two structural models have been proposed to give a theoretical
+foundation to the probit/logit models. Without loss of generality, we'll present these two models for the case where there is a unique covariate.
 
-### Latent variable and index function
+### Latent variable and index function {#sec-latent_variable}
 
 We observe that $y$ is equal to 0 or 1, but we now assume that this
 values is related to a latent continuous variable (called $y^*$) which
@@ -338,23 +336,23 @@ function of $\epsilon$. For example, if $\epsilon \sim \mathcal{N} (0, \sigma)$,
 $\mbox{P}(y = 1 \mid x) = 1 - \Phi(-(\alpha - \beta x) / \sigma)$. We can
 see from this expression that only $\alpha / \sigma$ and $\beta / \sigma$ can be identified,
 so that, $\sigma$ can be set to any arbitrary value, for
-example 1. Moreover, by the symetry of the normal distribution, we
+example 1. Moreover, by the symmetry of the normal distribution, we
 have $1 - \Phi(-z) = \Phi(z)$, so that the probability of success
-becomes $F(y = 1 \mid x) = \Phi(\alpha +\beta ^ \top x)$, which defines the
+becomes $F(y = 1 \mid x) = \Phi(\alpha +\beta \top x)$, which defines the
 probit model.
 Assuming that the distribution of $\epsilon$ is logistic, we have a
-probability of sucess equal to $1 - \Lambda(- \alpha-\beta  x)$ which
-reduce, as the logistic distribution is also symetric, to: $F(y = 1
+probability of success equal to $1 - \Lambda(- \alpha-\beta  x)$ which
+reduces, as the logistic distribution is also symmetric, to: $F(y = 1
 \mid x) = \Lambda(\alpha + \beta x) = e^{\alpha + \beta x} / (1 + e ^
 {\alpha + \beta x})$, which defines the logit model.
 
-### Random utility maximisation
+### Random utility model {#sec-rum_binomial}
 
 Consider now that we can define a utility function for the two
-alternatives that corresponds to the two values of the binomial
+alternatives that correspond to the two values of the binomial
 response. As an example, $y$ equals 1 or 0 if car or public transit
 is chosen and the only covariate $x$ is the generalized cost. The
-utility of chosing a transport mode doesn't depend only on the
+utility of choosing a transport mode doesn't depend only on the
 generalized cost, but also on some other unobserved variables. The
 effect of these variables are modelized as the realization of a random
 variable $\epsilon$. We can therefore define the following random
@@ -398,27 +396,27 @@ $$
 
 The probability of "success" (here choosing the car) is therefore
 $\mbox{P}(y = 1 \mid x) = 1 - F(- \alpha - \beta x)$, with $F$ the
-cummulative density of $\epsilon$. If the distribution is symmetric,
+cumulative density of $\epsilon$. If the distribution is symmetric,
 this probability reduces once again to $\mbox{P}(y = 1 \mid x) =
 F(\alpha + \beta x)$, and the probit or logit models are obtained by
 choosing either the normal or the logistic distribution. 
 
-## The binomial model as a generalized linear model
+## The binomial model as a generalized linear model {#sec-glm}
 
-The estimation of binomial with **R** is performed using the
+The estimation of binomial models with **R** is performed using the
 `stats::glm` function, which stands for **generalized linear model**. It
 is therefore important to have at least some basic knowledge about
 generalized linear models to understand the output of the fitted models. 
 
 ### Generalized linear models
 
-The generalized linear models (**glm** for short) is a wide family of
+The generalized linear models (**GLM** for short) is a wide family of
 models that are intended to extend the linear model. These models have the following
 components:
 
 - a *random component* which specify the distribution of the
   response, as a member of the exponential family, and in particular the expected value $\mbox{E}(y) = \mu$,
-- a *systematic componont*: some covariates $x_1, x_2, \ldots x_m$
+- a *systematic component*: some covariates $x_1, x_2, \ldots x_m$
   produce a linear predictor $\eta_n = \alpha + \beta ^ \top x_n$,
 - the *link* function $g$ which specify the relation between the random
   and the systematic components: $\eta = g(\mu)$.
@@ -457,13 +455,13 @@ $\mbox{E}\left(\frac{\partial^2 l}{\partial \theta ^ 2}\right) +
 \mbox{E}\left(\frac{\partial l}{\partial \theta} ^ 2\right) = 0$, so that 
 $\mbox{V}(y) = \phi b''(\theta)$.
 
-Going back to the normal (or Gaussian) model with an identity link, we have, for a given set of estimates (which leads to the **proposed** model): $\hat{\mu}_n = \hat{\eta}_n = \hat{\alpha} + \hat{\beta} ^ \top x_n$ and the log-likelihood function is:
+Going back to the normal (or Gaussian) model with an identity link, we have, for a given set of estimates (which leads to the **proposed model**): $\hat{\mu}_n = \hat{\eta}_n = \hat{\alpha} + \hat{\beta} ^ \top x_n$ and the log-likelihood function is:
 
 $$
 \ln L(y, \hat{\mu}) = - \frac{N}{2}\ln(2 \pi + \sigma ^ 2) - \frac{1}{2\sigma ^2} \sum_{n=1} ^ N (y_n - \hat{\mu}_n) ^ 2
 $$
 
-For an hypothetical "perfect" or saturated model with a perfect fit, we would have $\hat{\mu}_n = y_n$, so that the log-likelihood would be $- \frac{N}{2}\ln(2 \pi + \sigma ^ 2)$.
+For an hypothetical "perfect" or **saturated model** with a perfect fit, we would have $\hat{\mu}_n = y_n$, so that the log-likelihood would be $- \frac{N}{2}\ln(2 \pi + \sigma ^ 2)$.
 Minus two times the difference of these two values of the log likelihood function is called
 the **scaled deviance** of the proposed model:
 
@@ -502,7 +500,7 @@ $$
 D(y;\hat{\mu}) = 2 \sum_{n=1} ^ N y_n \ln \hat{\mu}_n + (1 - y_n) \ln(1 - \hat{\mu}_n)
 $$ {#eq-deviance_binomial}
 
-The minimal model is a model with only an intercept. In this case,
+The **null model** is a model with only an intercept. In this case,
 $\hat{\mu}_n = \hat{\mu}_0$ and the maximum likelihood estimator of
 $\mu_0$ is $\sum_{n=1} ^ N y_n / N$, ie the share of success in the
 sample. The deviance of this model is called the **null deviance**.
@@ -513,16 +511,16 @@ X ^ 2 = \sum_{n=1} ^ N \frac{(y_n - \hat{\mu}_n) ^ 2}{\mbox{V}(\hat{\mu}_n)}=
 \sum_{n=1} ^ N \frac{(y_n - \hat{\mu}_n) ^ 2}{\hat{\mu}_n(1 - \hat{\mu}_n)}
 $$ {#eq-pearson_statistic}
 
- Both $D$ and $X ^2$ have an asymptotic $\chi
-^ 2$ distribution.
+<!--  Both $D$ and $X ^2$ have an asymptotic $\chi -->
+<!-- ^ 2$ distribution. -->
 
 In the linear model, residuals have several interesting properties:
 
-- they are homoscedastic (or at least they may be homoscedastic if the
+- they are homoskedastic (or at least they may be homoskedastic if the
   variance of the conditional distribution of the response is constant),
 - they have an intuitive meaning are they are the difference between
   the actual and the fitted values of the response, which
-  estimate the conditional mean of the response,
+  estimates the conditional mean of the response,
 - they are related to the value of the objective function, which is
   the sum of square residuals.
   
@@ -553,7 +551,7 @@ response.^[Note that `family` is the second argument of `glm` and `data` the thi
 function. In the latter case, an argument called `link` can be
 specified, which indicates how the parameter of the distribution
 $\mu_n$ is related to the linear predictor $\eta_n=\alpha + \beta ^ \top x_n$). If we
-use `family = binomial(link = "probit")`, then $\mu_n = \Phi(\eta_n)$. The default choice (the so-called "canonical link") is `"logit"`, so that the logit model can be obtained using either:
+use `family = binomial(link = "probit")`, then $\mu_n = \Phi(\eta_n)$. The default choice is `"logit"` (the canonical link), so that the logit model can be obtained using either:
 
 ```{r results = "hide"}
 lgt <- glm(mode ~ gcost, data = mode_choice, 
@@ -566,7 +564,7 @@ glm(mode ~ gcost, data = mode_choice, family = "binomial")
 Remind that, while estimating a generalized linear model, three models are considered: 
 
 - the saturated model, for which there is one parameter for every
-  observation, a perfect fit; therefore the log-likelihood, the
+  observation and a perfect fit; therefore the log-likelihood, the
   deviance and the number of degrees of freedom are 0,
 - the null model, with only one estimated coefficient and $N-1$ degrees of
   freedom,
@@ -659,12 +657,12 @@ predict(lgt, newdata = mode_choice2, type = "response") %>% head
 # https://www.key2stats.com/data-set/view/1131
 ```
 
-## Model estimation, evaluation and test
+## Model estimation, evaluation and test {#sec-binom_evaluation}
 
 ### Estimation
 
-The `stats::glm` function use by default an iterative weighted least
-square method to fit all the flavors of glm's models. However, probit
+The `stats::glm` function use an iterative weighted least
+squares method to fit all the flavors of glm's models. However, probit
 and logit models are usually estimated by maximum likelihood. With $\eta_n = \alpha + \beta ^ \top x_n = \gamma ^ \top z_n$ the linear predictor, the
 individual contribution to the likelihood is $F(\eta_n)$ if
 $y_n = 1$ and $1 - F(\eta_n)$ if $y_n = 0$.
@@ -685,11 +683,13 @@ The first-order condition for a maximum is that the vector of the first derivati
 $$
 \frac{\partial \ln L}{\partial \gamma} = \sum_{n=1} ^ N \frac{y_n}{F(\eta_n)}f(\eta_n)z_n - 
 \frac{1 - y_n}{1 - F(\eta_n)}f(\eta_n)z_n=
-\sum_{n=1} ^ N \frac{y_n - F_n}{F_n\left(1 - F_n\right)}f_n z_n
+\sum_{n=1} ^ N \frac{y_n - F_n}{F_n\left(1 - F_n\right)}f_n z_n =0
 $$ {#eq-gradbinom}
 
 is zero, where we defined for convenience $F_n = F(\eta_n)$
 and $f_n = f(\eta_n)$.
+
+$\psi_n = \frac{y_n - F_n}{F_n\left(1 - F_n\right)}f_n$ is called the **generalized residual**.^[@GOUR:MONF:RENA:TROG:87.]. Generalized residuals have the same property than standard residuals in the linear regression model, they are orthogonal to all the covariates, and they sum to 0 if the regression contains an intercept. 
 The hessian matrix of the second derivatives is:
 
 $$
@@ -700,7 +700,7 @@ $$ {#eq-hessbinom}
 
 
 with $f'_n$ the derivative of $f_n$. Taking the expectation, we obtain a much simpler expression: as $E(y_n)
-= F_n$, the second terms in brackets disappears and the first one simplifies as:
+= F_n$, the second terms in brackets disappears and the first one simplifies to:
 
 $$
 \mbox{E} \left(\frac{\partial ^ 2 \ln L}{\partial \gamma \partial \gamma ^ \top}\right) =
@@ -716,9 +716,7 @@ $$
 \sum_{n=1} ^ N \left(y_n - \Lambda_n\right)z_n = 0
 $$
 
-This expression is particularly appealing as, $y_n - \Lambda_n$ is the response residual. Therefore, we obtain the equivalent of the "normal equations" for the linear model, which indicate that the vector of residuals
-is orthogonal to every covariate and, in particular, as the first element of $z$ is 1, the sum of the residuals is 0. 
-Moreover, the expression of the matrix of second derivatives is particularly simple:
+This expression is particularly appealing as the generalized residual $y_n - \Lambda_n$ is the response residual. Moreover, the expression of the matrix of second derivatives is particularly simple:
 
 $$
 \frac{\partial ^ 2 \ln L}{\partial \gamma \partial \gamma ^ \top} = 
@@ -727,15 +725,34 @@ $$
 $$
 
 and is equal to its expectation as it doesn't depend on $y$.
-For the probit model, the vector of residuals (as defined previously) is
+For the probit model, the vector of response residuals ($y_n - \Phi_n$) is
 not orthogonal to the covariates. Moreover, the formula of the hessian
 is rather complicated and depends on $y$. However, its expectation (@eq-infobinom) can be be expressed compactly in terms of the inverse mills ratio, defined by:
- $\mu(z) = \phi(z) / \Phi(z)$. Noting that $\phi(z) / (1 - \Phi(z)) = \phi(-z) / \Phi(-z) = \mu(-z)$ by symmetry of the normal distribution, @eq-infobinom simplifies to:
+ $\r(z) = \phi(z) / \Phi(z)$. Noting that $\phi(z) / (1 - \Phi(z)) = \phi(-z) / \Phi(-z) = \mu(-z)$ by symmetry of the normal distribution, @eq-infobinom simplifies to:
 
 $$
 \mbox{E} \left(\frac{\partial ^ 2 \ln L}{\partial \beta \partial \beta ^ \top}\right) =
-- \sum_{n = 1} ^ N \mu(\eta_n) \mu(- \eta_n)z_n z_n^\top
+- \sum_{n = 1} ^ N r(\eta_n) r(- \eta_n)z_n z_n^\top
 $$ {#eq-infoprobit}
+
+The generalized residuals are:
+
+$$
+\psi_n = \frac{\phi_n (y_n - \Phi_n)}{\Phi_n (1 - \Phi_n)}
+$$ {#eq-gen_resid_probit}
+
+and they are related to the latent variable $y^*$ used in @sec-latent_variable. Remind that $y_n ^ * = \mu_n + \epsilon^*_n$, with $\mu_n = \alpha + \beta ^ \top x_n$ and $\epsilon_n \sim \mathcal{N}(0, \sigma)$. Then, considering the latent variable, the residual can be defined as $\hat{\epsilon} ^ * _n = y_n ^ * - \hat{\mu}_n$. This residual can't be computed because $y_n ^ *$ is unobserved, we only observe $y_n = 1$ if $y_n ^ * > 0$ and $y_n = 0$ if $y_n ^ * \leq 0$. However, its expectation can be computed. For $y_n = 1$:
+
+$$
+\mbox{E}(\hat{\epsilon}^*\mid x, y^* > 0) = \frac{\int_{0} ^ {+\infty} y^*\phi(y^* - \hat{\mu}) dy^*}{\int_{0} ^ {+\infty}\phi(y^* - \hat{\mu})dy^*} - \hat{\mu} = 
+\frac{\int_{-\hat{\mu}} ^ {+\infty} (\hat{\mu} + v)\phi(v) dv}{\int_{-\hat{\mu}} ^ {+\infty}\phi(v)dv} - \hat{\mu} = \frac{\phi(\hat{\mu})}{\Phi(\hat{\mu})}
+$$
+Similarly, $\mbox{E}(\hat{\epsilon}^*\mid x, y^* \leq 0) = -\frac{\phi(\hat{\mu})}{1 - \Phi(\hat{\mu})}$, so that: 
+$$
+\mbox{E}(\hat{\epsilon}^*_n\mid x_n) = y_n \mbox{E}(\hat{\epsilon}^*_n\mid x_n, y_n ^* > 0) + (1 - y_n)  \mbox{E}(\hat{\epsilon}^*_n\mid x_n, y_n ^* \leq 0) = \frac{\phi(\hat{\mu}_n)(y_n - \Phi(\hat{\mu}_n))}{\Phi(\hat{\mu}_n)(1 - \Phi(\hat{\mu}_n))}
+$$ 
+
+which is the generalized residual defined in @eq-gen_resid_probit.
 
 The three estimators of the covariance matrix of the estimators can be
 used. The outer product of the gradient estimator is based on
@@ -803,7 +820,7 @@ The `micsr::stder` function enables to compute the different flavors of the esti
 ```{r}
 #| collapse: true
 vcov(pbt_unconst, vcov = "opg") %>% diag %>% sqrt
-stder(pbt_unconst, .vcov = "opg")
+stder(pbt_unconst, vcov = "opg")
 ```
 
 The sandwich estimator is obtained using the **micsr**'s method for `sandwich::vcovHC`. 
@@ -811,7 +828,7 @@ The sandwich estimator is obtained using the **micsr**'s method for `sandwich::v
 ```{r}
 #| collapse: true
 sandwich::vcovHC(pbt_unconst) %>% diag %>% sqrt
-stder(pbt_unconst, .vcov = vcovHC)
+stder(pbt_unconst, vcov = vcovHC)
 ```
 
 The 4 estimators of the standard errors are presented in table
@@ -846,20 +863,20 @@ process of one of them is based on several indicators. The first one
 is the value of the objective function, which is the
 log-likelihood. Closely related to the log-likelihood is the deviance,
 which is the opposite of twice the log-likelihood. Both measures are
-reported on table @tbl-binom_const_unconst. These measures favor lightly the
+reported on @tbl-binom_const_unconst. These measures favor lightly the
 logit models compared to the probit models and indicate an important
 difference between the constrained and the unconstrained
 model. However, the comparison between the constrained and the
 unconstrained models is spurious, because adding further covariates,
-even if they are irrelevant, necessarily increase the fit of the
-model. Therefore, we need indicators that penalize higly parametrized
+even if they are irrelevant, necessarily increases the fit of the
+model. Therefore, we need indicators that penalize highly parametrized
 models. The two most popular indicators are the Aikaike and the Bayes
 information criteria (**AIC** and **BIC**) which are respectively defined by $\mbox{AIC}
 = - 2 \ln L + 2 K$ and $\mbox{BIC} = - 2 \ln L + K \ln N$. They are
 therefore obtained by augmenting the deviance by a term which is a
 multiple of the number of fitted parameters: 2 times for the AIC
 and $\ln N$ times for the BIC. The rule being to select the model for which
-the statistic is lower, we can see from table @tbl-binom_const_unconst that the
+the statistic is lower, we can see from @tbl-binom_const_unconst that the
 AIC leads to the choice of the unconstrained model as the BIC
 leads to the choice of the constrained model. This is because the
 penalization in the BIC is higher, as $\ln 842 = 6.7$. These
@@ -871,19 +888,28 @@ statistics can be extracted from the fitted model using the `logLik`,
 AIC(pbt_unconst)
 ```
 
+The `logLik` method for `micsr` objects has a `type` argument which enables to extract the value for the proposed model (`type = "mode"`, the default), the null model or the saturated model:
+
+```{r}
+#| collapse: true
+logLik(pbt_unconst)
+logLik(pbt_unconst, type = "model")
+logLik(pbt_unconst, type = "null")
+logLik(pbt_unconst, type = "saturated")
+```
+
 In linear model, a popular indicator of the quality of a model is the
 coefficient of determination, called R^2^. For linear models: $\sum
 (y_n - \bar{y}) ^ 2 = \sum (\hat{y}_n - \bar{y}) ^ 2 + \sum
 \hat{\epsilon}_n ^ 2$ because the vectors of fitted values and
 residuals are orthogonal. The R^2^ can therefore be defined using
-three equivalent formula:
+three equivalent formula:^[See @sec-vardecomp_R2.]
 
 $$
 R ^ 2 = \frac{\sum (\hat{y}_n - \bar{y}) ^ 2}{\sum (y_n - \bar{y}) ^
 2} = 1 - \frac{\sum \hat{\epsilon}_n^2}{\sum (y_n - \bar{y}) ^ 2} =
 \hat{\rho}_{y,\hat{y}} ^ 2
 $$ {#eq-rsqlin}
-
 
 The first formula is particularly appealing as it indicates the share
 of the variance of the response that is explained by the model: it is
@@ -906,60 +932,15 @@ rsq(pbt_unconst, type = "rss")
 rsq(pbt_unconst, type = "cor")
 ```
 
-Moreover, in the linear model, the R^2^ is related to statistics that
+As seen in @sec-pseudo_r2_ml, in the linear model, the R^2^ is related to statistics that
 test the hypothesis that all the coefficients of the model except the
-intercept are 0. Denoting TSS, ESS and RSS the total, explained
-and residual sum of squares, the $F$ statistic and the Wald statistics are respectively:
-$F = \frac{\mbox{TSS} - \mbox{ESS}}{\mbox{ESS}} \frac{N - K - 1}{K}$ and
-$W = N \frac{\mbox{TSS} - \mbox{ESS}}{\mbox{ESS}}$. To compute the likelihood ratio statistic, we first write the log-likelihood for the linear gaussian model:
-
-$$
-\ln L = -\frac{N}{2}(\ln 2\pi + \ln \sigma^2) - \frac{1}{2\sigma ^ 2} \sum_n (y_n - \gamma ^ \top z_n) ^ 2
-$$
-The ML estimate of $\sigma ^ 2$ is $\hat{\sigma} ^ 2 = \sum_n (y_n - \hat{\gamma} ^ \top z_n) ^ 2 / N$, so that the value of the log-likelihood function for the ML estimator is: $\ln L = -\frac{N}{2}(\ln 2\pi - \ln N + 1) - \frac{N}{2}\ln \sum_n (y_n - \hat{\gamma} ^ \top z_n) ^ 2$. For the proposed and for the null model, $\sum_n (y_n - \hat{\gamma} ^ \top z_n) ^ 2$ is respectively RSS and TSS, so that the likelihood ratio statistic is: $\mbox{LR} = N (\ln \mbox{TSS} - \ln \mbox{SSR})$. Therefore, for the linear model:
-
-$$
-R ^ 2 = \frac{KF}{KF + (N - K - 1)} = \frac{W}{W + N} = 1 - e ^ {- LR / N}
-$$ {#eq-r2stat}
-
-The first two expressions are called @MAGE:90's R^2^ by @VEAL:ZIMM:96:
+intercept are 0. This leads to pseudo-R^2^ that are obtained using any of the three classical tests statistic:
 
 ```{r}
 #| collapse: true
-rsq(pbt_unconst, type = "f")
 rsq(pbt_unconst, type = "wald")
-```
-
-@ALDR:NELS:84 proposed a R^2^ based on the second equality, but using the likelihood ratio instead of the Wald statistic: $R ^ 2 =
-LR / (LR + N)$. The R^2^ based on the third equality: $1 - e ^ {- LR
-/ N}$ is often known as the @COX:SNEL:89's R^2^, but it has been
-previously proposed by @MADD:83.
-
-```{r }
-#| collapse: true
-rsq(pbt_unconst, type = "cox_snell")
-rsq(pbt_unconst, type = "aldrich_nelson")
-```
-
-The problem with these two R^2^ is that, for a "perfect" model, the
-likelihood ratio statistic is $LR^* = - 2 \ln L_0$ so that the maximum
-value of this R^2^ is not 1. This leads to the @NAGE:91's R^2^:
-
-$$
-R^2 = \frac{1 - e ^ {- LR / N}}{1 - e ^ {- 2 LR ^ * / N}}
-$$
-
-which is exactly the formula used by @CRAG:UHLE:70 and to the
-@VEAL:ZIMM:96's R^2^:
-
-$$
-R^2 = \frac{LR / (LR + N)}{LR ^ * / (LR ^ * + N)}
-$$
-
-```{r }
-#| collapse: true
-rsq(pbt_unconst, type = "cragg_uhler")
-rsq(pbt_unconst, type = "veall_zimm")
+rsq(pbt_unconst, type = "lr")
+rsq(pbt_unconst, type = "score")
 ```
 
 @TJUR:09 proposed an R^2^ that he called the coefficient of
@@ -1065,9 +1046,9 @@ rsq(pbt_unconst, type = "mcfadden")
 
 @MCKE:ZAVO:75 proposed a R^2^ based on the latent variable. Denoting
 $\hat{y}_n ^* = \hat{\alpha}+\hat{\beta} ^ \top x_n$ the fitted values and
-$\bar{y}_n^*$ their sample mean, the explained sum of squares is:
+$\bar{y}^*$ the sample mean, the explained sum of squares is:
 $\sum (\hat{y}_n ^ * - \bar{y}^ *) ^ 2$ and the residuals sum of
-squares is not estimated, but is $N$ times the variance of the errors, which
+squares is not estimated, but its expected value is $N$ times the variance of the errors, which
 is 1 for a probit and $\pi ^ 2 / 3$ for a logit. The R^2^ is then
 obtained by dividing the explained sum of squares by the sum of the
 explained and the residual sum of squares. 
@@ -1086,36 +1067,36 @@ DescTools::PseudoR2(z, "all")
 
 ### Tests
 
-To test nested models, the three tests are available: the Wald test
-(based on the unconstrained model), the Lagrange multiplier or score
-test (based on the constrained model) and the likelihood ratio (based
-on the comparison of the two models). These tests have been described
-in @sec-three_tests and @sec-three_tests_ml. The unconstrained model is:
+#### Tests of nested models
+
+To test nested models, the three tests described
+in @sec-three_tests and @sec-three_tests_ml are available. 
+
+In @sec-func_form_binom, we estimated a model with the generalized cost as a unique covariate, which was computed as: $g_n = c_n + 8(i_n + o_n)$, where $c$, $i$, and $o$ are the differences in monetary cost,
+in-vehicle time and out-vehicle time,
+based on the hypothesis that time value was 8$ per hour. 
+The unconstrained model is:
 
 $$
-P(y_n = 1) = \Phi(\beta_0 + \beta_c c_n + \beta_i i_n + \beta_o o_n)
+P(y_n = 1) = \Phi(\alpha + \beta_c c_n + \beta_i i_n + \beta_o o_n)
 $$
 
-where $c$, $i$, and $o$ are the differences in monetary cost,
-in-vehicule time and out-vehicule time. The constrained model uses
-generalized cost as the unique covariate, which is $c_n + 1.1 (i_n +
-o_n)$. This implies the two following hypothesis: $\beta_o = \beta_i =
-1.1 \beta_c$. It is more convenient to rewrite the model so
+The constrained model implies the two following hypothesis: $\beta_o = \beta_i =
+8 \beta_c$. It is more convenient to rewrite the model so
 that, under H~0~, a subset of the parameters are 0:
 
 $$ 
 \begin{array}{rcl}
-P(y_n = 1) &=& \Phi\left(\beta_0 + \beta_c \left(c_n + 1.1 (i_n +
-o_n)\right) + (\beta_i - 1.1\beta_c)i_n + (\beta_o - 1.1 \beta_c)
+P(y_n = 1) &=& \Phi\left(\alpha + \beta_c \left(c_n + 8 (i_n +
+o_n)\right) + (\beta_i - 8\beta_c)i_n + (\beta_o - 8 \beta_c)
 o_n\right)\\
-&=& \Phi(\beta_0 + \beta_c g_n + \beta_i'i_n + \beta_o'o_n) 
+&=& \Phi(\alpha + \beta_c g_n + \beta_i'i_n + \beta_o'o_n) 
 \end{array}
 $$
 
-where $g_n = c_n + 1.1 (i_n + o_n)$ is the generalized cost and
-$\beta_i = (\beta_i - 1.1\beta_c)$ and $\beta_o = (\beta_o -
-1.1\beta_c)$ are the reduced form parameters of the binomial
-regression with the generalized cost, the in and out-vehicule time as
+whith $\beta_i' = (\beta_i - 8\beta_c)$ and $\beta_o = (\beta_o -
+8\beta_c)$ are the reduced form parameters of the binomial
+regression with the generalized cost, the in vehicle and the out vehicle time as
 covariates. With this parametrization, the set of hypothesis is simply
 $\beta_i' = \beta_o' = 0$.
 
@@ -1124,24 +1105,36 @@ pbt_unconst2 <- binomreg(mode ~ gcost + ivtime + ovtime,
                          data = mode_choice, link = "probit")
 ```
 
-```{r }
-lratio <- lmtest::lrtest(pbt_unconst, pbt_const)
-wald <- lmtest::waldtest(pbt_unconst2, . ~ . - ivtime - ovtime)
-wald2 <- car::linearHypothesis(pbt_unconst, 
-                               c("ivtime = 8 * cost", 
-                                 "ovtime = 8 * cost"))
-score <- scoretest(pbt_const , . ~ . + ivtime + ovtime)
+Tests can be computed using several functions in the **lmtest** package [@ZEIL:HOTH:02].
+The likelihood ratio test can easily be computed "by hand" as it is twice the difference of the log-likelihood functions of the unconstrained and the constrained models:
+
+```{r}
+#| collapse: true
+as.numeric(2 * (logLik(pbt_unconst) - logLik(pbt_const)))
 ```
 
-`lmtest::lrtest`, `lmtest::waldtest` and `car::linearHypothesis`
-return an `anova` object which prints on several lines. The `sight` method  gives a short summary of the test.
+but `lmtest::lrtest` is a convenient function which computes the statistic and the probability value:
+
+```{r}
+#| collapse: true
+lmtest::lrtest(pbt_unconst, pbt_const) %>% gaze
+```
+
+The Wald test can be computed using either `lmtest::waldtest` or `car::linearHypothesis`. `lmtest::waldtest` provides two possible syntax: two fitted models, as `lmtest::lrtest` or the fitted unconstrained model and a formula describing the constrained model. `car::linearHypothesis`, already described in @sec-wald_test_example, uses a character vector to indicate the hypothesis:
+
+```{r}
+#| collapse: true
+lmtest::waldtest(pbt_unconst2, pbt_const) %>% gaze
+lmtest::waldtest(pbt_unconst2, . ~ . - ivtime - ovtime) %>% gaze
+car::linearHypothesis(pbt_unconst, 
+                      c("ivtime = 8 * cost", "ovtime = 8 * cost")) %>% gaze
+```
+
+Finally, score tests are provided by the `micsr::scoretest` function. Its first argument is the constrained fitted model and the second one a formula that describes the unconstrained model:
 
 ```{r }
 #| collapse: true
-sight(lratio)
-sight(wald)
-sight(wald2)
-sight(score)
+scoretest(pbt_const , . ~ . + ivtime + ovtime) %>% gaze
 ```
 
 The three statistics are very close and the joint hypothesis is rejected at the 1% level.
@@ -1178,8 +1171,6 @@ head(dev_res)
 ```
 
 
-
-
 ```{r }
 #| include: false
 #| eval: false
@@ -1195,9 +1186,79 @@ unconst <- binomreg(mode ~ cost + ivtime + ovtime, mc, link = "probit")
 lmtest::lrtest(unconst, const)
 ```
 
-## Endogeneity
+#### Conditional moment tests {#sec-cond_moment_binomial}
 
-We now consider the case where some of the covariates are endogenous. In a linear model, the solution is to use an instrumental variable estimator, which can be estimated using the 2SLS approach and therefore by using only the `lm` function. We treat in this section the case where the response is binomial and we consider that the realization of $y$ is related to the value of a latent variable $y_n ^ *$, with the usual observation rule: ($y = 0$ if $y^* \leq 0$ and $y = 1$ if $y^*>0$. $y^*$ is a linear function of a set of $K_1$ exogenous ($x_1$) and $G$ endogenous ($w$) covariates:
+The conditional moment tests have been presented in @sec-ml_cond_moment_test and the relevant moments are given by  @eq-emp_moments_homosc (for the heteroscedasticity test), @eq-emp_moments_normal (for the normal test) and @eq-emp_moments_omit_var (for the omitted variable test). The empirical moments use the powers (up to 4) of the residuals. As the residuals are unobserved, $\epsilon_n ^ k$ is replaced by their expectations, ie by the uncentered moments of the residuals:
+
+$$
+m_k = \mbox{E}(\epsilon_n ^ k \mid x_n) = (1-y_n) \mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * \leq 0) + y_n \mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * > 0)
+$$ {#eq-moments_errors}
+
+For the probit model, the first four moments of the truncated normal distribution should be computed. A recursive formula for the moments of a normal variable $x \sim \mathcal(\eta, \sigma)$ with $l\leq x \leq u$ is:^[Unpublished note by Eric Orjebin, 2014, founded on the wikipedia page entitled "Truncated normal distribution".]
+
+$$
+m_k = (k-1)\sigma ^ 2 m_{k-2} + \eta m_{k-1} - \sigma \frac{u ^ {k-1}\phi\left(\frac{u-\eta}{\sigma}\right) - l ^ {k-1}\phi\left(\frac{l-\eta}{\sigma}\right)}
+{\Phi\left(\frac{u-\eta}{\sigma}\right) - \Phi\left(\frac{l-\eta}{\sigma}\right)}
+$$ {#eq-moments_normal_trunc}
+
+with $m_{-1} = 0$ and $m_{0} = 1$. 
+For a residual of the probit model, we have $\eta = 0$ and $\sigma = 1$ and the truncature is $-\mu_n$. We then obtain, for $y_n^* \leq 0$ ($l = - \infty$ and $u = -\mu_n$) and $y_n ^ * > 0$ ($l = - \mu_n$ and $u = +\infty$) is:
+
+$$
+\left\{
+\begin{array}{rclrcl}
+\mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * \leq 0) &=& (k - 1)  m_{k-2} - (- \mu_n) ^ {k-1} \frac{\phi(\mu_n / \sigma)}{1-\Phi(\mu_n / \sigma)} \\
+\mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * > 0) &=& (k - 1)  m_{k-2} + (- \mu_n) ^ {k-1} \frac{\phi(\mu_n / \sigma)}{\Phi(\mu_n / \sigma)} \\
+\end{array}
+\right.
+$$
+
+Using @eq-moments_errors, the recursive formula for the k^th^ moment of $\epsilon$ is simply:
+
+$$
+m_k = (k-1) m_{k-2} + (-\mu_n)^{k-1}\frac{(y_n - \Phi(\mu_n / \sigma))\phi(\mu_n / \sigma)}{\Phi(\mu_n / \sigma)(1 - \Phi(\mu_n / \sigma))} = (k-1)m_{k-2} + (-\mu) ^ {k - 1} \psi_n
+$$
+
+where $\psi_n$ is the generalized residual defined by @eq-gen_resid_probit. 
+
+
+<!-- $$ -->
+<!-- \begin{array}{ccccc} -->
+<!-- k & \mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * \leq 0)  & \mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * > 0) & \mbox{E}(\epsilon_n ^ k \mid x_n) & \mbox{moment} \\ -->
+<!-- 1 & - r_{n0} & r_{n1} & r_n & \sum_n r_n w_n\\ -->
+<!-- 2 & 1 + \mu_n r_{n0} & 1 - \mu_n r_{n1} & 1 - \mu_n r & - \sum_n \mu_n r_n w_n\\ -->
+<!-- 3 & - (2 + \mu_n ^ 2) r_{n0} & (2 + \mu_n ^ 2) r_{n1} & (2 + \mu_n ^ 2) r & \sum_n \mu_n ^ 2 r_n\\ -->
+<!-- 4 & 3 + (3 \mu_n + \mu_n ^ 3)r_{n0} & 3 - (3 \mu_n + \mu_n ^ 3)r_{n1} & 3 - (3 \mu_n + \mu_n ^ 3)r & - \sum_n \mu_n ^ 3 r_n -->
+<!-- \end{array} -->
+<!-- $$ -->
+
+The omitted variable test uses the first moment, the homoskedasticity test the second one and the normality test the third and the fourth ones. The moments of $\epsilon_n$, the theoretical moments for the three hypothesis and their empirical counterparts are presented in the following table:^[Note that the empirical moments simplify because $\sum_n \psi_n = 0$ and $\sum_n \psi_n \mu_n = 0$, [see @eq-gradbinom].]
+
+$$
+\begin{array}{clcccc}\hline
+k & \mbox{hypothesis} & \mbox{E}(\epsilon_n ^ k \mid x_n) & \mbox{theor. moment} & \mbox{emp. moment} \\ \hline
+1 & \mbox{omit. variable} & \psi_n & \mbox{E}(\epsilon_n w_n\mid x_n) = 0 & \frac{1}{N}\sum_n \psi_n w_n\\
+2 & \mbox{homosc.} & 1 - \mu_n \psi_n & \mbox{E}((\epsilon_n^2-1) w_n\mid x_n) = 0 & \frac{1}{N}\sum_n \mu_n \psi_n w_n\\
+3 & \mbox{asymetry} &  (2 + \mu_n ^ 2) \psi_n &\mbox{E}(\epsilon_n^3\mid x_n) = 0 &  \frac{1}{N}\sum_n \mu_n ^ 2 \psi_n\\
+4 & \mbox{kurtosis} & 3 - (3 \mu_n + \mu_n ^ 3)\psi_n & \mbox{E}(\epsilon_n^4 - 3\mid x_n) = 0 & \frac{1}{N} \sum_n \mu_n ^ 3 \psi_n \\\hline
+\end{array}
+$$ {#eq-table_moments_probit}
+
+
+The `miscr::cmtest` computes the conditional moment test; the first argument is a fitted model the second one is `test` which can be equal to `"normality"`, `"reset"` (for tests for omitted variables) or `"heterosc"`. The two joint hypothesis corresponding to the normality hypothesis can be tested one by one by setting `test` either to `"skewness"` or `"kurtosis"`. For the homoscedasticity tests, the set of variables can be selected using the `heter_cov` argument. By default, all the covariates used in the model are selected. By default, tests are performed using the hessian, by the outer of product of the gradient form of the test can be computed by setting `opg` to `TRUE`.
+
+```{r}
+#| collapse: true
+cmtest(pbt_unconst) %>% gaze
+cmtest(pbt_unconst, test = "heterosc") %>% gaze
+cmtest(pbt_unconst, test = "reset") %>% gaze
+```
+
+Our probit model seems to be correctly specified, as the three hypothesis are not rejected.
+
+## Endogeneity {#sec-endog_probit}
+
+We now consider the case where some of the covariates are endogenous. In a linear model, the solution is to use an instrumental variable estimator, which can be estimated using the 2SLS approach and therefore by using only the `lm` function. We treat in this section the case where the response is binomial and we consider that the realization of $y$ is related to the value of a latent variable $y_n ^ *$, with the usual observation rule: ($y = 0$ if $y^* \leq 0$ and $y = 1$ if $y^*>0$). $y^*$ is a linear function of a set of $K_1$ exogenous ($x_1$) and $G$ endogenous ($w$) covariates:
 
 $$
 y_n ^ * = \alpha + \beta ^ \top x_{1n} + \delta ^ \top w_n + \epsilon_n = \gamma ^ \top
@@ -1211,13 +1272,12 @@ $$
 w_{gn} = \pi_g ^ \top v_n + \nu_{gn}
 $$
 
-
 where $v_n^\top = (1, x_{1n} ^ \top, x_{2n} ^ \top)$, $x_{2n}$ being a
 vector of $K_2$ external instruments. It is assumed that $K_2 \geq G$.
-The joint distribution of $y_n$ and $w_n$ is normal:
+The joint distribution of $y_n^*$ and $w_n$ is normal:
 
 $$
-\left(\begin{array}{c} y \\ w \end{array}\right) \sim N \left(
+\left(\begin{array}{c} y^* \\ w \end{array}\right) \sim N \left(
 \left(\begin{array}{c} \gamma ^ \top z_n  \\ \Pi v_n
 \end{array}\right) ;
 \left(
@@ -1244,7 +1304,7 @@ Let $\rho = \Sigma_\nu ^ {-1} \sigma_{\epsilon\nu}$ and $\sigma ^ 2 =
 \sigma_\epsilon ^ 2 - \sigma_{\epsilon\nu} ^ \top \Sigma_\nu ^ {-1}
 \sigma_{\epsilon\nu}$. The conditional mean of $y^*_n$ is then $\theta ^
 \top u_n$, with $\theta ^ \top = (\gamma ^ \top, \rho ^ \top)$ and $u_n
-^ \top = (z_n ^ \top, \nu_n ^ \top)$.
+^ \top = (z_n ^ \top, \nu_n ^ \top)$ and its conditional variance is $\sigma ^ 2$.
 
 ### Maximum likelihood estimation
 
@@ -1258,20 +1318,20 @@ $$
 ^ {-1} \nu_n\right)
 $$ {#eq-marg_density_w}
 
-We consider here the case where $y_n ^ *$ is not observed, but only its sign. Therefore, we observe $y_n$ equal 0 or 1, or $q_n = 2 y_n - 1$ equal -1 or +1. Moreover, the conditional variance of $y^*$ is not observed and can therefore be set to 1. The log-likelihood is then $\ln L = \sum_{n=1} ^ N \ln g(w_n) + \ln f(y_n \mid w_n)$, where $g(w)$ is given by @eq-marg_density_w and:
+We consider here the case where $y_n ^ *$ is not observed, but only its sign. Therefore, we observe $y_n$ equal to 0 or 1, or $q_n = 2 y_n - 1$ equal to -1 or +1. The log-likelihood is then $\ln L = \sum_{n=1} ^ N \ln g(w_n) + \ln f(y_n \mid w_n)$, where $g(w)$ is given by @eq-marg_density_w and:
 
 $$
 f(y_n \mid w_n) = \Phi\left(q_n\frac{\theta ^ \top u_n}{\sigma} \right) = 
 \Phi\left(q_n\frac{\gamma ^ \top z_n + \sigma_{\epsilon\nu}
-^ \top \Sigma_\nu ^ {-1}(w_n - \Pi v_n)}{\sigma_\epsilon ^ 2 -
-\sigma_{\epsilon\nu} ^\top \Sigma_\nu ^ {-1} \sigma_{\epsilon\nu}}\right)
+^ \top \Sigma_\nu ^ {-1}(w_n - \Pi v_n)}{\sqrt{\sigma_\epsilon ^ 2 -
+\sigma_{\epsilon\nu} ^\top \Sigma_\nu ^ {-1} \sigma_{\epsilon\nu}}}\right)
 $$ {#eq-cond_density_y_star}
 
-The computation of the estimator is simplified by the use of the Cholesky decomposition of $\Sigma_\nu ^ {-1}$, ie by considering the lower triangular matrix $C$ such that $CC^\top = \Sigma_\nu ^
+The computation of the estimator is simplified by the use of the Cholesky decomposition of $\Sigma_\nu ^ {-1}$, ie by considering the upper triangular matrix $C$ such that $C^\top C= \Sigma_\nu ^
 {-1}$. Then, the determinant of $\Sigma_\nu ^ {-1}$ is simply the product of the squares of the diagonal elements of $C$. Therefore, $\ln \mid \Sigma_\nu ^ {-1} \mid = 2 \sum_g \ln C_{gg}$ and $\ln \mid \Sigma_\nu \mid = - 2 \sum_g \ln C_{gg}$.
-Denoting $\Pi ^ * = C ^ \top \Pi$ and $\rho ^ * = C ^ \top
+Denoting $\Pi ^ * = C \Pi$, $w_n^* = C w_n$ and $\rho ^ * = C
 \sigma_{\epsilon\nu}$ we have : $\theta ^ \top u_n = \gamma ^ \top
-z_n + \rho ^ {* \top} (C ^ \top w_n - \Pi ^ *)$ and $\sigma ^ 2 =
+z_n + \rho ^ {* \top} (w_n^* - \Pi ^ *)$ and $\sigma ^ 2 =
 \sigma_\epsilon ^ 2 - \rho ^{*\top} \rho ^ *$.
 The marginal density of $w_n$ and the conditional density of $y_n$ are then:
 
@@ -1280,31 +1340,30 @@ $$
 \begin{array}{rcl}
 \ln g(w_n) &=& - 
 \frac{1}{2} G \ln 2\pi + \sum_{g = 1} ^ G  \ln C_{gg} - 
-\frac{1}{2} (C ^ \top w_n - \Pi ^ * v_n) ^ \top (C ^ \top w_n - \Pi ^ * v_n) \\
-\ln f(d_n \mid w_n) &=& \Phi\left((2 d_n - 1) \frac{\gamma ^ \top z_n + \rho ^ {*
-\top} (C ^ \top w_n - \Pi ^ * v_n)}
+\frac{1}{2} (w_n ^ * - \Pi ^ * v_n) ^ \top (w_n ^ * - \Pi ^ * v_n) \\
+\ln f(y_n \mid w_n) &=& \Phi\left((2 y_n - 1) \frac{\gamma ^ \top z_n + \rho ^ {*
+\top} (w_n^* - \Pi ^ * v_n)}
 {\sqrt{\sigma_\epsilon ^ 2 - \rho ^{*\top} \rho ^ *}}\right)
 \end{array}
 \right.
 $$
 The maximum likelihood estimator is then obtained by maximizing the
 log-likelihood function $\ln L = \sum_{n=1} ^ N \ln g(w_n) + \ln f(y_n
-\mid w_n)$ with respect to $\beta$, $\rho ^*$ and $\Pi ^ *$. $\sigma_\epsilon$ is not identified and can be set to 1.
+\mid w_n)$ with respect to $\gamma$, $\rho ^*$, $\Pi ^ *$ and $C$. $\sigma_\epsilon$ is not identified and can be set to 1.
 
 ### Two-steps estimator
 
-
 From @eq-ycond, we have $y_n ^ * \sim N \left(\gamma ^ \top z_n +
-\rho ^ \top \nu_n, \sigma\right)$. If $y_n ^ *$ and $\nu_n$ were
+\rho ^ \top \nu_n, \sigma^2\right)$. If $y_n ^ *$ and $\nu_n$ were
 observed, the model could be consistently estimated by regressing $y_n
 ^ *$ on $z_n$ and $\nu_n$. $\nu_n$ is actually
-unknown, but it can be consistently estimated from the estimation of
-$\hat{\Pi}$ by maximizing $\sum_{n=1} ^ N \ln g(w_n)$. This is a
+unknown, but it can be consistently estimated using the estimation of
+$\hat{\Pi}$ obtained by maximizing $\sum_{n=1} ^ N \ln g(w_n)$. This is a
 seemingly unrelated regression problem and it is well known that, for
 the special case where the set of covariates is the same for all the
 equations, the estimator can be obtained using OLS independently on
 each equation. From this first step, we obtain $\hat{\nu}_n =
-w_n - \hat{\Pi} v_n$ and in the second step, $\hat{\delta}$ and $\hat{\rho}$
+w_n - \hat{\Pi} v_n$ and, in the second step, $\hat{\gamma}$ and $\hat{\rho}$
  are obtained by regressing $y_n ^*$  on $z_n$ and $\hat{\nu}_n$.
 
 Regressing $y_n ^ *$ on a vector of 1, $x_{1n}$, $w_n$ and
@@ -1318,7 +1377,7 @@ statistic. If $G > 1$, the joint hypothesis that $\rho= 0$ can be
 tested using a Wald test, the statistic being a $\chi ^ 2$ with $G$
 degrees of freedom under the null hypothesis of exogeneity.
 
-This two-steps instrumental variable estimator has been extended for
+This two-steps instrumental variable estimator and test has been extended for
 the case were $y_n ^*$ is only partially observed by @SMIT:BLUN:86 and
 @RIVE:VUON:88 (respectively for the tobit and the probit models). It
 can be computed as follow:
@@ -1327,11 +1386,12 @@ can be computed as follow:
   and retrieve the residuals $\hat{\nu}_{gn}$,
 - estimate $\theta ^ \top = (\gamma ^ \top, \rho^\top)$ using a
   probit model with $z_n$, and $\hat{\nu}_n$ as covariates.
+- test the hypothesis that $\rho = 0$.
 
 As it is customary for two-steps estimators, the covariance matrix
 returned by the probit model is inconsistent
 because it doesn't take into account the fact that $\nu_n$ is unknown
-and is replaced by a consistent estimator. Denoting $\pi = \mbox{vec} \Pi$, the first order approximation of the vector of scores is:
+and is replaced by a consistent estimator. Denoting $\pi = \mbox{vec} \,\Pi$, the first order approximation of the vector of scores is:
 
 $$
 \frac{\partial \ln L}{\partial \theta}(\hat{\theta}, \hat{\pi}) \approx
@@ -1368,11 +1428,11 @@ $$
 
 $A$ and $B$ contain the second derivatives of the individual
 contribution to the log-likelihood function for the probit model. These are, defining: $\eta_n = \gamma ^ \top z_n + \rho \hat{\nu}_n$
-and $\mu_n = \phi(\eta_n) / (1 - \Phi(\eta_n))$:
+and $r_n = \phi(\eta_n) / (1 - \Phi(\eta_n))$:
 
 $$
 \frac{\partial ^ 2\ln l_n}{\partial \eta_n \partial \eta_n ^ \top} = -
-\mu_n \left(\mu_n + \eta_n \right) = - \psi_n
+r_n \left(r_n + \eta_n \right) = - \psi_n
 $$
 
 More precisely, $A = \sum_{n=1} ^ N \psi_n \hat{u}_n \hat{u}_n ^ \top$ and $B =
@@ -1391,31 +1451,29 @@ $$
 (\hat{\rho} ^ \top \hat{\Sigma} \hat{\rho})\times
 (\hat{U} ^ \top \Psi \hat{U}) ^ {-1} (\hat{U} ^  \top \Psi Z) (Z ^ \top Z) ^ {-1} (Z ^  \top \Psi \hat{U}) (\hat{U} ^ \top \Psi \hat{U}) ^ {-1}
 $$
-
-A simple test of endogeneity can be performed using a Wald test on the subset of the fitted coefficients $\hat{\rho}$ associated with the first-step residuals of the endogenous covariates. The test is performed using the raw estimate of the covariance matrix returned by a probit package. 
-
+@SMIT:BLUN:86 proposed an endogeneity test based on the two-steps estimator. As for the linear instrumental variable estimator, it is a Wald test that $\rho = 0$, but it uses the simple probit estimation of the covariance matrix.
 
 ### Minimum $\chi ^ 2$ estimator
 
-More efficient estimators can be obtained using @AMEM:78's minimum
-chi-square estimator [see @NEWE:87], which is obtained in five steps:
+@NEWE:87 argued that @AMEM:78's minimum
+chi-square estimator can be used in this context and is more efficient than the two-steps estimator. This estimator is computed in 5 steps:
 
-- compute the OLS estimator of $\pi_g$ for the $G$ endogenous variables
+1. compute the OLS estimator of $\pi_g$ for the $G$ endogenous variables
   and compute the fitted values $\hat{w}_{gn}$ and the residuals
   $\hat{\nu}_{gn}$ of these regressions,
-- using a probit or a tobit, regress $y$ on the whole set of exogenous
-  variables $x$ and the previously computed residuals
-  $\hat{\nu}_{gn}$. Save the coefficients of $x$ ($\hat{\alpha}$), of
-  $\hat{\nu}$ ($\hat{\lambda}$) and the part of the covariance matrix
+1. using a probit regress $y$ on the whole set of exogenous
+  variables $v_n ^ \top = (1, x_{n1} ^ \top, x_{n2} ^ \top)$ and on the previously computed residuals
+  $\hat{\nu}_{gn}$. Save the coefficients of $v_n$ ($\hat{\alpha}$), of
+  $\hat{\nu}_n$ ($\hat{\lambda}$) and the part of the covariance matrix
   that corresponds to $\alpha$  $\hat{\Sigma}_{1}$,
-- using a probit or a tobit, regress $y$ on the exogenous covariates
-  $x_1$, the fitted values and the residuals computed on the first
-  stage; save the coefficients of the fitted values $\hat{\beta}$ and
-  compute $\hat{\rho} = \hat{\lambda} - \hat{\beta}$,
-- regress $\hat{\rho} ^ \top w_n$ on the whole set of exogenous
-  variables $x_n$, save the covariance matrix $\hat{\Sigma}_{2}$ and
+1. using a probit, regress $y$ on 
+  $z_n^\top = (1, x_1^\top, \hat{\nu}_n ^ \top)$ and on the fitted values $\hat{w}_{gn}$ computed on the first
+  step; save the coefficients of the fitted values $\hat{\delta}$ and
+  compute $\hat{\rho} = \hat{\lambda} - \hat{\delta}$,
+1. regress $\hat{\rho} ^ \top w_n$ on the whole set of exogenous
+  variables $v_n$, save the covariance matrix $\hat{\Sigma}_{2}$ and
   compute $\hat{\Omega} = \hat{\Sigma}_1 + \hat{\Sigma}_2$,
-- compute the minimum the minimum $\chi^2$ estimator $\hat{\beta}$ and
+1. compute the minimum the minimum $\chi^2$ estimator $\hat{\beta}$ and
   its variance $\hat{V}(\hat{\beta})$:
   
 $$\hat{V}(\hat{\beta}) = (Z^\top X) (X^\top X) ^ {-1} \hat{\Omega} ^
@@ -1426,9 +1484,9 @@ $$\hat{\beta}
   = \hat{V}(\hat{\beta}) (Z^\top X) (X^\top X) ^ {-1} \hat{\Omega} ^ {-1}
 $$
 
-### Applications
+### Application
 
-@ADKI:CART:SIMP:07 and @ADKI:12 analyzed the effect of managerial incentives on the use of foreign-exchange derivatives for hedging by U.S. bank holding companies, for the 1996-2000 period. The dependent variable `federiv` is 1 if the bank use foreign-exchange derivatives.
+@ADKI:CART:SIMP:07 and @ADKI:12 analyzed the effect of managerial incentives on the use of foreign-exchange derivatives for hedging by U.S. bank holding companies, for the 1996-2000 period. The dependent variable `federiv` is 1 if the bank uses foreign-exchange derivatives.
 
 The first set of covariates concerns ownership. When managers have a higher ownership position in the bank, their behavior is more in line with the preferences of shareholders and they therefore have an incentive to take risk: the logarithm of the percentage of total shares outstanding that are owned by officers and directors (`linsown`) should therefore have a negative effect on the probability of using foreign exchange derivatives. However, incentives provided by regulation may dominate the expected incentive relation and lead to a negative effect on the probability. On the contrary, institutional blockholders have imperfect information and, therefore, the logarithm of the percentage of total shares outstanding that are owned by all institutional investors (`linstown`) should have a negative effect on the probability of using foreign exchange derivatives. 
 
@@ -1436,25 +1494,22 @@ The second set of covariates concerns CEO compensation. Value of option awards (
 
 The other covariates are the leverage `eqrat`, the logarithm of total assets `ltass`,  the return on equity `roe`, the market to book ratio `mktbt`, the foreign to total interest income ratio `perfor`, a derivative dealer activity dummy `dealdum`, dividends paid `div` and the year from 1996 to 2000 (`year`). 
 
-Three covariates are suspected to be endogenous: the leverage `eqrat`, the option awards `optval` and the bonus, `bonus`. The external instruments are the number of employees (`no_emp`), of subsidiaries (`no_subs`) and of officies (`no_off`), the CEO age `ceo_age`, the 12 month maturity mismatch `gap` anr the ratio of cash flow to total assets `cfa`. The results for the three estimators are presented in @tbl-resbank. To save place, we only present the coefficients for the covariates of main interest.
+Three covariates are suspected to be endogenous: the leverage `eqrat`, the option awards `optval` and the bonus, `bonus`. The external instruments are the number of employees (`no_emp`), of subsidiaries (`no_subs`) and of officies (`no_off`), the CEO age `ceo_age`, the 12 month maturity mismatch `gap` and the ratio of cash flow to total assets `cfa`. 
 
-```{r}
-#| include: false
-first_eqrat <- lm(eqrat ~ ltass + linsown + linstown + roe + mktbk + perfor + dealdum + div + year + no_emp + no_subs + no_off + ceo_age + gap + cfa, federiv)
-first_options <- update(first_eqrat, optval ~ .)
-first_bonus <- update(first_eqrat, bonus ~ .)
-map(list(first_eqrat, first_options, first_bonus), ~ summary(.x)$r.squared) %>% as.numeric
-```
+The instrumental variable probit estimator is obtained using `binomreg` with `link = "probit"` and a two part formula, containing the covariates and the instruments. The method argument (the default `"ml"`, `"twosteps"` and `"min"`) indicates the estimation method. The results for the three estimators are presented in @tbl-resbank. To save place, we only present the coefficients for the covariates of main interest.
+
 ```{r }
-bank_msq <- ivldv(federiv ~ eqrat + optval + bonus + ltass + 
-                    linsown + linstown + roe + mktbk + 
-                    perfor + dealdum + div + year |
-                      . - eqrat - bonus - optval + no_emp + 
-                    no_subs + no_off + ceo_age + gap + cfa,
-                  data = federiv, method = "minchisq")
+form <- federiv ~ eqrat + optval + bonus + ltass + 
+                      linsown + linstown + roe + mktbk + 
+                      perfor + dealdum + div + year |
+                        . - eqrat - bonus - optval + no_emp + 
+                      no_subs + no_off + ceo_age + gap + cfa
+bank_msq <- binomreg(form, data = federiv, link = "probit",
+                    method = "minchisq")
 bank_ml <- update(bank_msq, method = "ml")
 bank_2st <- update(bank_msq, method = "twosteps")
 ```
+
 
 ```{r }
 #| label: tbl-resbank
@@ -1466,17 +1521,32 @@ modelsummary::msummary(list("minchisq" = bank_msq, "two-steps" = bank_2st, "ML" 
                        gof_omit = "AIC|BIC|Log.Lik.")
 ```
 
-The coefficients of `linstown`, `bonus` and `optval` have the expected sign and are significant for the ML and for the two-steps estimators (but not for the minimum $\chi^2$ estimator). `linsown` has a positive sign, which must be driven by the strength of the regulatory constraints. 
+The coefficients of `linstown`, `bonus` and `optval` have the expected sign. `linsown` has a positive sign, which must be driven by the strength of the regulatory constraints. Note that the standard deviations are much smaller for the highly parametrized ML estimator, compared to the two-steps and the minimum $\chi^2$ estimator.
 
-The `micsr::endogtest` function enables to test the hypothesis of endogeneity:
+To perform the endogeneity test, we first estimate the two-steps estimator with the probit estimator of the covariance matrix of the coefficients. This is performed by setting the supplementary argument `robust` to `FALSE`:
+
+```{r}
+bank_2s_nr <- binomreg(form, data = federiv, link = "probit", 
+                       method = "twosteps", robust = FALSE)
+```
+
+Then, a Wald test that $\rho = 0$ can be performed, using for example `car::linearHypothesis`:
 
 ```{r}
 #| collapse: true
-endogtest(bank_2st)
+bank_2s_nr %>% car::linearHypothesis(c("rho_eqrat = 0", 
+                                       "rho_optval = 0", 
+                                       "rho_bonus = 0")) %>% gaze
 ```
 
-The hypothesis of no endogeneity is rejected at the 5%, but not at the 10% level.
+or more simply using the `miscsr::endogtest` function:
 
+```{r}
+#| collapse: true
+endogtest(form, federiv) %>% gaze
+```
+
+The hypothesis of no endogeneity is rejected at the 10%, but not at the 5% level.
 
 
 <!-- ```{r } -->
@@ -1502,30 +1572,32 @@ The hypothesis of no endogeneity is rejected at the 5%, but not at the 10% level
 
 An ordered model is a model for which the response can take $J$
 distinct values (with $J>2$). The construction of the model is very
-similar to the one of the binomial model. We consider a latent
-variable, like before equal to the sum of a linear combination of the
-covariates and and error:
+similar to the one of the binomial model. We consider, as in @sec-latent_variable, a latent
+variable equal to the sum of a linear combination of the
+covariates and an error:
 
 $$
-y^* = \beta^\top x + \epsilon
+y^* = \alpha + \beta^\top x + \epsilon
 $$
-
 
 Denoting $\mu = (\mu_0, \mu_1, \mu_1, \ldots, \mu_{J})$ a vector of
 parameters, with $\mu_0 = -\infty$ and $\mu_{J}= +\infty$, the rule of
 observation for the different values of $y$ is then:
 
-
 $$
+\left\{
 \begin{array}{rclcclccc}
-y &=& 1 &  \Leftrightarrow & \mu_0 &\leq& \beta^\top x + \epsilon &\leq& \mu_1 \\
-y &=& 2 &  \Leftrightarrow & \mu_1 &\leq& \beta^\top x + \epsilon &\leq& \mu_2 \\
+y &=& 1 &  \Leftrightarrow & \mu_0 &\leq& \alpha + \beta^\top x + \epsilon &\leq& \mu_1 \\
+y &=& 2 &  \Leftrightarrow & \mu_1 &\leq& \alpha + \beta^\top x + \epsilon &\leq& \mu_2 \\
 &\vdots &  & \vdots && \vdots & & \vdots\\
-y &=& J-1 &  \Leftrightarrow & \mu_{J-2} &\leq& \beta^\top x + \epsilon &\leq& \mu_{J-1} \\
-y &=& J &  \Leftrightarrow & \mu_{J-1} &\leq& \beta^\top x + \epsilon &\leq& \mu_{J}\\
+y &=& J-1 &  \Leftrightarrow & \mu_{J-2} &\leq& \alpha + \beta^\top x + \epsilon &\leq& \mu_{J-1} \\
+y &=& J &  \Leftrightarrow & \mu_{J-1} &\leq& \alpha + \beta^\top x + \epsilon &\leq& \mu_{J}\\
 \end{array}
+\right.
 $$
 
+For $y = 1$, subtracting $\alpha$ from the three terms of the inequality, we get:
+$\mu_0 - \alpha \leq \beta ^ \top x + \epsilon \leq \mu_1 - \alpha$. Therefore, the observation rule doesn't depend on $\mu_0$, $\mu_1$ and $\alpha$, but on $\mu_0-\alpha$ and $\mu_1 - \alpha$. Therefore, $\mu_0$, $\mu_1$ and $\alpha$ are not identified and, for example, $\alpha$ can be set to 0. The same reasoning applies to the other values of $y$. 
 Denoting $F$ the cumulative density of $\epsilon$, the probability for a
 given value $j$ of $y$ is:
 
@@ -1533,8 +1605,8 @@ $$
 \mbox{P}(y_n=j)=F(\mu_{j} - \beta^\top x_n) - F(\mu_{j-1} - \beta^\top x_n)
 $$
 
-The probabilities are represented on figure @fig-ordered1 for $J
-= 3$. These are the area under the density curve of $\epsilon$ between
+The probabilities are represented on @fig-ordered1 for $J
+= 3$ by the areas under the density curve of $\epsilon$ between
 two consecutive values of $\mu_j - \beta ^ \top x$ (with $\mu_0 =
 -\infty$ and $\mu_3 = + \infty$).
 
@@ -1545,10 +1617,10 @@ two consecutive values of $\mu_j - \beta ^ \top x$ (with $\mu_0 =
 knitr::include_graphics("./tikz/fig/ordered1.png", auto_pdf = TRUE)
 ```
 
-Consider now an increase of a covariate and suppose that the
-associated coefficient is positive. Then, all the values of $\mu_j -
-\beta^ \top x$ decrease by the same amount $-\beta ^ \top \Delta
-x$. The new probabilities are represented on @fig-ordered2.
+Consider now an increase of a covariate $x_k$ and suppose that the
+associated coefficient $\beta_k$ is positive. Then, all the values of $\mu_j -
+\beta^ \top x$ decrease by the same amount $-\beta_k  \Delta
+x_k$. The new probabilities are represented on @fig-ordered2.
 
 ```{r }
 #| label: fig-ordered2
@@ -1557,35 +1629,29 @@ x$. The new probabilities are represented on @fig-ordered2.
 knitr::include_graphics("./tikz/fig/ordered2.png", auto_pdf = TRUE)
 ```
 
-The dashed area is an increase of the probability that $y = 2$ and a
-reduction of the probability that $y = 1$.  The dotted area is a
+The dashed area represents an increase of the probability that $y = 2$ and a
+reduction of the probability that $y = 1$, and the dotted area a
 reduction of the probability that $y = 2$ and an increase of the
-probabity that $y = 3$. Therefore, the marginal effect is unambiguous
-for the probabilities that $y = 1$ and $y = 3$ and the sign of the
-effect is the sign of the coefficient. For $y = 2$, the effect is
-ambigus. For small changes of $x$ the dashed and dotted areas are
+probability that $y = 3$. Therefore, the marginal effect of $x_k$ is positive for $\mbox{P}(y = 3)$, negative for $\mbox{P}(y = 1)$  and ambiguous for $\mbox{P}(y = 2)$. For small changes of $x_k$ the dashed and dotted areas are
 proportional to the densities for the two limits of the range of
 $\epsilon$ for which $y = 2$. Therefore $\mbox{P}(y = 2)$ increases if
 the density for the lower limit ($\mu_1 - \beta ^ \top x$) is greater
 than the density for the upper limit ($\mu_2 - \beta ^ \top x$), which
 is the case here, and decrease otherwise.
-
 More generally, when $y$ takes $J$ values, the effect on the
-probabilities is unambiguous only for $y=1$ and $y = J$.
-
-
-The probability of the outcome can be written:
+probabilities is unambiguous only for $\mbox{P}(y = 1)$ and $\mbox{P}(y = J)$.
+The probability of the outcome can be written compactly using the $\mathbf{1}(x)$ function which equals one if $x$ is true and 0 otherwise:
 
 $$  
-  \mbox{P}(y_n)=\sum_{j=1}^J 1(y_n = j)\left[F(\mu_{j} - \beta^\top x_n) - F(\mu_{j-1} - \beta^\top x_n)\right]
+  \mbox{P}(y_n)=\sum_{j=1}^J \mathbf{1}(y_n = j)\left[F(\mu_{j} - \beta^\top x_n) - F(\mu_{j-1} - \beta^\top x_n)\right]
 $$ {#eq-probord}
 
-For a sample of size $n$, the log-likelihood function is obtained by
-  summing the logarithms of (@eq-probord) for all the
+For a sample of size $N$, the log-likelihood function is obtained by
+  summing the logarithms of @eq-probord for all the
   observations:
 
 $$
-\ln L = \sum_{n=1}^{n} \sum_{j = 1}^J1(y_n = j)\left[F(\mu_j -
+\ln L = \sum_{n=1}^{N} \sum_{j = 1}^J\mathbf{1}(y_n = j)\ln \left[F(\mu_j -
   \beta^\top x_n) - F(\mu_{j-1} - \beta^\top x_n)\right]
 $$
 
@@ -1595,33 +1661,27 @@ distributions, which lead respectively to the ordered probit and logit
 models.
 
 As an example, we consider the article of @ABIA:MODY:05 which study
-the determinants of financial reform. The data set is a panel of 35
-countries for 24 years (from 1973 to 1996). The variable of interest
-is an index of financial liberazation, which takes integer values from
-0 to 18. 
+the determinants of financial reform. The data set, called `fin_reform` is a panel of 35
+countries for 24 years (from 1973 to 1996). The variable of interest `fli`
+is an index of financial liberalization, which takes integer values from
+0 to 18. Denote $I_{nt}$ the value of this variable for country $n$ on year $t$ divided by 18, so that $I_{nt}$ equal 0 and 1 indicates no and perfect financial liberalization. It is assumed that the yearly variation of the index is given by the following equation, denoting $I^*_{nt}$ the desired value of $I_{nt}$:
 
 $$
 \Delta I_{nt} = \alpha(I ^ *_{nt} - I_{n(t-1)}) + \epsilon_{nt}
 $$
-
-where $\alpha$ is an adjustment factor. $I^*$ is unobserved and is
-supposed to be equal to 1 (financial liberalization is regarded as a
-norm) and $\alpha = \theta I_{n(t-1)}$, the resistance to reform is a
-function of the state of liberalization. We then have:
+$I^*$ is unobserved and is supposed to be equal to 1, so that the target  is perfect financial liberalization. $\alpha$ is an adjustment factor and is supposed to be equal to $\alpha = \theta I_{n(t-1)}$, so that the resistance to reform is a function of the state of liberalization. We then have:
 
 $$
 \Delta I_{nt} = \theta I_{n(t-1)}(1 - I_{n(t-1)}) + \epsilon_{nt}
 $$
 
 The response is therefore the change in the index and the main
-covariate is `indxl` $\times$ `(1 - indxl)` where `indxl` is the laged value of
+covariate is `indxl` $\times$ `(1 - indxl)` where `indxl` is the lagged value of
 the index on the 0-1 scale. The computation of these variables are
 presented bellow; note the use of the `lag` function on the data frame
-grouped by `country`. This unsures that the lag value for the the
+grouped by `country`. This insures that the lag value for the
 first year (1973) for the second country (Australia) is `NA` and not
 the value of the first country (Argentina) for the last year (1996).
-
-
 
 ```{r }
 fin_reform <- fin_reform %>%
@@ -1633,7 +1693,19 @@ fin_reform <- fin_reform %>%
     ungroup
 ```
 
-The contagious hypothesis is tested using a covariate which is equal
+```{r}
+#| include: false
+#| eval: false
+fin_reform <- fin_reform %>% 
+  mutate(cls = case_when(dindx <= -3 ~ "large_reversal",
+                         dindx %in% c(-2, -1) ~ "reversal",
+                         dindx == 0 ~ "status_quo",
+                         dindx %in% c(1, 2) ~ "reform",
+                         dindx >= 3 ~ "large_reform"))
+```
+
+
+The authors tested the possibility of regional diffusion: countries within a region would then be induced to catch up with the highest level of liberalization observed within the region. Therefore, they introduce a covariate which is equal
 to the difference between the previous value of the index and the
 maximum value in the group of country:
 
@@ -1646,16 +1718,16 @@ fin_reform <- fin_reform %>% left_join(g) %>%
 
 Other covariates are the political orientation of the government
 (`pol`, a factor with levels `center`, `left` and `right`) and dummies
-for first year of office (`dum_1yofc`), for balance of paiments and
+for first year of office (`dum_1yofc`), for balance of payments and
 bank crises in the first two previous years (`dum_bop` and `dum_bank`)
 and for recession `recession` (growth rate `gdpg` negative) and high
-inflation `hinfl` (inflation rate `infl` > greater thant 50%).
+inflation `hinfl` (inflation rate `infl` > greater than 50%). The relevant dummies are computed below:            
 
 ```{r }
 fin_reform <- fin_reform %>%
-    mutate(dum_bop = ifelse(bop | lag(bop) | (! is.na(lag(bop, 2)) && 
+    mutate(dum_bop = ifelse(bop | lag(bop) | (! is.na(lag(bop, 2)) & 
                                                 lag(bop, 2)), 1, 0),
-           dum_bank = ifelse(bank | lag(bank) | (! is.na(lag(bank, 2)) && 
+           dum_bank = ifelse(bank | lag(bank) | (! is.na(lag(bank, 2)) & 
                                                    lag(bank, 2)), 1, 0),
            dum_1yofc = ifelse(!is.na(yofc) & yofc == 1, 1, 0),
            recession = ifelse(gdpg <= 0, 1, 0),
@@ -1667,22 +1739,67 @@ argument similar to the `link` argument of the `binomial` function
 used as a `family` argument in `glm`. It can be set to `logistic`
 (called `logit` for binomial) , `probit`, `loglog`, `cloglog` and
 `cauchy`. As for binomial models, `probit` and `logit` are by far the
-more used links.
-
-Another implementation of the ordered model is `micsr::ordreg`. Table
+most used links.
+Another implementation of the ordered model is `micsr::ordreg`. 
 @tbl-ordfinreform presents the three specification presented
 by [@ABIA:MODY:05, table 7, page 78].
 
 ```{r}
-mod1 <- ordreg(factor(dindx) ~ rhs1 + catchup, fin_reform, link = "logit")
+mass1 <- MASS::polr(factor(dindx) ~ rhs1 + catchup, fin_reform, 
+                    method = "logistic")
+mod1 <- ordreg(factor(dindx) ~ rhs1 + catchup, fin_reform, 
+               link = "logit")
 mod2 <- update(mod1, . ~ . + dum_bop + dum_bank + recession + hinfl)
-mod3 <- update(mod2, . ~ . + imf + usint + pol + open)
+mod3 <- update(mod2, . ~ . + dum_1yofc + imf + usint + pol + open)
 ```
-
 
 ```{r }
 #| label: tbl-ordfinreform
 #| echo: false
-modelsummary::msummary(list(mod1, mod2, mod3),
-                       title = "Ordered logit models for the financial reform data set")
+#| tbl-cap: "Ordered logit models for the financial reform data set"
+modelsummary::msummary(list(mod1, mod2, mod3), stars  = TRUE)
 ```
+
+The first column presents the result of the model with the resistance to reform and the diffusion covariates which have both of the expected sign and are significant. In the second column, the shocks covariates are added and only the balance of payments and the bank crisis dummies are significant. Finally, in the third column, the political and the economic structure  covariates are added, but none of them are significant. 
+
+<!-- ## Bivariate probit -->
+
+<!-- The methods previously described rest on the hypothesis that the -->
+<!-- endogenous variables are normally distributed. They are therefore -->
+<!-- irrelevant in the common case where the endogenous variable is -->
+<!-- binary. In this situation, the bivariate probit model is -->
+<!-- appropriate. Denote $y_j$ and $x_j$ the two responses and the two sets -->
+<!-- of covariates. For the two responses, define $y_j^* = \beta_j ^ \top -->
+<!-- x_j + \epsilon_j$ a latent variable. $(y_1 = 0, y_2 = 0)$ is then -->
+<!-- observed if $(y_1 ^ * < 0, y_2 ^ * < 0)$ or $(\epsilon_1 < - \beta_1 ^ -->
+<!-- \top x_1, \epsilon_2 < - \beta_2 ^ \top x_2)$. Assuming that the joint -->
+<!-- distribution of $(\epsilon_1, \epsilon_2)$ is normal with a -->
+<!-- coefficient of correlation $\rho$, the probability that $(y_1 = 0, y_2 -->
+<!-- = 0)$ is given by the cummulative bivariate density function: -->
+
+<!-- $$ -->
+<!-- \mbox{P}(y_1 = 1, y_2 = 1) = \Phi_b(\beta_1 ^ \top x_1, \beta_2 ^ \top x_2, \rho) -->
+<!-- $$ -->
+
+<!-- @GREE:18 showed that the general formula for the probability is: -->
+
+<!-- $$ -->
+<!-- \Phi_b(q_1 \beta_1 ^ \top x_1, q_2 \beta_2 ^ \top x_2, q_1 q_2 \rho) -->
+<!-- $$ -->
+
+<!-- The log-likelihood function is then: -->
+
+<!-- $$ -->
+<!-- \ln L = \sum_{n=1} ^ N \ln \Phi_b(q_{n1} \beta_1 ^ \top x_{n1}, q_{n2} \beta_2 ^ \top x_{n2}, q_{n1} q_{n2} \rho) -->
+<!-- $$ -->
+
+<!-- This general model can deal with the case of endogenous dependant -->
+<!-- variable if, for example, $y_1$ is one element of $x_2$. -->
+
+<!-- ```{r } -->
+<!-- pins <- bivprobit(doctor | privateins ~ size + smsa + age + sex + educ + log(wage) | -->
+<!--                       . -privateins + pluriloc + nbemp, private_ins) -->
+<!-- #pins <- bivprobit(doctor | privateins ~ privateins + size + smsa + age + sex + educ + log(wage) | -->
+<!-- #                      . - privateins + pluriloc + nbemp, private_ins) -->
+<!-- ``` -->
+

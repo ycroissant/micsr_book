@@ -13,4 +13,4 @@ Rscript makeTikz.R intervalreg3 10 0.6 1
 Rscript makeTikz.R equilibre 10 0.6 1
 Rscript makeTikz.R ordered1 10 0.6 1
 Rscript makeTikz.R ordered2 10 0.6 1
-
+Rscript makeTikz.R price_time 10 0.6 1

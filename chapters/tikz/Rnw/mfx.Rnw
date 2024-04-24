@@ -80,8 +80,8 @@ TIKline(list(c((mu1+mu2)/2, 0), c((mu1+mu2)/2, dnorm((mu1+mu2)/2, mu2))), option
 step <- 0.03
 TIKnode(c(xmax - 2.8, ymax), "$\\mu_1=\\alpha+\\beta x_1$", pos = "right")
 TIKnode(c(xmax - 2.8, ymax - step), "$\\mu_2=\\alpha+\\beta x_2$", pos = "right")
-TIKnode(c(xmax - 2.8, ymax - step * 2), "$\\mbox{E}_1=\\mbox{E}(y\\mid x_1)=\\alpha+\\beta x_1 + \\sigma r\\left(\\frac{\\alpha+\\beta x_1}{\\sigma}\\right)$", pos = "right")
-TIKnode(c(xmax - 2.8, ymax - step * 3), "$\\mbox{E}_2=\\mbox{E}(y\\mid x_2)=\\alpha+\\beta x_2 + \\sigma r\\left(\\frac{\\alpha+\\beta x_2}{\\sigma}\\right)$", pos = "right")
+TIKnode(c(xmax - 2.8, ymax - step * 2), "$\\mbox{E}_1=\\mbox{E}(y\\mid x_1)=\\mu_1 + \\sigma r(\\mu_1/\\sigma)$", pos = "right")
+TIKnode(c(xmax - 2.8, ymax - step * 3), "$\\mbox{E}_2=\\mbox{E}(y\\mid x_2)=\\mu_2 + \\sigma r(\\mu_2/\\sigma)$", pos = "right")
 @   
 \end{tikzpicture}
 

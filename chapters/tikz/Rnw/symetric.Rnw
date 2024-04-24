@@ -61,7 +61,7 @@ TIKline(list(c(2, 0.65), c(1.27, dnorm(1.27, mu1) / (1 - 2 * PI))), options = " 
 TIKnode(c(2, 0.65), "$\\frac{f(y)}{1 - 2 \\times F(0)}$", pos = "right")
 
 TIKnode(c(-0.7, 0.06), "$F(0)$", pos = "right")
-TIKnode(c(1.6, 0.06), "$1-F(2\\beta^\\top x)$", pos = "right")
+TIKnode(c(1.6, 0.06), "$1-F(2\\mu_n)$", pos = "right")
 TIKnode(c(1.6, 0.03), "$=F(0)$", pos = "right")
 
 
@@ -71,8 +71,10 @@ TIKline(cbind(xs[xs >= 0 & xs <= 2 * mu1], ys3[xs >= 0 & xs <= 2 * mu1]), option
 #TIKcoords(c(mu1, dnorm(mu1, mean = mu1, sd = sigma)), labx = "$\\beta'x$")
 #TIKcoords(c(2 * mu1, dnorm(2 * mu1, mean = mu1, sd = sigma)), labx = "$2\\beta'x$")
 
-TIKnode(c(mu1, 0), "$\\beta'x$", pos = "below")
-TIKnode(c(2*mu1, 0), "$2\\beta'x$", pos = "below")
+#TIKnode(c(-1.8, 0.6), "$\\mu_n = \\alpha + \\beta ^ \\top x_n = \\gamma ^ \\top z_n$", pos = "right")
+
+TIKnode(c(mu1, 0), "$\\mu_n$", pos = "below")
+TIKnode(c(2*mu1, 0), "$2\\mu_n$", pos = "below")
 
 TIKnode(c(E, 0), "$\\mbox{E}(y\\mid x)$", pos = "below")
 TIKline(list(c(E, -0.01), c(E, +0.01)), options = "thick")

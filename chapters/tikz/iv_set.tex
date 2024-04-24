@@ -90,13 +90,13 @@
 \node (01b) at (9.5, 2) [circle,draw,radius=1em] {01};
 
 
-\draw[very thick,blue, fill = orange, fill opacity=0.2, draw
+\draw[very thick, fill opacity=0.2, draw
   opacity=1] \convexpath{00,11}{1cm};
-\draw[very thick,blue, fill = orange, fill opacity=0.2, draw
+\draw[very thick, fill opacity=0.2, draw
   opacity=1] \convexpath{01,11b}{1cm};
-\draw[very thick,blue, fill = orange, fill opacity=0.2, draw
+\draw[very thick, fill opacity=0.2, draw
   opacity=1] \convexpath{10b,01b}{1cm};
-\draw[very thick,blue, fill = orange, fill opacity=0.2, draw
+\draw[very thick, fill opacity=0.2, draw
   opacity=1] \convexpath{00b,10}{1cm};
 
 
@@ -106,16 +106,12 @@
 \node (01c) at (1.6, 3.5) [rectangle,draw,radius=1em, fill=lightgray] {01};
 \node (10c) at (11.4, 3.5) [rectangle,draw,radius=1em, fill=lightgray] {10};
 
-\node (comp) at (6.5, 11) [rectangle,draw,radius=1em, fill =
-  {rgb:orange,1;yellow,2;pink,5}] {\tiny compliers};
-\node (def) at (6.5, 2) [rectangle,draw,radius=1em, fill =
-  {rgb:orange,1;yellow,2;pink,5}] {\tiny defiers};
+\node (comp) at (6.5, 11) [rectangle,draw,radius=1em, fill = white] {\tiny compliers};
+\node (def) at (6.5, 2) [rectangle,draw,radius=1em, fill = white] {\tiny defiers};
 
-\node (nt) at (9.5, 6.5) [rectangle,draw,radius=1em, fill =
-  {rgb:orange,1;yellow,2;pink,5}] {\tiny never taker};
+\node (nt) at (9.5, 6.5) [rectangle,draw,radius=1em, fill = white] {\tiny never taker};
 
-\node (at) at (3.5, 6.5) [rectangle,draw,radius=1em, fill =
-  {rgb:orange,1;yellow,2;pink,5}] {\tiny always taker};
+\node (at) at (3.5, 6.5) [rectangle,draw,radius=1em, fill =  white] {\tiny always taker};
 
 
 \end{tikzpicture}

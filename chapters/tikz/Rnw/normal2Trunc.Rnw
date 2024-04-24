@@ -52,26 +52,26 @@ TIKnode(c(xmax, 0), "y", pos = "right")
 
 TIKline(list(c(2.7, 0.5), c(1, dnorm(1, mu1) / Adj)), options = "->") 
 TIKnode(c(2.7, 0.5),
-"$\\frac{1}{\\sigma_y}
-\\frac{\\phi\\left(\\frac{y-\\mu_y}{\\sigma_y}\\right)}
-{\\Phi\\left(\\frac{u-\\mu_y}{\\sigma_y}\\right)- \\Phi\\left(\\frac{l-\\mu_y}{\\sigma_y}\\right)}$", pos = "above")
+"$\\frac{1}{\\sigma}
+\\frac{\\phi\\left(\\frac{y-\\mu}{\\sigma}\\right)}
+{\\Phi\\left(\\frac{u-\\mu}{\\sigma}\\right)- \\Phi\\left(\\frac{l-\\mu}{\\sigma}\\right)}$", pos = "above")
 
 TIKline(list(c(2.7, 0.1), c(2.21, 0.009)), options = "->") 
 TIKnode(c(2.7, 0.1), "$1-\\Phi\\left(\\frac{u -
-  \\mu_y}{\\sigma_y}\\right)$", pos = "above")
+  \\mu}{\\sigma}\\right)$", pos = "above")
 
 TIKnode(c(-1, 0.05), "$\\Phi\\left(\\frac{l -
-  \\mu_y}{\\sigma_y}\\right)$")
+  \\mu}{\\sigma}\\right)$")
 
 TIKline(list(c(2.7, 0.29), c(1.5, dnorm(1.5, mu1))), options = "->") 
-TIKnode(c(2.7, 0.29), "$\\frac{1}{\\sigma_y}\\phi\\left(\\frac{y-\\mu_y}{\\sigma_y}\\right)$", pos = "above")
+TIKnode(c(2.7, 0.29), "$\\frac{1}{\\sigma}\\phi\\left(\\frac{y-\\mu}{\\sigma}\\right)$", pos = "above")
 
 TIKline(list(c(l, 0), c(l, dnorm(l, mu1) / Adj)), options = "dotted")
 TIKline(list(c(u, 0), c(u, dnorm(u, mu1) / Adj)), options = "dotted")
 
 TIKline(cbind(xs, dnorm(xs, mu1)))
 TIKline(cbind(xs[xs > l & xs < u], dnorm(xs[xs > l & xs < u]) / Adj), options = "dashed")
-TIKcoords(c(mu1, dnorm(mu1, mean = mu1, sd = sigma)), labx = "$\\mu_y$")
+TIKcoords(c(mu1, dnorm(mu1, mean = mu1, sd = sigma)), labx = "$\\mu$")
 TIKnode(c(E, 0), "$\\mbox{E}(y)$", pos = "below")
 TIKline(list(c(E, -0.01), c(E, +0.01)), options = "thick")
 

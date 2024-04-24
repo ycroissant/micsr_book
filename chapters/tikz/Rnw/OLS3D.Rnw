@@ -43,10 +43,10 @@ cat(draw3D(x2, linetype = "dashed", name = "x_2", pos = "below"))
 cat(draw3D(xo = x1, x = c(x1[1] + x2[1], x1[2] + x2[2], 0), linetype = "dotted", vect = FALSE))
 cat(draw3D(xo = x2, x = c(x1[1] + x2[1], x1[2] + x2[2], 0), linetype = "dotted", vect = FALSE))
 
-cat(draw3D(y))
+cat(draw3D(y, name = "y", pos = "left"))
 cat(draw3D(hy, linetype = "dashed", name = "\\hat{y}", pos = "below"))
 cat(draw3D(e))
-cat(draw3D(xo = hy, y))
+cat(draw3D(xo = hy, y, name = "\\hat{\\epsilon}", pos = "right"))
 @   
 
 \end{tikzpicture}

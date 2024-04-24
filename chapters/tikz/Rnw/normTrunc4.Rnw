@@ -48,7 +48,7 @@ afig <- function(mu1, X_LEFT, Y_BELOW){
 #    TIKcoords(c(X_LEFT + mu1, dnorm(mu1, mean = mu1, sd = sigma) - Y_BELOW), labx = "$\\beta'x$")
     TIKnode(c(X_LEFT + E, 0 - Y_BELOW), "$\\mbox{E}(y\\mid x)$", pos = "below")
     TIKline(list(c(X_LEFT + E, -0.01 - Y_BELOW), c(X_LEFT + E, +0.01 - Y_BELOW)), options = "thick")
-    TIKnode(c(X_LEFT + mu1, 0 - Y_BELOW - 0.02), "$\\beta^\\top x$", pos = "below")
+    TIKnode(c(X_LEFT + mu1, 0 - Y_BELOW - 0.02), "$\\alpha + \\beta x$", pos = "below")
     TIKline(list(c(X_LEFT + mu1, -0.01 - Y_BELOW), c(X_LEFT + mu1, +0.01 - Y_BELOW)), options = "thick")
 }
 

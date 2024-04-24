@@ -58,7 +58,7 @@ cat(draw3D(xo = x2, x = c(x1[1] + x2[1], x1[2] + x2[2], 0), linetype = "dotted",
 # decomposition of y in hat(y) and hat(eps)
 cat(draw3D(hy, name = "\\hat{y}", pos = "above", lab = 0.6))
 #cat(draw3D(e, name = "\\hat{\\epsilon}_9", pos = "left", color = "blue"))
-cat(draw3D(xo = hy, y, color = "blue", name = "\\hat{\\epsilon}_{12}=M_{12}y", lab = 0.5, pos = "right"))
+cat(draw3D(xo = hy, y, name = "\\hat{\\epsilon}_{12}=M_{12}y", lab = 0.5, pos = "right"))
 
 # decomposition of hat(y) in bx1 and bx2
 cat(draw3D(xo = bx1, x = c(bx1[1] + bx2[1], bx1[2] + bx2[2], 0), linetype = "dotted", vect = FALSE))
@@ -69,12 +69,12 @@ cat(draw3D(xo = bx2, x = c(bx1[1] + bx2[1], bx1[2] + bx2[2], 0), linetype = "dot
 
 P1x2 <- as.numeric(Pmat(x1) %*% x2)
 P1bx2 <- as.numeric(Pmat(x1) %*% bx2)
-cat(draw3D(x = x2, xo = P1x2, col = "green", lab = 0.35, pos = "above", name = "M_1x_2"))
-cat(draw3D(x = bx2, xo = P1bx2, col = "red", lab = 0.5, name = "\\hat{\\beta}_2M_1x_2", pos = "below"))
+cat(draw3D(x = x2, xo = P1x2, lab = 0.35, pos = "above", name = "M_1x_2"))
+cat(draw3D(x = bx2, xo = P1bx2, lab = 0.5, name = "\\hat{\\beta}_2M_1x_2", pos = "below"))
 
 P1y <- as.numeric(Pmat(x1) %*% y)
-cat(draw3D(x = y, xo = P1y, col = "blue", name = "\\hat{\\epsilon}_{1}=M_1y", lab = 0.5))
-cat(draw3D(x = hy, xo = P1y, col = "red", name = "P_{M_1x_2}y=\\tilde{\\beta}_2M_1x_2", lab = 0.5, pos = "above"))
+cat(draw3D(x = y, xo = P1y, name = "\\hat{\\epsilon}_{1}=M_1y", lab = 0.5))
+cat(draw3D(x = hy, xo = P1y, name = "P_{M_1x_2}y=\\tilde{\\beta}_2M_1x_2", lab = 0.5, pos = "above"))
 
 @   
 

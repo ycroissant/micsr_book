@@ -34,7 +34,7 @@ TIKline(list(c(0, ymin), c(0, ymax)), options = "->")
 TIKnode(c(xmax, 0), "x", pos = "right")
 #TIKnode(c(0, ymax), "y", pos = "above")
 TIKnode(c(0, 0), "0", pos = "below")
-TIKnode(c(0, ymax), "$\\frac{\\phi(x)}{\\Phi(x)}$", pos = "above")
+TIKnode(c(0, ymax), "$r(x)=\\frac{\\phi(x)}{\\Phi(x)}$", pos = "above")
 TIKline(cbind(xs, ys1)[ys1 < 6.5, ])
 TIKline(rbind(c(0,0), c(-6.5, 6.5)), options = "dashed")
 @   

@@ -1,21 +1,85 @@
 # Preface {.unnumbered}
 
-This book is about micro-econometrics.
+This book is about doing micro-econometrics with R. Microeconometrics is defined by @CAME:TRIV:05 as "the analysis of individual-level data on the economic behavior of individuals or ﬁrms using regression methods applied to cross-section and panel data". We'll use in this book a broader definition of microeconometrics as some of the empirical examples use countries or regions. But, nevertheless, the underlying model will have microeconomic foundations, as for example the Solow growth model that is treated at length in chapter @sec-mult_reg_chapter. A negative delimitation of what is in this book is that it doesn't contain any analyzes of time series. 
 
-```{r }
-#| label: setup
-#| include: false
-knitr::opts_chunk$set(message = FALSE,
-                      warning = FALSE,
-                      out.width = "60%",
-                      fig.align = "center",
-                      cache = TRUE)
-options(
-    htmltools.dir.version = FALSE,
-    formatR.indent = 2,
-    width = 55,
-    digits = 4,
-    tibble.print_max = 5,
-    tibble.print_min = 5
-)
+I used throughout the book some manuals. My main reference was @CAME:TRIV:05, but I also used @GREE:18 (especially the online mathematical and statistical appendices that I found particularly useful) and @WOOL:10. At an introductory level, I also used @STOC:WATS:15 and @MADD:LAHI:09. For some specific points (geometry of least squares, asymptotic theory, GDP, computational considerations), I was also inspired by @DAVI:MACK:93 and @DAVI:MACK:04.
+On more specific subjects, I used also some specific textbook and surveys: @CAME:TRIV:13 for chapter 11 (count data), @MADD:83 for chapters 10 and 12 (binomial and censored models), two excellent surveys by Amemiya for chapter 10 [@AMEM:81] and 12 [@AMEM:84], @TRAI:09 for chapter 14 (discrete choice models) and @LANC:90 and @KIEF:88 for chapter 13 (duration models).
+
+**R** appeared in the late nineties as a clone of **S** which rapidly became a **GNU** project. It became increasingly popular among statisticians, especially in fields where **S+** was popular. Its adoption by econometricians is more recent, especially because of the use of other software like **SAS**, **GAUSS** and especially nowadays **Stata**, and the lack of some popular estimators and tests for econometrics in the core of **R** (including the "recommended packages"). Since then, numerous excellent packages have been developed that make the adoption of **R** as the primary software for an econometrician a relevant choice. Moreover, **R** has some characteristics that make **R** code concise and clear, compared to other softwares. 
+
+**Rstudio** (now **Posit**), founded in 2009 by Joseph J. Allaire, developed a set of **R** packages that changed deeply the way a lot of **R** users (including myself) use **R**. Among them, **quarto** was used to build this book and the set of packages called the **tidyverse** is used extensively for all the basic tasks of an applied statistician which are, citing @WICK:CETI:GROL:23, importing, tidying, transforming and visualizing data sets. Packages of the **tidyverse**, respectively **readr**, **tidy**, **dplyr** and **ggplot2** enable to perform these tasks using a set of efficient, intuitive and consistent functions. 
+
+This book use a set of data sets to illustrate the use of the techniques described in the book. A particular care was given to use original and interesting data sets. Our main source to get data was the Journal of Applied Econometrics data archive maintained by James G. MacKinnon since 1994 and available at <http://qed.econ.queensu.ca/jae/> and the website of the American Economic Association <https://www.aeaweb.org> which provides data sets and programs used in articles published in AEA's journal, in particular the American Economic Review and the four American Economic Journals (we particularly used Applied Economics). We also wrote to a lot of authors to ask them whether the data used in their publications was still available and if they could share it with us. Many thanks for those who provided with data sets that are now included in the **micsr** and the **micsr.data** packages: John Mullahy (`birthwt`, `cigmales`), Mark Ottoni Wilhelm (`charitable`), Lawrence Katz (`recall`), Joseph Terza (`trips`), Franck Koppelman (`toronto_montreal`), Christopher Skeels and David Drukker (`moffitt`), Winfried Pohlmeier (`doctor_ger`), Rainer Winkelman (`jobmob`).^[Franck Vella, Adrian Pagan, Jerry Haussman, Claudia Goldin, Wynand van de Ven, Andrew Jones, Richard J Smith, Pramila Krishnan, Orley C. Ashenfelter, John Ham, James Adams, John McDonald, Laurence Kotlikoff, Mark Rosenzweig, James Dunvely, Kathryn Graddy kindly answered me that they were unable to share the data I required (most of the time because it was not available anymore to them).]
+
+This book requires basic knowledge of **R** and the **tidyverse**, at the level of the first part of @WICK:CETI:GROL:23, which is untitled "the whole game" and is an excellent introduction for readers of this book that are not **R** users. Moreover, there is a free on-line version of this book that can be found at <https://r4ds.hadley.nz/>.
+
+The book comes with a companion package called **micsr**. It is available on **CRAN** and is therefore very easy to install. As indicated previously, the book use extensively the **tidverse** package and it is therefore recommended to install **tidyverse** before trying to replicate the **R** code contained in the book. **micsr** contains a small subset of the data sets included in the book and some specific methods of estimations and testing procedures for micro-econometrics. The **modelsummary** package is used extensively to produce tables of fitted models. Some other more specific packages are used in different chapters. Data sets used in this book not included in the **micsr** package are available in the **micsr.data** package which is available from **github**. To install it, you should first install the **pak** package and then simply write:
+
+```{r}
+#| eval: false
+pak::pkg_install("ycroissant/micsr.data")
+```
+
+```{r}
+library(tidyverse)
+library(micsr)
+library(micsr.data)
+```
+
+The output of **R** calls is often quite long and take two much place in a book. For this reason, **micsr** contains a generic function called `gaze` with methods for a lot of **R** objects. Consider for example a t-test:
+
+```{r}
+t.test(extra ~ 1, data = sleep)
+```
+
+The output is 12 lines long, including 3 blank lines. `gaze` writes the main part of the results in just 1 line:
+
+```{r}
+#| collapse: true
+t.test(extra ~ 1, data = sleep) %>% gaze
+```
+
+**micsr** also contains some general utilities particularly useful to extract some information from fitted models. Consider the following linear model:
+
+```{r}
+z <- lm(dist ~ speed, cars)
+summary(z)
+```
+
+The printed output of `summary` is quite long and contains informations that can't be easily extracted from the result. A `gaze` method for `lm` object is provided to print only the table of coefficients (by default without the intercept):
+
+```{r}
+#| collapse: true
+z %>% gaze
+```
+
+With base **R**, its easy to extract the number of observations using `nobs`, but there is no such function to extract the number of parameters. We provide the `npar` function for this purpose:
+
+```{r}
+#| collapse: true
+npar(z)
+```
+
+The second column of the table of the coefficients is the vector of standard errors of the coefficients With base **R**, it can be extract by first using the `vcov` function to extract the covariance matrix and then by taking the square roots of the diagonal elements of this matrix. **micsr** provide the `stder` function to achieve easily the same task:
+
+```{r}
+#| collapse: true
+z %>% vcov %>% diag %>% sqrt
+z %>% stder
+```
+
+Two very important statistics of the linear model are the coefficient of determination and the F statistic. They should be extracted "manually" from the object returned by `summary`, applied to a `lm` object:
+
+```{r}
+#| collapse: true
+summary(z)$r.squared
+summary(z)$fstat
+```
+
+The `rsq` and the `ftest` of the **micsr** package can be used instead:
+
+```{r}
+#| collapse: true
+z %>% rsq
+z %>% ftest %>% gaze
 ```

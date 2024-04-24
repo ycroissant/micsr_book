@@ -13,5 +13,6 @@ options(
 )
 
 library(tidyverse)
+theme_set(theme_classic())
 library(micsr)
 library(micsr.data)

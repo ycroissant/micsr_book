@@ -3,11 +3,14 @@
 source("../_commonR.R")
 ```
 
-# Treatment Effect
+# Treatment Effect {#sec-treatment_effect}
 
 In treatment evaluation analysis, one is interested in the effect of a
-treatment on an outcome of interest. Popular example are the effect of microcredit access on the economic outcomes of households in developing countries, effects of a reduction of class size on the academic outcomes of pupils, effects of a youth job training program on employment status. In the simplest case, the outcome $y$ is a continuous variable and the treatment variable $D$ is
-binomial (1 for treatment, 0 otherwise). The causal impact of $D$ on $y$ is measured by the difference between the value of $y$ if $D=0$, denoted $y_0$ and if $D=1$, denoted $y_1$. For an individual for which $D=0$, $y_0$ is the observed or factual situation. The value of $y$ if the individual had received the treatment is $y_1$ and is called the **counterfactual**. The fundamental problem is that the counterfactual is unobserved. This framework leads to the **potential outcome** model, which became increasibly popular in econometrics.
+treatment on a relevant outcome. Popular example are the effect of
+microcredit access on the economic outcomes of households in
+developing countries, effects of a reduction of class size on the
+academic outcomes of pupils, effects of a youth job training program on employment status. In the simplest case, the outcome $y$ is a continuous variable and the treatment variable $D$ is
+binomial (1 for treatment, 0 otherwise). The causal impact of $D$ on $y$ is measured by the difference between the value of $y$ if $D=0$, denoted $y_0$ and if $D=1$, denoted $y_1$. For an individual for which $D=0$, $y_0$ is the observed or factual situation. The value of $y$ if the individual had received the treatment is $y_1$ and is called the **counterfactual**. The fundamental problem is that the counterfactual is unobserved. This framework leads to the **potential outcome** model, which became increasingly popular in econometrics.
 On a sample of size $N$, denoting $y_{0n}$ and $y_{1n}$ the two values of the outcome, the natural estimator of the effect of the treatment would be:
 
 $$
@@ -33,9 +36,9 @@ To overcome these difficulties, different estimators have been suggested for obs
 
 ## Randomized experiment {#sec-randomized_experiment}
 
-Randomized experiences are the ideal setting to analyse treatment
+Randomized experiences are the ideal setting to analyze treatment
 effect. The treatment and the control groups are composed of
-individuals that are drawn from the same population and therefore the average observable and unobservable characteristics in
+individuals that are randomly drawn from the same population and therefore the average observable and unobserved characteristics in
 both groups should be similar.
 
 To illustrate the use of randomized experiment, we consider the study
@@ -68,7 +71,7 @@ of the test. It uses a formula-data interface and has a supplementary argument c
 ```{r }
 #| label: welch_afghan_girls
 #| collapse: true
-t.test(distance ~ group, afghan_girls) %>% sight
+t.test(distance ~ group, afghan_girls) %>% gaze
 ```
 
 and the hypothesis of equal mean is highly rejected. Computing the simple version of the t-test:
@@ -76,7 +79,7 @@ and the hypothesis of equal mean is highly rejected. Computing the simple versio
 ```{r }
 #| collapse: true
 #| label: ttest_afghan_girls
-t.test(distance ~ group, afghan_girls, var.equal = TRUE) %>% sight
+t.test(distance ~ group, afghan_girls, var.equal = TRUE) %>% gaze
 ```
 
 we get almost the same result. This last version of the test is equivalent to the result of a
@@ -84,17 +87,18 @@ regression of the outcome variable on the group dummy:
 
 ```{r }
 #| label: lm_afghan_girls
-lm(distance ~ group, afghan_girls) %>% sight
+#| collapse: true
+lm(distance ~ group, afghan_girls) %>% gaze
 ```
 
-The coefficient of the intercept is the mean for the control group and the coefficient of `grouptreatment` is the difference of the means for the two groups. The t-value is excactly the one obtained using `t.test` with `var.equal = TRUE`.
+The coefficient of the intercept is the mean for the control group and the coefficient of `grouptreatment` is the difference of the means for the two groups. The t-value is exactly the one obtained using `t.test` with `var.equal = TRUE`.
 
 Balance between groups of factors can be tested using a Pearson's
 $\chi^2$ test. It is based on the comparison of the observed joint
 distribution of the two variables and the one obtained using the
 independence hypotheses (obtained by multiplying the marginal
 frequencies of the two variables). 
-Denoting $o$ and $e$ the observed and hypothesized frequencies, $i$ is the index of the cell and $N$ the size of the
+Denote $o$ and $e$ the observed and the hypothesized frequencies, $i$ the index of the cell and $N$ the size of the
 sample:
 
 $$
@@ -103,17 +107,17 @@ $$ {#eq-pearson_chi2}
 
 the statistic is, under the hypothesis of independence, a $\chi
 ^ 2$ with a number of degrees of freedom equal to $(J_1 -1) \times
-(J_2 - 1)$ where $J_1$ and $J_2$ are the number of modalities of the
+(J_2 - 1)$ where $J_1$ and $J_2$ are the number of modalities for the
 two factors.
 
-In the `afghan_girls` data set, `ethny` is a factor with levels `"other"`, `"farsi"` and `"tajik"`. We first compute the frequency table using the `table` function, which is similar to `dplyr::count`, but the input is a series and not a data frame and the result is an object of class `table`, which is much alike an object of class `matrix`, and not a data frame. We then compute the relative frequencies using `prop.table` function. Note that `prop.table` has a `margin` argument that we don't use here. ^[If `margin = 1`, the frequencies sum to one for each line and if `margin = 2`, they sum to one for each column.]
+In the `afghan_girls` data set, `ethny` is a factor with levels `"other"`, `"farsi"` and `"tajik"`. We first compute the frequency table using the `table` function, which is similar to `dplyr::count`, but the input is a series and not a data frame and the result is an object of class `table`, which is much alike an object of class `matrix`, and not a data frame. We then compute the relative frequencies using the `prop.table` function. Note that `prop.table` has a `margin` argument that we don't use here. ^[If `margin = 1`, the frequencies sum to one for each line and if `margin = 2`, they sum to one for each column.]
 
 ```{r }
 #| label: obs_freq
 obs_freq <- prop.table(table(afghan_girls$group, afghan_girls$ethny))
 ```
 
-In case of independence, the frequencies are using the outer product of the marginal frequencies:
+In case of independence, the frequencies are obtained using the outer product of the marginal frequencies:
 
 ```{r }
 #| label: indep_freq
@@ -130,17 +134,17 @@ Applying @eq-pearson_chi2, we obtain:
 sum((obs_freq - ind_freq) ^ 2 / ind_freq) * nrow(afghan_girls)
 ```
 
-This test can be conveniently computed using the `chisq.test` function:
+This test can be conveniently computed using the `stats:chisq.test` function:
 
 ```{r }
 #| label: pearson_chisq_test
 #| collapse: true
-chisq.test(table(afghan_girls$group, afghan_girls$ethny)) %>% sight
+chisq.test(table(afghan_girls$group, afghan_girls$ethny)) %>% gaze
 ```
 
 and the hypothesis of independence is not rejected. The whole table of balance is often called "Table 1", as it is the first table that appears in most articles in medical reviews. It 
-can be computed using the `gtsummary::tbl_summary` function, which has a `by` argument that indicates the grouping variable.  `tbl_summary` has a lot of arguments and auxiliary function that enables to customize the results. ^[Detailed documentation of the package can be found on the web site of the package <https://www.danieldsjoberg.com/gtsummary/> and on @SJOB:21]. The balance table for the `afghan_girls` data set is
-presented in @tbl-balance_afghan.
+can be computed using the `gtsummary::tbl_summary` function, which has a `by` argument that indicates the grouping variable.  `tbl_summary` has a lot of arguments and auxiliary function that enables to customize the results.^[Detailed documentation of the package can be found on the web site of the package <https://www.danieldsjoberg.com/gtsummary/> and on @SJOB:21.]. The balance table for the `afghan_girls` data set is
+presented in @tbl-balance_afghan.^[Note that we also used some functions of the **kableExtra** package for fine-tuning of the table.]
 
 ```{r }
 #| tbl-cap: "Balance table for the `afghan_girls` data set"
@@ -166,7 +170,7 @@ The set of tests don't detect any significant differences between the
 two groups for the covariates `head_child`, `sex`, `age`, `occup`,
 `age_head`, `jeribs`, `distance` and `ethny`. On the contrary, for the
 `duration`, `hsize`, `sheeps` and `distance` covariates, the equal mean
-hypothesis are strongly rejected.
+hypothesis is strongly rejected.
 The next step is to apply the same tests to the outcomes which are, in
 this study, `enrollment` and `test`. For the `test` variable, a box
 plot is presented in @fig-bxp_test, with a separate plot for boys and
@@ -187,7 +191,7 @@ for girls. For girls, we get:
 ```{r }
 #| collapse: true
 #| label: tttest_afghan_outcome
-t.test(test ~ group, afghan_girls, subset = sex == "girl") %>% sight
+t.test(test ~ group, afghan_girls, subset = sex == "girl") %>% gaze
 ```
 
 The effect is strong (about 0.75, which means three quarter of a
@@ -201,10 +205,11 @@ will increase the precision of the estimation.
 
 ```{r }
 #| label: lm_afghan_outcome
+#| collapse: true
 lm(test ~ group + chagcharan + head_child + age + duration + occup +
        age_head + educ + hsize + jeribs + sheeps + distance + ethny,
    afghan_girls, subset = sex == "girl") %>% 
-  sight(coef = 2)
+  gaze(coef = 2)
 ```
 
 The coefficient is slightly lower but still very significant.
@@ -214,21 +219,21 @@ The coefficient is slightly lower but still very significant.
 @IMBE:ANGR:94 and @ANGR:IMBE:RUBI:96 consider the use of instrumental
 variables in the context of the potential outcome
 model. We consider the simple case where the treatment $d$ is
-binary and the instrument $z$ is also binary. 
+binary and the instrument $w$ is also binary.^[This is the setting of the Wald estimator that was presented in @sec-wald_estimator.] 
 The value of the outcome for individual $n$ for a given combination of
-$d$ and $z$ is denoted: $y_n(z_n, d_n)$. $z$ can be used as an
-instrumental variable if $z$ is related to $y$ only because of its
+$d$ and $w$ is denoted: $y_n(w_n, d_n)$. $w$ can be used as an
+instrumental variable if $w$ is related to $y$ only because of its
 influence on $d$. Stated differently, for a given value of $d$, $y$ is
-the same whatever the value of $z$: $y_n(0, d_n) = y_n(1, d_n)$. This
+the same whatever the value of $w$: $y_n(0, d_n) = y_n(1, d_n)$. This
 is the **exclusion restriction**, standard in the instrumental
-variable litterature. Therefore, potential outcome can be defined as a
-function of the treatment variable only: $y_n(z_n, d_n) = y_n(d_n)$
-and $d_n$ can be expressed as a function of $d_n$: $d_n(z_n)$.
-The next assumption is that in average, $z$ has a causal effect on
+variable literature. Therefore, potential outcome can be defined as a
+function of the treatment variable only: $y_n(w_n, d_n) = y_n(d_n)$
+and $d_n$ can be expressed as a function of $d_n$: $d_n(w_n)$.
+The next assumption is that in average, $w$ has a causal effect on
 $d$: $\mbox{E}\left(d(1)  - d(0)\right) \neq 0$.
 The last assumption is **monotonicity** [@IMBE:ANGR:94] which states
 that $d_n(1) \geq d_n(0) \; \forall n$. 
-With these assumptions in hand, the causal effect of $z$ on $y$ is:
+With these assumptions in hand, the causal effect of $w$ on $y$ is:
 
 $$\begin{array}{rcl}
 y_n(1, d_n(1)) - y_n(0, d_n(0)) &=& y_n(d_n(1)) - y_n(d_n(0)) \\
@@ -238,54 +243,54 @@ y_n(1, d_n(1)) - y_n(0, d_n(0)) &=& y_n(d_n(1)) - y_n(d_n(0)) \\
 \end{array}
 $$ {#eq-fourcats}
 
-Therefore, the causal effect of $z$ on $y$ is the product of the
-causal effects of $d$ on $y$ and of $z$ on $d$.
-Consider now the relation between $z$ and $d$ at the individual
-level. 4 cathegories can be considered (represented on @fig-ivset):
+Therefore, the causal effect of $w$ on $y$ is the product of the
+causal effects of $d$ on $y$ and of $w$ on $d$.
+Consider now the relation between $w$ and $d$ at the individual
+level. 4 categories can be considered (represented on @fig-ivset):
 
 - the compliers: $d_n(1) = 1$ and $d_n(0) = 0$,
 - the always takers: $d_n(1) = d_n(0) = 1$,
 - the never takers: $d_n(1) = d_n(0) = 0$,
 - the deniers: $d_n(1) = 0$ and $d_n(0) = 1$.
 
-![The 4 cathegories of individuals](./tikz/iv_set.pdf){#fig-ivset}
+![The 4 categories of individuals](./tikz/iv_set.pdf){#fig-ivset}
 
-There are 4 observable cathegories of individuals, represented by the
-4 squares and named by the two digits number (the observed values of $z$ and $d$) indicated in a grey square. The potential conterfactual are represented by two circles inside the square.
+There are 4 observable categories of individuals, represented by the
+4 squares and named by the two digits (the observed values of $w$ and $d$) indicated in a gray square. The potential counterfactual are represented by two circles inside the square.
 For example the square called $00$ contains the individuals
-for which $z=0$ and $d=0$. For those individuals the unobserved
-conterfactual is $z=1$ and $d$ either equal to 0 or 1. If the conterfactual is $z = 1, d = 0$, the individual is a never-taken, $d= 0$ whatever the value of $z$. If the conterfactual is $z=1, d=1$, the individual is a complier: with $z=0$, $d=0$, but a change of $z$ from 0 to 1 results in a change of $z$ from 0 to 1.
-With the always takers and the never takers, the causal effect of $z$
-on $y$ in @eq-fourcats is zero because the causal effect of $z$ on $d$ is zero. The monotoniciy assumption rules out
-the existence of deniers. Therefore, the causal effect of $z$ on $d$
+for which $w=0$ and $d=0$. For those individuals the unobserved
+counterfactual is $w=1$ and $d$ either equal to 0 or 1. If the counterfactual is $w = 1, d = 0$, the individual is a never-taken, $d= 0$ whatever the value of $w$. If the counterfactual is $w=1, d=1$, the individual is a complier: with $w=0$, $d=0$, but a change of $w$ from 0 to 1 results in a change of $d$ from 0 to 1.
+With the always takers and the never takers, the causal effect of $w$
+on $y$ in @eq-fourcats is zero because the causal effect of $w$ on $d$ is zero. The monotonicity assumption rules out
+the existence of deniers. Therefore, the causal effect of $w$ on $d$
 reduces to the treatment effect for the compliers. 
 
 Consider now the instrumental variable estimator. It estimates, in the
-general case, the following population estimand: $\frac{\mbox{cov}(y, z)}{\mbox{cov}(d, z)}$, 
-which, for the case where both $d$ and $z$ are binary, reduce to:
+general case, the following population estimand: $\frac{\mbox{cov}(y, w)}{\mbox{cov}(d, w)}$, 
+which, for the case where both $d$ and $w$ are binary, reduce to:
 
 $$
 \frac{\mbox{E}\left(y(1, d(1)) - y(0, d(0))\right)}
 {\mbox{E}\left(d(1) - d(0)\right)}
 $$ {#eq-late}
 
-The numerator is the average causal effect of $z$ on $y$ for the
+The numerator is the average causal effect of $w$ on $y$ for the
 compliers and the denominator is the share of compliers in the
-population. @ANGR:IMBE:RUBI:96 call @eq-late the Local Average
-Treatment Effect (**LATE**) to stress the fact that what is estimated
+population. @ANGR:IMBE:RUBI:96 call @eq-late the **local average
+treatment effect** (**LATE** in short) to stress the fact that what is estimated
 using the instrumental variable estimator is an average treatment
 effect for only a subset of the population called the compliers, ie
-those for which a change in the value of $z$ results in a change in the
+those for which a change in the value of $w$ results in a change in the
 value of $d$.
-The numerator is also called the **reduced form** equation, as it measures the effect of the instrument on the outcome. The denominator called the **intention to treat** equation, it measures the effect of the instrument on the treatment dummy.
+The numerator is also called the **reduced form** equation, as it measures the effect of the instrument on the outcome. The denominator is called the **intention to treat** equation, it measures the effect of the instrument on the treatment dummy.
 
 As an example, we use the data set of 
 @ANGR:BETT:BLOO:KING:KREM:02 called `paces`. The authors investigate the effect of a large
 school voucher program in Columbia called PACES. This voucher
 covers more than half of the cost of private secondary school and may
 induce parents to enroll their children in private schools, which are
-known to provide much better service than public shools. In this case,
-$z$ is a dummy for children that receive the voucher and $d$ is
+known to provide much better service than public schools. In this case,
+$w$ is a dummy for children that receive the voucher and $d$ is
 enrollment in private school. Several outcomes $y$ are used, as the
 number of finished years of education, the number of repetitions and a
 dummy for finished 8th grade. 
@@ -313,7 +318,7 @@ reduced_paces <- unname(coef(lm(educyrs ~ voucher, paces))[2])
 ```{r}
 #| label: ols_paces
 #| collapse: true
-lm(educyrs ~ privsch, paces) %>% sight
+lm(educyrs ~ privsch, paces) %>% gaze
 ```
 
 Therefore, the number of years of education is higher by about 0.29 of a year for pupils enrolled in private schools and the effect is highly significant.
@@ -322,8 +327,8 @@ We then compute the effect of the instrument on the treatment (intention to trea
 ```{r}
 #| label: reduced_inttreat
 #| collapse: true
-lm(privsch ~ voucher, paces) %>% sight(coef = 2)
-lm(educyrs ~ voucher, paces) %>% sight(coef = 2)
+lm(privsch ~ voucher, paces) %>% gaze(coef = 2)
+lm(educyrs ~ voucher, paces) %>% gaze(coef = 2)
 ```
 
 The voucher has a large effect on enrolling in private school, the
@@ -341,20 +346,20 @@ type of survey (`pilot` is one if the individual was surveyed during
 the "pilot" survey and `housvisit` is one if the survey was conducted
 in person and not by phone), `smpl` is a factor indicating the three
 subsamples (Bogota in 1995, Bogota in 1997 and Djamunid in 1993),
-`phone` is a dummy for owning a phone, `age` and `sex` are the age ond the sex of the
+`phone` is a dummy for owning a phone, `age` and `sex` are the age and the sex of the
 and `strata` is a strata of residence. We
 then compute the OLS and IV estimator:
 
 ```{r }
 #| label: paces_covariates
-#| collapes: true
+#| collapse: true
 ols <- lm(educyrs ~ privsch + pilot + housvisit + smpl +
                phone + age + sex + strata + month, data = paces)
 iv <- ivreg::ivreg(educyrs ~ privsch + pilot + housvisit + smpl +
                       phone + age + sex + strata + month | . - privsch +
                       voucher, data = paces)
-ols %>% sight(coef = 2)
-iv %>% sight(coef = 2)
+ols %>% gaze(coef = 2)
+iv %>% gaze(coef = 2)
 ```
 
 The two estimators are now almost identical: introducing the
@@ -453,7 +458,7 @@ about 14% of the recipients are not eligible.
 The plot is obtained by defining bins for the forcing
 variable, computing the mean of the outcome for each bin, plotting the points and adding a smoothing
 line. 
-The **micsr** provides
+The **micsr** package provides
 the convenient `geom_binmeans` function to compute and plot the mean
 of the response for bins of $x$ (see @fig-binmeans).
 
@@ -462,11 +467,11 @@ of the response for bins of $x$ (see @fig-binmeans).
 #| fig-cap: Discontinuity for probation
 #| warning: false
 probation %>% filter(abs(distcut) < 1.5) %>%
-    ggplot(aes(distcut, gpa2, color = gender)) +
+    ggplot(aes(distcut, gpa2)) +
     geom_binmeans(aes(size = after_stat(n)), shape = 21,
                   center = 0, width = 0.2) +
     geom_smooth(aes(linetype = probation),
-                method = "lm", se = FALSE)
+                method = "lm", se = FALSE, color = "black")
 ```
 
 Two arguments of `geom_binmeans` are used: `center` to
@@ -513,25 +518,50 @@ is similar for males and females.
 
 The `rdrobust::rdplot` function performs the same task (see @fig-rdplot). There are numerous options available to customize the graphic, described in details in @CALI:CATT:TITI:15.
 
-```{r }
-#| label: fig-rdplot
-#| message: false
-#| warning: false
-#| fig-cap: Discontinuity for probation using `rdplot`
+```{r}
+#| eval: false
 library(rdrobust)
 with(probation, rdplot(y = gpa2, x = distcut, nbins = 10))
 ```
 
+
+```{r }
+#| label: fig-rdplot
+#| message: false
+#| warning: false
+#| echo: false
+#| fig-cap: Discontinuity for probation using `rdplot`
+library(rdrobust)
+with(probation, rdplot(y = gpa2, x = distcut, nbins = 10, masspoints = "off",
+                       col.dots = "black", col.lines = "black"))
+```
+
 Placebo tests consist on applying the same visual techniques to variables that shouldn't be impacted by the discontinuity. In @fig-disc_hsg, we plot the high school grade percentile and we can see that there is no clear discontinuity for this variable around the threshold.
+
+
+```{r}
+#| eval: false
+with(probation, rdplot(y = hsgrade, x = distcut, nbins = 10))
+```
 
 ```{r}
 #| label: fig-disc_hsg
 #| message: false
 #| warning: false
+#| echo: false
 #| fig-cap: "Placebo test for probation"
-with(probation, rdplot(y = hsgrade, x = distcut, nbins = 10))
+with(probation, rdplot(y = hsgrade, x = distcut, nbins = 10, masspoints = "off",
+                       col.dots = "black", col.lines = "black"))
 ```
 
+**rdrobust**'s functions don't have a data argument. Therefore, series should be provided and we could have written the previous expression as:
+
+```{r}
+#| eval: false
+rdplot(y = probation$hsgrade, x = probation$distcut, nbins = 10)
+```
+
+Using `with(data, expression)`, series of `data` can be called directly in `expression` without prefixing them by `probation$`.
 
 ### Computing the effect of the treatment. 
 
@@ -540,7 +570,7 @@ the treatment if the discontinuity is sharp) is the difference between
 the intercepts of two smoothing lines, which can be obtained using OLS
 or some more complicated fitting tools like local polynomials. In the simplest
 case, it is given by the estimation of $\beta_t$ in the following
-regression:
+regression, $t_n$ being the treatment variable and $x_n$ the forcing variable:
 
 $$
 y_n = \beta_0 + \beta_t t_n + \beta_x x_n + \beta_{xt} x_n t_n + \epsilon_n
@@ -549,7 +579,7 @@ $$
 Note that the presence of $\beta_{xt}$ allows to have different
 slopes on both sides of the cutoff. Two crucial choices have to be
 made while estimating the effect of the treatment: the **bandwidth**, ie the range of values of the forcing variable used in the estimation and the  degree of smoothness of the fitting line.
-A larger bandwidth leads to a more precise estimator (as the number of
+A larger bandwidth leads to a more efficient estimator (as the number of
 observations is higher) but the estimation may be biased as the sample
 contains observations not close enough to the cutoff. 
 We first regress the outcome on the forcing variable interacted with
@@ -559,7 +589,7 @@ formula), with a bandwidth of $1.5$:
 ```{r }
 #| label: probation_te
 lm(gpa2 ~ distcut * probation, probation,
-   subset = abs(distcut) < 1.5) %>% sight
+   subset = abs(distcut) < 1.5) %>% gaze
 ```
 
 The coefficient of `probationyes` is highly significant, students just
@@ -573,11 +603,11 @@ a quadratic term in the forcing variable.
 #| label: probation_te_variants
 #| collapse: true
 lm(gpa2 ~ distcut * probation, probation,
-   subset = abs(distcut) < 0.5) %>%  sight(coef = "probationyes")
+   subset = abs(distcut) < 0.5) %>%  gaze(coef = "probationyes")
 lm(gpa2 ~ (distcut + I(distcut ^ 2)) * probation, probation,
-   subset = abs(distcut) < 1.5) %>%  sight(coef = "probationyes")
+   subset = abs(distcut) < 1.5) %>%  gaze(coef = "probationyes")
 lm(gpa2 ~ (distcut + I(distcut ^ 2)) * probation, probation,
-   subset = abs(distcut) < 0.5) %>%  sight(coef = "probationyes")
+   subset = abs(distcut) < 0.5) %>%  gaze(coef = "probationyes")
 ```
 
 Depending on the specification, the coefficient varies from 0.19 to 0.26.
@@ -590,7 +620,7 @@ computed internally using the `rdbwselect` function.
 ```{r }
 #| label: probation_rdrobust_te
 #| warning: false
-with(probation, rdrobust(gpa2, distcut)) %>% sight
+with(probation, rdrobust(gpa2, distcut)) %>% gaze
 ```
 
 The bandwidth is 0.457 (as the initial range of the forcing variable is $[-1.6, 2.8]$) and 8592 observations are used out of `r nrow(probation)` in the `probation` data set. Besides the standard t statistic, `rdrobust` computes a robust statistic, which is slightly lower than the conventional statistic.
@@ -601,17 +631,18 @@ an instrument for treatment.
 
 ```{r }
 #| label: bdh_iv_te
+#| collapse: true
 bdh <- bdh %>% mutate(eligible = as.numeric(selben < 0))
 ivreg::ivreg(attendmonth ~ selben * treated | selben * eligible, 
-             data = bdh) %>% sight(coef = "treated")
+             data = bdh) %>% gaze(coef = "treated")
 ```
 
-The effect of receiving the grant increases by 1.72 monthly church attendance and the effect is significant. The `rdrobust` function can be used the effect in a fuzzy discontinuity context using the `fuzzy` argument to indicate the treatment variable. A matrix of supplementary covariates can be added using the `covs` argument.
+The effect of receiving the grant increases by 1.72 monthly church attendance and the effect is significant. The `rdrobust` function can be used in a fuzzy discontinuity context using the `fuzzy` argument to indicate the treatment variable. A matrix of supplementary covariates can be added using the `covs` argument.
 
 ```{r }
 #| label: bdh_rdrobust_te
 with(bdh, rdrobust(y = attendmonth, x = selben, fuzzy = treated,
-                   covs = cbind(age, hsize, schooling))) %>% sight
+                   covs = cbind(age, hsize, schooling))) %>% gaze
 ```
 
 As the `h` argument is not specified, the bandwidth is automatically computed and is 1.851 and the number of observation used is 1114 out of 2645 in the original data set. The coefficient of `treatment` is 2.07 (slightly higher than the one obtained previously) and the conventional and the robust tests indicate that the coefficient is significant at the 5% level.
@@ -633,7 +664,7 @@ exhibit a discontinuity at the cutoff. The first manipulation test was proposed 
 #| label: probation_manip
 library(rddensity)
 dens_test <- probation %>% pull(distcut) %>% rddensity
-dens_test %>% sight
+dens_test %>% gaze
 ```
 
 The p-value being equal to $0.45$, the absence of manipulation is not
@@ -643,10 +674,18 @@ interval; if the two confidence intervals overlaps, the hypothesis of no
 manipulation is not rejected. This is the case with the `probation`
 data set, as shown on @fig-maniptest.
 
+```{r}
+#| eval: false
+ra <- rdplotdensity(dens_test, probation$distcut)
+```
+
 ```{r }
 #| label: fig-maniptest
 #| fig-cap: "Density estimation on both sides of the cutoff for the `probation` data set"
-ra <- rdplotdensity(dens_test, probation$distcut)
+#| echo: false
+ra <- rdplotdensity(dens_test, probation$distcut, CIcol = "black",
+                    histLineCol = "black",
+                    histFillCol = "black", lcol = "black", lty = 2)
 ```
 
 ## Difference in differences {#sec-diff_diff}
@@ -657,7 +696,7 @@ $$
 \frac{\sum_{n \in T} (y_{n2} - y_{n1})}{N_T} - \frac{\sum_{n \in C} (y_{n2} - y_{n1})}{N_C}
 $$ {#eq-diff_diff}
 
-Each term is the mean difference of the outcome between the two periods for the two groups and the estimator is the difference of these differences. Consider as an example that the treatment is a job-training program implemented in 2021 and the output is wage observed in 2022. If the first term is 1000 $, this means that the average annual wage in the treatment group increased by 1000 $ in 2022 compared to 2021. This would be a relevant estimator of the effect of the program if nothing had changed on the labor market in 2022 compared to 2021. But if the economic situation improved, then the average wages will increase even for those who haven't been treated. This is measured by the second term in @eq-diff_diff (say 600 $). Therefore, the effect of the treatment is the difference between the two terms, which is 400 $.
+Each term is the mean difference of the outcome between the two periods for the two groups and the estimator is the difference of these differences. Consider as an example that the treatment is a job-training program implemented in 2021 and that the outcome is wage observed in 2022. If the first term of @eq-diff_diff is 1000 $, this means that the average annual wage in the treatment group increased by 1000 $ in 2022 compared to 2021. This would be a relevant estimator of the effect of the program if nothing had changed on the labor market in 2022 compared to 2021. But if the economic situation improved, then the average wages will increase even for those who haven't been treated. This is measured by the second term in @eq-diff_diff (say 600 $). Therefore, the effect of the treatment is the difference between the two terms, which is 400 $.
 
 As an example, @DITE:SCHA:04 sought to estimate the causal
 effect of police on crime. This task is difficult using non
@@ -665,18 +704,18 @@ experimental data as there may be a reverse casualty relationship
 between police and crime: more police reduces crime (negative causal relationship),
 but an increase in crime may lead authorities to increase police (positive reverse causal relationship).
 In July 18, 1994, a terrorist attack destroyed the main Jewish center
-in Buenos-Aires, Argentina and the federal government decided to
+in Buenos Aires, Argentina, killing 85 people, and the federal government decided to
 provide 24 hour police protection to Jewish
 institutions. @DITE:SCHA:04 collected data on three "barrios" in
 Buenos Aires at the block level on a monthly basis. The outcome of
-interest is the number of car thefts. Denoting $D$ a dummy
+interest is the number of car thefts. Denoting $x$ a dummy
 equal to 1 if the block contains or is close to a Jewish institution
-and $T$ a dummy equal to 1 after the attack, the treatment effect is,
+and $p$ a dummy equal to 1 after the attack, the treatment effect is,
 in a regression context, the estimate of $\theta$ on the following
 equation:
 
 $$
-y_{nt} = \beta_0 + \beta_d D_{n} + \beta_t T_{t} + \theta D_{n} T_{t} + \epsilon_{nt}
+y_{nt} = \beta_0 + \beta_x x_{n} + \beta_p p_{nt} + \theta x_{n} p_{nt} + \epsilon_{nt}
 $$
 
 with $t=1, 2$, (the periods before and after the attack). 
@@ -700,11 +739,11 @@ two_obs <- car_thefts %>%
     group_by(block, period) %>%
     summarise(thefts = sum(thefts) / sum(days) * 30.5, 
               .groups = "drop")
-two_obs %>% summarise(mean(thefts)) %>% pull
+mean(two_obs$thefts)
 ```
 
 The number of monthly theft per block is about 0.09.
-`distance` is a factor indicating the distance from the block to the nearest Jewish institution: its levels are `"same"` (same block), `"one"`, `"two"` and `">2"` (one block, two blocks or more than two blocks). We add this variable to `two_obs` by selecting it in the original data frame, selecting only the distinct rows (on per block) and joining it to `two_obs`:
+`distance` is a factor indicating the distance from the block to the nearest Jewish institution: its levels are `"same"` (same block), `"one"`, `"two"` and `">2"` (one block, two blocks or more than two blocks). We add this variable to `two_obs` by selecting `distance` and `block` in the original data frame, selecting only the distinct rows (on per block) and joining it to `two_obs`:
 
 ```{r}
 #| label: car_add_distance
@@ -718,10 +757,10 @@ for same block:
 ```{r }
 #| label: car_dist_dummy
 two_obs %>% mutate(distance = ifelse(distance == "same", 1, 0)) %>% 
-    lm(formula = thefts ~ period * distance) %>% sight
+    lm(formula = thefts ~ period * distance) %>% gaze
 ```
 
-The effect of police on thefts is -0.07, which is very high as the average number of mountly theft per block is 0.09 and it is significant.
+The effect of police on thefts is -0.07, which is very high as the average number of monthly theft per block is 0.09 and it is significant.
 The same difference-in-differences estimator can be obtained by
 computing a t-test of equality of the two means. We first
 reshape the data set in order to have one line per block and we
@@ -740,18 +779,18 @@ and we then use the `t.test` function:
 ```{r }
 #| label: car_ttest
 #| collapse: true
-t.test(dt ~ distance, diffs) %>% sight
+t.test(dt ~ distance, diffs, var.equal = TRUE) %>% gaze
 ```
 
 The difference-in-differences can be extend to the case where the
 observation units before and after the implementation of the treatment
-are not the same. This is the case in @HONG:13 article, who
+are not the same. This is the case in @HONG:13's article, who
 studied the impact of the introduction of Napster on music
 expenditure. The study is based on the Consumer Expenditure Survey,
-which is performed on a quarterly basis and the data set is called `napster`. Napster was introduced in
-1999, June and became the dominant file-sharing service. Households
+which is performed on a quarterly basis and the data set is called `napster`. Napster was introduced in June
+1999 and became the dominant file-sharing service. Households
 with (without) internet access constitute the treatment (control)
-group. From the `date` series, we construct a `period` variable using 1999, June as the cutoff:
+group. From the `date` series, we construct a `period` variable using June 1999 as the cutoff:
 
 ```{r }
 #| label: napster
@@ -766,10 +805,10 @@ we then proceed to the estimation, with `expmusic`, the expenditures on recorded
 
 ```{r }
 #| label: napster_lm
-lm(expmusic ~ period * internet, napster, weight = weight) %>% sight
+lm(expmusic ~ period * internet, napster, weight = weight) %>% gaze
 ```
 
-`internetyes` has a strong positive effect on expenditure. The interaction term between `period` and `internet` indicates that, after the deployment of Napster leads to a reduction of the expense for the "treated" individuals of 4.6 $, ie those who have internet access and that this effect is significant.
+`internetyes` has a strong positive effect on expenditure. The interaction term between `period` and `internet` indicates that, the deployment of Napster led to a significant reduction of the expense for the "treated" individuals (those who have internet access) of 4.6 $.
 
 ## Matching {#sec-matching}
 
@@ -796,7 +835,7 @@ response being a dummy for treated individuals. Then, each treated
 individual is matched with the observation in the control group which
 has the closest propensity score. Finally, the estimation of the treatment effect is performed on the subset of the sample composed by all the observations of the treatment group and those of the control group that match these observations.
 
-The matching estimator was first proposed by @ROSE:RUBI:83 and the interest in matching methods in econometrics realy started with   @DEHE:WAHB:99 and @DEHE:WAHB:02. These two articles revisited the results of @LALO:86 who showed that the estimation of treatment effect with observational data can be 
+The matching estimator was first proposed by @ROSE:RUBI:83 and the interest in matching methods in econometrics really started with   @DEHE:WAHB:99 and @DEHE:WAHB:02. These two articles revisited the results of @LALO:86 who showed that the estimation of treatment effect with observational data can be 
 seriously biased. Using
 Lalonde's data, they showed that matching methods can be used to
 estimate consistently treatment effects on observational data. They
@@ -814,7 +853,7 @@ also proposed an algorithm, implemented in Stata by @BECK:ICHI:02:
 - then compute the same test for every covariate,
 - if the test fails for some covariates, estimate a more flexible
   propensity score model, adding squares and interactions between
-  covariates,
+  covariates.
 
 Once the stratas are computed, a natural estimator of the treatment
 effect is:
@@ -824,11 +863,11 @@ variance of the estimated treatment effect can be computed with or without the
 hypothesis of equal variance between stratas, between groups or
 both. 
   
-As an example, we replicate the results of @ICHI:MEAL:NANN:08 who study
+As an example, we replicate the results of @ICHI:MEAL:NANN:08 who studied
 the effect of temporary work agency (TWA) jobs on the probability of
 finding a stable job. The data set, called `twa` contains $2030$ observations ($511$
 treated and $1519$ untreated) for two regions, Tuscany and
-Sicilya. We restrict the sample to Tuscany:
+Sicily. We restrict the sample to Tuscany:
 
 ```{r }
 #| label: tuscany
@@ -857,9 +896,6 @@ tuscany %>% group_by(group) %>%
 The proportion of individuals who have a permanent job is 31.3% for
 the treated group and 16.6% for the control group and the apparent
 treatment effect is therefore 14.7%.
-
-<!-- !!! y1 | y2 ou y1 + y2 -->
-
 The `micsr::pscore` function implements the algorithm
 previously described. The first two arguments are `formula` and
 `data`. The formula should have two variables on the left-hand side,
@@ -918,8 +954,7 @@ ps %>% summary %>% print(step = "strata")
 Two of the initial stratas were cut in halves (0-0.2 and 0.6-0.8). The
 control subsample is restricted to the range of the values of the
 propensity score for the treated; therefore, only 592 observations of
-the control group out of 628 are used.  
-With `step = "covariates"`, we get a (long) table indicating, for each covariate, the results of the balance test between the treatment and the control group:
+the control group out of 628 are used. With `step = "covariates"`, we get a (long) table indicating, for each covariate, the results of the balance test between the treatment and the control group:
 
 ```{r}
 #| results: false
@@ -927,7 +962,7 @@ With `step = "covariates"`, we get a (long) table indicating, for each covariate
 ps %>% summary %>% print(step = "covariates")
 ```
 
-Finally, `step = "atet"` gives the values of the estimated ATET and different estimates of its standard deviation:
+Finally, `step = "atet"` gives the values of the estimated ATET (average treatment effect on the treated) and different estimates of its standard deviation:
 
 ```{r}
 #| label: tuscanny_atet
@@ -942,10 +977,11 @@ deviations ranging from $0.035$ to $0.049$.
 An alternative to using stratas and computing the ATET as a weighted average of the difference of the mean of the outcome between treated and control observations in each strata is to match each treated observation to one or several observations in
 the control group. The simplest algorithm consists on selecting, for
 every treated observation, the control observation which has the
-closest value of propensity score. Using the `model` tibble returned by `pscore`, we begin with constructing two tibbles, one for the treatment and one for the control group, containing only the index of the observation and the value of the propensity score:
+closest value of propensity score. Using the `model` tibble returned by `pscore`, we begin with constructing two tibbles, one for the treatment group and one for the control group, containing only the index of the observation and the value of the propensity score:
 
 ```{r}
 #| label: tuscanny_treatment_control
+#| collapse: true
 tusc_tr <- ps$model %>% filter(group == "treated") %>%
     select(id_tr = id, ps_tr = pscore)
 tusc_ctl <- ps$model %>% filter(group == "control") %>%
@@ -953,7 +989,7 @@ tusc_ctl <- ps$model %>% filter(group == "control") %>%
 tusc_tr %>% print(n = 2)
 ```
 
-We then need to join the two tables, and **dplyr** provides functions that perform mutating joins. Among them, the `dplyr::left_join` function is appropriate at it returns all the rows of the "left" table (the treatment group `tusc_tr`) and only those of the "right" table that matches. Standard use of mutating joins are based on equality of one or several joining variables, but recent versions of **dplyr** perform **inequality** and **rolling** joins. With inequality joins, one can for example match a treated observations with all the observations in
+We then need to join the two tables, and **dplyr** provides functions that perform mutating joins. Among them, the `dplyr::left_join` function is appropriate at it returns all the rows of the "left" table (the treatment group `tusc_tr`) and only those of the "right" table that matches. Standard use of mutating joins are based on equality of one or several joining variables, but **dplyr** (since its version 1.1.0) performs also **inequality** and **rolling** joins. With inequality joins, one can for example match a treated observations with all the observations in
 the control group with higher propensity scores. We do it below only for the first two treated observations:
 
 ```{r }
@@ -1019,7 +1055,7 @@ match_nearest %>% count(id_ctl) %>% top_n(2, n)
 ```
 
 For example, observation 4935 in the control group matches 16 observations in the treatment group.
-For some observations, the nearest algorithm may result in a poor
+For some observations, the algorithm may result in a poor
 match for some treated observations if the difference between the
 probability scores of this observation and the matched control
 observation is high.
@@ -1064,6 +1100,8 @@ atet <- means$perm[2] - means$perm[1]
 c(treatment = means$perm[2], control = means$perm[1], atet = atet)
 ```
 
+The ATET (`r round(atet, 4)`) is close to the one obtained previously using the algorithm based on stratas (`r round(unname(summary(ps)$atet[1]))`).
+
 Several packages have implemented the matching techniques previously
 described and some more advanced methods. We'll describe here the
 **MatchIt** package. The `MatchIt::matchit` function performs the matching, with a formula-data interface. It has numerous extra arguments, we set here the `replace` argument to `TRUE`, so that one observation in the control group can match several observations in the treatment group.
@@ -1073,11 +1111,9 @@ described and some more advanced methods. We'll describe here the
 library(MatchIt)
 ftusc2 <- update(ftusc, group ~ .)
 mtch <- matchit(ftusc2, tuscany, replace = TRUE)
-mtch
 ```
 
-The `print` method indicates that the `nearest` method (the default)
-is used. The number of matched observations is 427 (as previously),
+The `"nearest"` method is used (the default) and the number of matched observations is 427 (as previously),
 the 281 treated observations and 146 observations of the control group. 
 A `match.data` function is provided in order to extract the data frame
 restricted to the treated observations and the subset of observations
@@ -1094,7 +1130,7 @@ treated observations and 146 observations of the control group. The
 weights for the treated observations is 1. For an observation of the
 control group that match only one treated observation, the weight is
 $146 / 281 = 0.52$ and, for example, for an observation of the control
-group that matches 4 treated observations, the weight is :$146 / 281 *
+group that matches 4 treated observations, the weight is :$146 / 281 \times
 4 = 2.08$.
 Capiler matching is performed using the `caliper` argument. The value
 indicated is by default a share of the standard deviation of the
@@ -1152,7 +1188,7 @@ the comparison untreated unit is a weighted average of some units
 taken from a set of units called the **donor pool**. The example used
 by @ABAD:GARD:03 is the effect of terrorism in the Basque Country: the
 donor pool is the 17 Spanish regions and the **synthetic control** of
-the Basque Country is a weighted mean of two regions, Catalonia (85%)
+the Basque Country is a weighted average of two regions, Catalonia (85%)
 and Madrid (15%). The construction of the synthetic control is data
 driven, it doesn't rely on any subjective thought of the researcher of
 which Spanish regions look much like the Basque Country before the
@@ -1165,14 +1201,14 @@ control methods are the analysis of the effect of:
   [@ABAD:DIAM:HAIN:10],
 - the reunification of Germany [@ABAD:DIAM:HAIN:15],
 - mafia in southern Italy [@PINO:15] and [@BECK:KLOS:17],
-- the Legal Arizona Workers Act [@BOHN:LOFS:RAPH:14],
+- the Legal Arizona Workers Act [@BOHN:LOFS:RAPH:14].
 
 
 Consider a set of $N+1$ units, the first one being the treated
 unit. Variables for these units are observed for $T$ periods and the
 treatment that affects unit 1 happened at the end of period
 $T_0$. Therefore, $t = 1, \ldots, T_0$ are pre-treatment periods and $t =
-T_0+1, \ldots T$ are post-treatement periods. $y$ is the outcome and $x$ is a set of
+T_0+1, \ldots T$ are post-treatment periods. $y$ is the outcome and $x$ is a set of
 covariates (that are supposed to explain the variations of $y$).
 $y_{nt} ^ T$ is the value of the outcome for unit $n$ at period $t$ if
 the unit were treated at this period and $y_{nt} ^ C$ is the value
@@ -1191,9 +1227,8 @@ $$
 \hat{y}_{1t} ^ C = \sum_{n = 2} ^ {N+1} w_n y_{nt}
 $$
 
-where $w_n$ are unknown weights such that $w_n \geq 0$ and $\sum_{n=2} ^ {N+1}
-= 1$. These weights define the synthetic
-control for unit 1. 
+where $w_n$ are unknown weights such that $w_n \geq 0$ and $\sum_{n=2} ^ {N+1} w_n= 1$. These weights define the **synthetic
+control** for unit 1. 
 The weights have to be chosen so that synthetic control of unit 1 is
 as similar as possible to unit 1 in the pre-treatment period. This
 similarity is evaluated using a set of covariates that are assumed to
@@ -1351,7 +1386,7 @@ grab_balance_table(bc) %>% print(n = Inf)
 
 The value of the covariate for the Basque Country may be very
 different from the mean of the values for the donor pool, but should
-be close to the one of its synthetic control. It is particulary the
+be close to the one of its synthetic control. It is particularly the
 case here for `agriculture` and `popdens`.
 To get the unit weights and only select those which are not almost
 zero, we can use:
@@ -1362,7 +1397,7 @@ grab_unit_weights(bc) %>% filter(weight > 1E-05)
 ```
 
 As stated previously the synthetic control of the Basque Country
-consists on 85% of Cataluna and 15% of Madrid. It is a comon feature
+consists on 85% of Catalunya and 15% of Madrid. It is a common feature
 of this method that the number of unit in the donor pool that are
 really used is small.
 To get the covariates weights:
@@ -1373,16 +1408,25 @@ grab_predictor_weights(bc) %>% arrange(desc(weight))
 ```
 
 Population density and pre-treatment average of the GDP par capita are
-the two most important covariates.
+the two covariates with the largest weights.
 @fig-weights plots represents these weights using the `plot_weights`
 function.
+
+```{r}
+#| eval: false
+plot_weights(bc)
+```
+
 
 ```{r }
 #| label: fig-weights
 #| fig-cap: "Weights for the units and the predictors"
 #| out-width: 100%
 #| fig-width: 14
-plot_weights(bc)
+#| echo: false
+plot_weights(bc) + theme_get() + 
+  scale_fill_manual(values = rep("lightgrey", 2)) + 
+  scale_color_manual(values = rep("black", 2))
 ```
 
 The real series of GDP per capita for the Basque Country and its
@@ -1392,22 +1436,42 @@ the `plot_trends` function.^[Note the use of `labs`; **tidysynth** use
 **ggplot** so that the plots can be customized with any function of
 the **ggplot2** package.]
 
-```{r }
-#| label: fig-trends
-#| fig-cap: "GDP per capita for the Basque Country and its synthetic control"
-grab_synthetic_control(bc)
+```{r}
+#| eval: false
 plot_trends(bc) + labs(title = NULL, y = "GDP per capita")
 ```
 
-Instead of ploting the gdp per capita for the real and the synthetic
-Basque Country, one can also plot the differnce between both
-series, see @fig-diff. The difference should be small and erratic before the
-treatment and large and negative after the treatment. 
+
+```{r }
+#| label: fig-trends
+#| fig-cap: "GDP per capita for the Basque Country and its synthetic control"
+#| echo: false
+grab_synthetic_control(bc)
+plot_trends(bc) + labs(title = NULL, y = "GDP per capita") +  scale_color_manual(values = c("black", "grey")) +  
+  scale_linetype_manual(values = c(1, 4)) + theme_get()
+```
+
+Instead of plotting the gdp per capita for the real and the synthetic
+Basque Country, one can also plot the difference between both
+series (see @fig-diff). The difference should be small and erratic before the treatment and large and negative after the treatment. 
+
+```{r}
+#| eval: false
+plot_differences(bc) + theme_get()
+```
 
 ```{r }
 #| label: fig-diff
 #| fig-cap: "Difference of GDP per capita for the Basque Country and its synthetic control"
-plot_differences(bc)
+#| echo: false
+bc %>% slice(1) %>% 
+  select(.synthetic_control) %>% 
+  unnest(cols = .synthetic_control) %>% 
+  mutate(diff = real_y - synth_y) %>% 
+  ggplot(aes(time_unit, diff)) + 
+  geom_line() + geom_point() + 
+  geom_hline(yintercept = 0, linetype = "dashed") + 
+  labs(y = "gdpcap", x = "year")
 ```
 
 The quality of the fit can be evaluated using `grab_loss`:
@@ -1437,7 +1501,7 @@ that $m_n^{\mbox{post}}$ should be high. Therefore, the ratio $r_n =
 m_n^{\mbox{post}} / m_n^{\mbox{pre}}$ should be high if the treatment
 is efficient and if synthetic control method is relevant. Moreover, it
 should be much higher than the ones obtained for untreated units. The
-significancy of the treatment can be established using the
+significance of the treatment can be established using the
 distribution of $r$ for all the units (the treated one and the
 untreated ones). Denoting $\bar{r}$ and $\hat{\sigma}_r$ the mean and
 the standard deviation of $r$, we can define $z_n = (r_n - \bar{r}) /
@@ -1459,7 +1523,7 @@ m <- mean(v$mspe_ratio)
 s <- sd(v$mspe_ratio)
 ```
 
-The highest ratio is actually the treated unit, ie the Basque
+The highest ratio is actually the one for the treated unit, ie the Basque
 Country. The mean and the standard deviations of this ratio are
 respectively `r round(m, 2)` and `r round(s, 2)`. The $z$ value for
 the Basque Country is 2.97, much higher than the critical value for a
@@ -1468,10 +1532,18 @@ a $z$ value of 1.81 lower than the critical value at the 5% level.
 The mspe ratios are represented on @fig-msperatio, using the
 `plot_mspe_ratio` function:
 
+```{r}
+#| eval: false
+plot_mspe_ratio(bc) + labs(title = NULL)
+```
+
+
 ```{r }
 #| label: fig-msperatio
 #| fig-cap: "Plot of the mspe ratio"
-plot_mspe_ratio(bc) + labs(title = NULL)
+#| echo: false
+plot_mspe_ratio(bc) + labs(title = NULL) + theme_get() + 
+  scale_fill_manual(values = c("grey", "black"))
 ```
 
 Finally, a popular graphic in synthetic control analysis consists on
@@ -1481,10 +1553,17 @@ treatment period for the treated unit and small for the other units
 which are not treated. This so called placebos plot is obtained using
 the `plot_placebos` function and is presented in figure @fig-placebos
 
+```{r}
+#| eval: false
+plot_placebos(bc)
+```
+
 ```{r }
 #| label: fig-placebos
 #| fig-cap: "Placebos plot"
-plot_placebos(bc)
+#| echo: false
+plot_placebos(bc) + scale_colour_manual(values = c("black", "grey")) + 
+   theme_get()
 ```
 
 ```{r }
