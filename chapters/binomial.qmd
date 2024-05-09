@@ -115,7 +115,7 @@ compared. This is due to the fact that they are scaled differently, as
 the standard deviation of the logistic distribution is $\pi/\sqrt{3}
 \approx 1.81$, compared to 1 for the normal distribution. Therefore,
 it would be tempting to multiply the probit coefficients by 1.81 to
-compare them to the logit coefficients, but @AMEM:81 showed that,
+compare them to the logit coefficients, but @AMEM:81\index[author]{Amemiya} showed that,
 empirically, the value of 1.6 performs better.
 
 
@@ -127,7 +127,7 @@ mode_choice <- mode_choice %>%
     mutate(ivtime = ivtime / 60, ovtime = ovtime / 60, cost = cost / 100)
 ```
 
-As an example, we consider the data set used by @HORO:93 which
+As an example, we consider the data set used by @HORO:93\index[author]{Horowitz} which
 concern the transport mode chosen for work trips by a sample of 842 individuals in
 Washington DC in the late 60's. The response `mode` is 1 for car and 0
 for transit. The covariates are the in and out-vehicle times
@@ -228,10 +228,10 @@ Finally, the ratio of the logit and probit coefficients is
 $`r round(coef(lt_m)[2], 3)` /
 `r round(coef(lt_m)[2], 3)` = 
 `r round(coef(lt_m)[2] / coef(pt_m)[2], 3)`$ 
-which is a bit larger than the value of 1.6 suggested by @AMEM:81.
+which is a bit larger than the value of 1.6 suggested by @AMEM:81\index[author]{Amemiya}.
 
 We now consider a second data set called `airbnb`, used by
-@EDEL:LUCA:SVIR:17. The aim of their study is to analyze the presence
+@EDEL:LUCA:SVIR:17\index[author]{Edelman}\index[author]{Luca}\index[author]{Svirsky}. The aim of their study is to analyze the presence
 of racial discrimination on the Airbnb platform. The authors create
 guest accounts that differ by the first name chosen. More
 specifically, the race of the applicant is suggested by the choice of
@@ -291,7 +291,7 @@ this example, the previous computation of the derivative gives an
 extremely accurate approximation of the effect of this dummy
 covariate. Finally, note that the ratio of the logit and the probit
 coefficients is actually very close to the value of 1.6 advocated by
-@AMEM:81.
+@AMEM:81\index[author]{Amemiya.
 
 ## Structural models for binomial responses {#sec-struct_binom}
 
@@ -491,7 +491,7 @@ the probit model, we have $\mu = \frac{e ^ \eta}{1+e ^ \eta}$, so that
 $\eta = \ln \frac{\mu}{1 - \mu} = g(\mu)$. We then have $\theta =
 \eta$, so that the logit link is called the **canonical** link for
 binomial models^[For every member of the exponential family, there is
-one canonical link, see @MCCU:NELD:89 page 30.].
+one canonical link, see @MCCU:NELD:89 page 30.\index[author]{McCullagh}\index[author]{Nelder}].
 As the density for the binomial model returns a probability, the
 log-likelihood for the saturated model is zero. Therefore, the
 deviance is:
@@ -689,7 +689,7 @@ $$ {#eq-gradbinom}
 is zero, where we defined for convenience $F_n = F(\eta_n)$
 and $f_n = f(\eta_n)$.
 
-$\psi_n = \frac{y_n - F_n}{F_n\left(1 - F_n\right)}f_n$ is called the **generalized residual**.^[@GOUR:MONF:RENA:TROG:87.]. Generalized residuals have the same property than standard residuals in the linear regression model, they are orthogonal to all the covariates, and they sum to 0 if the regression contains an intercept. 
+$\psi_n = \frac{y_n - F_n}{F_n\left(1 - F_n\right)}f_n$ is called the **generalized residual**.^[@GOUR:MONF:RENA:TROG:87\index[author]{Gourieroux}\index[author]{Monfort}\index[author]{Renault}\index[author]{Trognon}.]. Generalized residuals have the same property than standard residuals in the linear regression model, they are orthogonal to all the covariates, and they sum to 0 if the regression contains an intercept. 
 The hessian matrix of the second derivatives is:
 
 $$
@@ -920,10 +920,10 @@ model for which the vector of residuals is 0.
 
 The three formula are not equivalent for binomial models and,
 therefore, there is no unambiguous formula for the R^2^ for these models. A lot of
-different formula have been proposed in the literature.^[Useful surveys are @MAGE:90, @WIND:95 and @VEAL:ZIMM:96.] The **micsr**
+different formula have been proposed in the literature.^[Useful surveys are @MAGE:90\index[author]{Magee}, @WIND:95\index[author]{Windmeijer} and @VEAL:ZIMM:96\index[author]{Veall}\index[author]{Zimmermann}.] The **micsr**
 package provides an `rsq` function which has a type argument. By
 setting `type` to `"ess"`, `"rss"` and `"cor"`, we get the three
-versions of the R^2^ described in @eq-rsqlin. The `"rss"` version is often called the @EFRO:78's R^2^ and was previously proposed by @LAVE:70.
+versions of the R^2^ described in @eq-rsqlin. The `"rss"` version is often called the @EFRO:78's\index[author]{Efron} R^2^ and was previously proposed by @LAVE:70\index[author]{Lave}.
 
 ```{r }
 #| collapse: true
@@ -943,7 +943,7 @@ rsq(pbt_unconst, type = "lr")
 rsq(pbt_unconst, type = "score")
 ```
 
-@TJUR:09 proposed an R^2^ that he called the coefficient of
+@TJUR:09\index[author]{Tjur} proposed an R^2^ that he called the coefficient of
 discrimination. This coefficient is the difference between the
 probability of success for the subsample for which $y=1$ and the
 subsample for which $y=0$. His measure is interestingly related to the
@@ -1001,7 +1001,7 @@ plot(pt_a)
 rsq(pt_a, type = "tjur")
 ```
 
-@ESTR:98 proposed a $R^2$ based on the likelihood ratio statistic comparing  the proposed model and
+@ESTR:98\index[author]{Estrella} proposed a $R^2$ based on the likelihood ratio statistic comparing  the proposed model and
 the minimal model, for which only one parameter is estimated. 
 The average likelihood ratio statistic is:
 
@@ -1033,7 +1033,7 @@ $$
 rsq(pbt_unconst, type = "estrella")
 ```
 
-@MCFA:74b proposed the very popular pseudo-R^2^:
+@MCFA:74b\index[author]{McFadden} proposed the very popular pseudo-R^2^:
 
 $$
 R ^ 2 = 1 - \frac{\ln L_0}{\ln L}
@@ -1044,7 +1044,7 @@ $$
 rsq(pbt_unconst, type = "mcfadden")
 ```
 
-@MCKE:ZAVO:75 proposed a R^2^ based on the latent variable. Denoting
+@MCKE:ZAVO:75\index[author]{McKelvey}\index[author]{Zavoina} proposed a R^2^ based on the latent variable. Denoting
 $\hat{y}_n ^* = \hat{\alpha}+\hat{\beta} ^ \top x_n$ the fitted values and
 $\bar{y}^*$ the sample mean, the explained sum of squares is:
 $\sum (\hat{y}_n ^ * - \bar{y}^ *) ^ 2$ and the residuals sum of
@@ -1105,7 +1105,7 @@ pbt_unconst2 <- binomreg(mode ~ gcost + ivtime + ovtime,
                          data = mode_choice, link = "probit")
 ```
 
-Tests can be computed using several functions in the **lmtest** package [@ZEIL:HOTH:02].
+Tests can be computed using several functions in the **lmtest** package [@ZEIL:HOTH:02]\index[author]{Zeileis}\index[author]{Hothorn}.
 The likelihood ratio test can easily be computed "by hand" as it is twice the difference of the log-likelihood functions of the unconstrained and the constrained models:
 
 ```{r}
@@ -1378,8 +1378,8 @@ tested using a Wald test, the statistic being a $\chi ^ 2$ with $G$
 degrees of freedom under the null hypothesis of exogeneity.
 
 This two-steps instrumental variable estimator and test has been extended for
-the case were $y_n ^*$ is only partially observed by @SMIT:BLUN:86 and
-@RIVE:VUON:88 (respectively for the tobit and the probit models). It
+the case were $y_n ^*$ is only partially observed by @SMIT:BLUN:86\index[author]{Smith}\index[author]{Blundell} and
+@RIVE:VUON:88\index[author]{Rivers}\index[author]{Vuong} (respectively for the tobit and the probit models). It
 can be computed as follow:
 
 - compute the OLS estimator of $\pi_g$ for the G endogenous variables
@@ -1451,11 +1451,11 @@ $$
 (\hat{\rho} ^ \top \hat{\Sigma} \hat{\rho})\times
 (\hat{U} ^ \top \Psi \hat{U}) ^ {-1} (\hat{U} ^  \top \Psi Z) (Z ^ \top Z) ^ {-1} (Z ^  \top \Psi \hat{U}) (\hat{U} ^ \top \Psi \hat{U}) ^ {-1}
 $$
-@SMIT:BLUN:86 proposed an endogeneity test based on the two-steps estimator. As for the linear instrumental variable estimator, it is a Wald test that $\rho = 0$, but it uses the simple probit estimation of the covariance matrix.
+@SMIT:BLUN:86\index[author]{Smith}\index[author]{Blundell} proposed an endogeneity test based on the two-steps estimator. As for the linear instrumental variable estimator, it is a Wald test that $\rho = 0$, but it uses the simple probit estimation of the covariance matrix.
 
 ### Minimum $\chi ^ 2$ estimator
 
-@NEWE:87 argued that @AMEM:78's minimum
+@NEWE:87\index[author]{Newey} argued that @AMEM:78's\index[author]{Amemiya} minimum
 chi-square estimator can be used in this context and is more efficient than the two-steps estimator. This estimator is computed in 5 steps:
 
 1. compute the OLS estimator of $\pi_g$ for the $G$ endogenous variables
@@ -1486,7 +1486,7 @@ $$
 
 ### Application
 
-@ADKI:CART:SIMP:07 and @ADKI:12 analyzed the effect of managerial incentives on the use of foreign-exchange derivatives for hedging by U.S. bank holding companies, for the 1996-2000 period. The dependent variable `federiv` is 1 if the bank uses foreign-exchange derivatives.
+@ADKI:CART:SIMP:07\index[author]{Adkins}\index[author]{Carter}\index[author]{Simpson} and @ADKI:12\index[author]{Adkins} analyzed the effect of managerial incentives on the use of foreign-exchange derivatives for hedging by U.S. bank holding companies, for the 1996-2000 period. The dependent variable `federiv` is 1 if the bank uses foreign-exchange derivatives.
 
 The first set of covariates concerns ownership. When managers have a higher ownership position in the bank, their behavior is more in line with the preferences of shareholders and they therefore have an incentive to take risk: the logarithm of the percentage of total shares outstanding that are owned by officers and directors (`linsown`) should therefore have a negative effect on the probability of using foreign exchange derivatives. However, incentives provided by regulation may dominate the expected incentive relation and lead to a negative effect on the probability. On the contrary, institutional blockholders have imperfect information and, therefore, the logarithm of the percentage of total shares outstanding that are owned by all institutional investors (`linstown`) should have a negative effect on the probability of using foreign exchange derivatives. 
 
@@ -1660,7 +1660,7 @@ distribution of $\epsilon$ are the normal and the logistic
 distributions, which lead respectively to the ordered probit and logit
 models.
 
-As an example, we consider the article of @ABIA:MODY:05 which study
+As an example, we consider the article of @ABIA:MODY:05\index[author]{Abiad}\index[author]{Mody} which study
 the determinants of financial reform. The data set, called `fin_reform` is a panel of 35
 countries for 24 years (from 1973 to 1996). The variable of interest `fli`
 is an index of financial liberalization, which takes integer values from
@@ -1742,7 +1742,7 @@ used as a `family` argument in `glm`. It can be set to `logistic`
 most used links.
 Another implementation of the ordered model is `micsr::ordreg`. 
 @tbl-ordfinreform presents the three specification presented
-by [@ABIA:MODY:05, table 7, page 78].
+by [@ABIA:MODY:05, table 7, page 78]\index[author]{Abiad}\index[author]{Mody}.
 
 ```{r}
 mass1 <- MASS::polr(factor(dindx) ~ rhs1 + catchup, fin_reform, 

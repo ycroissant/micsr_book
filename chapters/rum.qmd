@@ -5,7 +5,7 @@
 source("../_commonR.R")
 ```
 
-Consider the case where the response is the choice of an alternative among a set of mutually exclusive alternatives. This choice can be modeled in a utility maximization framework, which means that we hypothesize that the individual choose the alternative which corresponds to the maximum level of utility.^[We've already encountered this model in the special case where the response is binomial in @sec-rum_binomial.] Namely, denoting $j = 1 \ldots J$ the set of alternatives, we'll denote $U_{nj}$ the level of utility of individual $n$ if he chooses alternative $j$ and the $j$^th^alternative will be chosen if $U_{nj} > U_{nk}\; \forall k \neq j$. The level of utility will depends on some observable covariates and on some other unobservables whose effect will be summarized in a variable $\epsilon_{nj}$ that will be considered, from the researcher's point of view, as the realization of a random variable. Two key questions for these models are how the covariates enter the utility function and what is the assumed distribution of the error. @sec-data_formula_rum will deal with the first point, namely how to deal with covariates in discrete choice model. @sec-multinom_logit will present the landmark model in this field, the multinomial logit model. @sec-relaxing_iid will go beyond the hypothesis of iid errors to present two extensions of the basic model, the nested and the heteroscedastic logit models. @sec-mixed_logit will introduce the rich field of random parameters logit models. Finally, @sec-multinom_probit will be devoted to the multinomial probit model.^[This chapter is largely based on @CROI:20.]
+Consider the case where the response is the choice of an alternative among a set of mutually exclusive alternatives. This choice can be modeled in a utility maximization framework, which means that we hypothesize that the individual choose the alternative which corresponds to the maximum level of utility.^[We've already encountered this model in the special case where the response is binomial in @sec-rum_binomial.] Namely, denoting $j = 1 \ldots J$ the set of alternatives, we'll denote $U_{nj}$ the level of utility of individual $n$ if he chooses alternative $j$ and the $j$^th^alternative will be chosen if $U_{nj} > U_{nk}\; \forall k \neq j$. The level of utility will depends on some observable covariates and on some other unobservables whose effect will be summarized in a variable $\epsilon_{nj}$ that will be considered, from the researcher's point of view, as the realization of a random variable. Two key questions for these models are how the covariates enter the utility function and what is the assumed distribution of the error. @sec-data_formula_rum will deal with the first point, namely how to deal with covariates in discrete choice model. @sec-multinom_logit will present the landmark model in this field, the multinomial logit model. @sec-relaxing_iid will go beyond the hypothesis of iid errors to present two extensions of the basic model, the nested and the heteroscedastic logit models. @sec-mixed_logit will introduce the rich field of random parameters logit models. Finally, @sec-multinom_probit will be devoted to the multinomial probit model.^[This chapter is largely based on @CROI:20\index[author]{Croissant.]
 
 Throughout this chapter, we'll use the **mlogit** package which is devoted to the estimation of discrete choice models:
 
@@ -52,7 +52,7 @@ special data frame column which contains the indexes. The second argument is cal
 
 #### Wide format {#sec-wide_format}
 
-`dutch_railways`^[Used by @BENA:BOLD:BRAD:93 and @MEIJ:ROUW:06.] is an example
+`dutch_railways`^[Used by @BENA:BOLD:BRAD:93\index[author]{Ben-Akiva}\index[author]{Bolduc}\index[author]{Bradley} and @MEIJ:ROUW:06\index[author]{Meijer}\index[author]{Rouwendal}.] is an example
   of a *wide* data set:
 
 ```{r }
@@ -114,8 +114,8 @@ idx(Tr)
 
 #### Long format
 
-`toronto_montreal`,^[Used in particular by [@FORI:KOPP:93],
-  @BHAT:95, @KOPP:WEN:98 and @KOPP:WEN:00.] is an example of a data
+`toronto_montreal`,^[Used in particular by @FORI:KOPP:93\index[author]{Forinash}\index[author]{Koppleman},
+  @BHAT:95\index[author]{Bhat}, @KOPP:WEN:98\index[author]{Koppelman}\index[author]{Wen} and @KOPP:WEN:00.] is an example of a data
   set in long format. It presents the choice of individuals for a
   transport mode for the Toronto-Montreal corridor:
   
@@ -403,7 +403,7 @@ integration.
 
 ### The distribution of the error terms
 
-The multinomial logit model [@MCFAD:74] is a special case of the
+The multinomial logit model [@MCFAD:74]\index[author]{McFadden} is a special case of the
 model developed in the previous section. It is based on three
 hypothesis.
 The first hypothesis is the independence of the errors. In this case,
@@ -558,7 +558,7 @@ more. Stated more simply, time value is 30\$ per hour.
 #### Consumer's surplus {#sec-consumer_surplus}
 
 Consumer's surplus has a very simple expression for multinomial logit
-models, which was first derived by @SMAL:ROSE:81. The level of
+models, which was first derived by @SMAL:ROSE:81\index[author]{Small}\index[author]{Rosen}. The level of
 utility attained by an individual is $U_j=V_j+\epsilon_j$, $j$ being
 the chosen alternative. The expected utility, from the searcher's
 point of view is then: $\mbox{E}(\max_j U_j)$, where the expectation
@@ -815,7 +815,7 @@ maintaining the hypothesis of a Gumbel distribution.
 
 ### The heteroskedastic logit model
 
-The heteroskedastic logit model was proposed by @BHAT:95.  The
+The heteroskedastic logit model was proposed by @BHAT:95\index[author]{Bhat}.  The
 probability that $U_l>U_j$ is:
 
 $$
@@ -844,7 +844,7 @@ There is no closed form for this integral, but it can be efficiently
 computed using a Gauss quadrature method, and more precisely the
 Gauss-Laguerre quadrature method.
 
-@BHAT:95 estimated the heteroskedastic logit model on the
+@BHAT:95\index[author]{Bhat} estimated the heteroskedastic logit model on the
 `toronto_montreal` data set. Using `mlogit`, the heteroskedastic
 logit model is obtained by setting the `heterosc` argument
 to `TRUE`:
@@ -914,7 +914,7 @@ the likelihood ratio tests.
 
 ### The nested logit model
 
-The nested logit model was first proposed by @MCFAD:78. It is a
+The nested logit model was first proposed by @MCFAD:78\index[author]{McFadden}. It is a
 generalization of the multinomial logit model that is based on the
 idea that some alternatives may be joined in several groups (called
 nests). The error terms may then present some correlation in the same
@@ -944,12 +944,12 @@ $$
 
 and that this model is a random utility model if all the $\lambda$
 parameters are in the $0-1$ interval.^[A slightly different
-version of the nested logit model [@DALY:87] is often used, but is not
+version of the nested logit model [@DALY:87]\index[author]{Daly} is often used, but is not
 compatible with the random utility maximization hypothesis. Its
 difference with the previous expression is that the deterministic
 parts of the utility for each alternative is not divided by the nest
 elasticity. The differences between the two versions have been
-discussed in @KOPP:WEN:98, @HEIS:02 and @HENS:GREEN:02.]
+discussed in @KOPP:WEN:98\index[author]{Koppelman}\index[author]{Wen}, @HEIS:02\index[author]{Heiss} and @HENS:GREEN:02\index[author]{Hensher}\index[author]{Greene}.]
 Let us now write the deterministic part of the utility of alternative
 $j$ as the sum of two terms: the first one ($Z_j$) being specific to
 the alternative and the second one ($W_l$) to the nest it belongs to:
@@ -1005,7 +1005,7 @@ estimated, using $I_l$ as covariates. Maximizing directly the
 likelihood function of the nested model leads to a more efficient
 estimator.
 
-To illustrate the estimation of the nested logit model, we use the `telephone` data set, used by @TRAI:MCFA:BENA:87 and @WALK:BENA:BOLD:07.
+To illustrate the estimation of the nested logit model, we use the `telephone` data set, used by @TRAI:MCFA:BENA:87\index[author]{Train}\index[author]{McFadden}\index[author]{Ben-Akiva} and @WALK:BENA:BOLD:07\index[author]{Walker}\index[author]{Ben-Akiva}\index[author]{Bolduc}.
 
 ```{r}
 head(telephone, 4)
@@ -1215,7 +1215,7 @@ distribution:
   used.
 
 `R` is the number of draws, `halton` indicates whether Halton draws
-[see @TRAI:09 chapter 9] should be used (`NA` and `NULL` indicate
+[see @TRAI:09\index[author]{Train} chapter 9] should be used (`NA` and `NULL` indicate
 respectively that default Halton draws are used and that pseudo-random
 numbers are used), `panel` is a boolean which indicates if the panel
 data version of the log-likelihood should be used.
@@ -1447,7 +1447,7 @@ while presenting the random utility model. The utility of an
 alternative is still the sum of two components : $U_j = V_j +
 \epsilon_j$ but the joint distribution of the error terms is now a multivariate
 normal with mean 0 and with a matrix of covariance denoted
-$\Omega$^[see @HAUS:WISE:78 and @DAGA:79].
+$\Omega$^[see @HAUS:WISE:78\index[author]{Hausman}\index[author]{Wise} and @DAGA:79\index[author]{Daganzo}].
 Alternative $l$ is chosen if :
 $$
 \left\{
@@ -1693,7 +1693,7 @@ Let's now investigate the marginal and conditional probabilities :
 
 This probabilities can easily be simulated by drawing numbers from a
 truncated normal distribution.
-This so called GHK algorithm [@GEWE:KEAN:RUNK:94]  can be described as follow :
+This so called GHK algorithm [@GEWE:KEAN:RUNK:94]\index[author]{Geweke}\index[author]{Keane}\index[author]{Runkle}  can be described as follow :
 
 1. compute $\Phi\left(-\frac{V_1^l}{l_{11}}\right)$
 1. draw a number called $\nu_1^r$ from a standard normal

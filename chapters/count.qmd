@@ -27,6 +27,8 @@ We start with the presentation of some data sets for which the
 response is a count. All these data are available in the **micsr.count**
 package and are summarized in @tbl-empsurvey.
 
+\blandscape
+
 ```{r }
 #| label: tbl-empsurvey
 #| eval: true
@@ -72,7 +74,7 @@ p_doctor_ger <- glm(sdoctor ~ female + single + age + I(age ^ 2) + income + chro
                         pop + physdens + unemp + hospm7 + sickm14 + disability,
                     data = doctor_ger, family = poisson)
 
-# GEIL:97
+# GEIL:MILL:ROTT:ZIMM:97
 p_hospitalization <- glm(hospital ~ age + I(age ^ 2 / 10E3) + I(age ^ 3 / 1E04) + copayment +
                              (public + voluntary + family) * (additional + aok) +
                              chronic + handicap + I(income / 1E05) + distance + married + children +
@@ -173,48 +175,56 @@ results <- t(sapply(1:nrow(za),
 rownames(results) <- za$reg
 library("kableExtra")
 results %>% as_tibble(rownames = "data") %>%
-    rename("$\\mu$" = mu, "$\\omega$" = omega,
-           "$\\frac{\\omega}{\\mu}$" = over,
+    rename("$\\mu$" = mu, "$\\sigma ^ 2$" = omega,
+           "$\\frac{\\sigma ^ 2}{\\mu}$" = over,
            "$P(Y = 0)$" = zero,
            "$\\hat{P}(Y = 0)$" = fzero,
            "$\\frac{P(Y = 0)}{\\hat{P}(Y = 0)}$" = exczero) %>%
     mutate(data = str_sub(data, 3),
            data = str_replace(data, "_", ".")) %>%
     arrange(data) %>% 
+#  add_column(ref = c("@CAME:TRIV:86", "@TERZ:98", rep("un", 16)), .before = 2) %>% 
     knitr::kable(digits = c(0, 0, 1, 1, 1, 2, 2, 1, 1),
                  escape = FALSE, booktabs = TRUE) %>%
     kable_styling()
 ```
+\elandscape
 
 About half of these data sets concern demand for health
-care. `doctor_aus`, `doctor_cal`, `doctor_ger` and `doctor_us` concern
+care. `doctor_aus`[@CAME:TRIV:86], `doctor_cal` [@GURM:97], `doctor_ger`
+[@SANT:WIND:01] and `doctor_us` [@MULL:98] concern
 annual doctor visits, respectively in Australia, California, Germany
-and the United States. `health_ins` focus on the link between health insurance
+and the United States. `health_ins` [@DEB:TRIV:02] focus on the link between health insurance
 and doctor visits using a randomized experiment in the United States,
-as `health_reform` analyzes the effect of an health insurance reform in
-Germany. `elderly` focus on the demand for health care by elderly in
-the US and `hospitalization` uses as the response the number of stays at
+as `health_reform`[@WINK:04] analyzes the effect of an health insurance reform in
+Germany. `elderly` [@DEB:TRIV:97]  focus on the demand for health care by elderly in
+the US and `hospitalization` [@GEIL:MILL:ROTT:ZIMM:97] uses as the response the number of stays at
 the hospital.
 
-`amc12` uses the number of students per school who got a very high
-score at the AMC12 test (a test on mathematics). `asymptotic` is a
+`amc12` [@ELLI:SWAN:16] uses the number of students per school who got a very high
+score at the AMC12 test (a test on mathematics). `asymptotic`
+[@KOEN:ZEIL:09] is a
 meta analysis of wage equations reported in 156 papers and the
 analysis stress on the hypothesis used to get the consistency of an
 estimator, ie that the number of regressor is fixed as the number of
-observations increases. `bids` analyzes the number of bids received by
-126 firms that were targets of tender offers. `cartels` is a time
+observations increases. `bids` [@CAME:JOHA:97] analyzes the number of bids received by
+126 firms that were targets of tender offers. `cartels` [@MILL:09] is a time
 series of bi-annual observations, the response being the number of
 cartels discoveries and the main covariate the pre and post period
-when new leniency program was introduced. `cigmales` measure the
+when new leniency program was introduced. `cigmales` [@MULL:97] measures the
 number of cigarettes daily smoked by males in the United
-States. `majordrg` contain data about the number of major derogatory
+States. `majordrg` [@GREE:01] contain data about the number of major derogatory
 reports by cardholders. `publications` analyzes the
 scientific production (measured by the number of publications) of
-individuals who got a Ph. D. in bio-chemical. `somerville` reports the
-number of recreational visits to a lake in Texas. `strikes` is a time
+individuals who got a Ph. D. in bio-chemical. `somerville`
+[@SELL:STOL:CHAV:85] reports the
+number of recreational visits to a lake in Texas. `strikes` [@KENN:85] is a time
 series that reports the number of strikes (and also their length) in
-the United States.  `trips` contains the number of trips taken by
+the United States.  `trips` [@TERZ:98] contains the number of trips taken by
 members of households the day prior the survey interview.
+\index[author]{Cameron}\index[author]{Trivedi}\index[author]{Winkelman}\index[author]{Kennan}\index[author]{Terza}\index[author]{Mullahy}\index[author]{Deb}
+\index[author]{Santos Silva}\index[author]{Windmeijer}
+\index[author]{Geil}\index[author]{Rotte}\index[author]{Zimmermann}\index[author]{Million}\index[author]{Gurmu}\index[author]{Johansson}\index[author]{Ellison}\index[author]{Swanson}\index[author]{Koenker}\index[author]{Zeileis}\index[author]{Miller}\index[author]{Seller}\index[author]{Stoll}\index[author]{Chavas}\index[author]{}\index[author]{Greene}
 
 As we have seen in @sec-poisson_ml, count data can be considered as a random variable that follows a Poisson distribution, which has a unique parameter, this parameter being the mean and the variance of the series. The ML estimator of this parameter is the sample mean, which is indicated in
 the first column ($\mu$) of  @tbl-empsurvey. The empirical
@@ -259,7 +269,7 @@ probabilities of 0 greater that the one implied by the Poisson model.
 
 ### Analyzing the number of trips
 
-Throughout this chapter, we'll use the `trips` data set. It was used by @TERZ:98 and the response is the number of trips taken the day before the
+Throughout this chapter, we'll use the `trips` data set. It was used by @TERZ:98\index[author]{Terza} and the response is the number of trips taken the day before the
 interview. 
 We first consider the unconditional distribution of the number of
 `trips`, computing the first two moments and the share of 0:
@@ -622,9 +632,9 @@ Tests for overdispersion can easily be implemented using one the three
 test principles: Wald, likelihood ratio and score tests. The first
 two require the estimation of a more general model that doesn't impose
 the equality between the conditional mean and the conditional variance. The score test requires only the estimation of the constrained (Poisson) model. It can takes different form, we'll just
-present here the test advocated by @CAME:TRIV:86 who use an
+present here the test advocated by @CAME:TRIV:86\index[author]{Cameron}\index[author]{Trivedi} who use an
 auxiliary regression.^[Score tests that are not obtained from auxiliary regressions are
-presented by @DEAN:92.] The null hypothesis is:
+presented by @DEAN:92\index[author]{Dean}.] The null hypothesis is:
 
 $$
 \mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = \sigma_n ^ 2 - \mu_n = 0
@@ -935,7 +945,7 @@ length of the survey is two weeks.
 
 #### Hurdle models
 
-For the first situation, @CRAG:71 proposed the hurdle model (presented in @sec-tobit2), for which
+For the first situation, @CRAG:71\index[author]{Cragg} proposed the hurdle model (presented in @sec-tobit2), for which
 the level of consumption of a good is taken into account by two
 different models:
 
@@ -943,7 +953,7 @@ different models:
   expenditure is zero or positive,
 - the second model explains the level of the expenditure if it is positive.
 
-This hurdle model has been adapted to count data by @MULL:86. The first model
+This hurdle model has been adapted to count data by @MULL:86\index[author]{Mullahy}. The first model
 returns the probability that $y=0$. Therefore, the response is $d_n=\mbox{I}(y_n > 0)$, which takes the two values of 0 ($y_n$ is 0) and 1 ($y_n$ is strictly positive). A set of covariates $z_1$ is used for this model, with corresponding coefficients denoted $\gamma_1$. For example, using a probit model, we would have $\mbox{P}(d_n = 1) = \Phi(\gamma_1 ^ \top z_1)$. Another choice is to use a count distribution to modelize the probability that $d_n = 0$. For example, using the Poisson distribution ($\mbox{P}(y) = e^ {-\theta}\theta ^ y / y!$) and the log link ($\theta = \exp(\gamma_1 ^ \top z_1$) we have $\mbox{P}(d_n = 0) = \exp(e ^ {-\gamma_1 ^ \top z_1})$. Therefore the first model writes:
 
 $$
@@ -980,7 +990,7 @@ case, if $z_1 = z_2$, ie if the same set of covariates is used in the two models
 hypothesis of the simple model being: $\mbox{H}_0: \gamma_1 = \gamma_2$.
 
 The **zero-inflated Poisson** (or **ZIP** model), also called *with zeros*
-model, proposed by @LAMB:92 starts from a count model, for example a Poisson with a set of covariates denoted $z_2$ and corresponding coefficients $\gamma_2$. The probability of 0 ($e^{-\gamma_2^\top
+model, proposed by @LAMB:92\index[author]{Lambert} starts from a count model, for example a Poisson with a set of covariates denoted $z_2$ and corresponding coefficients $\gamma_2$. The probability of 0 ($e^{-\gamma_2^\top
 z_{n2}}$ is inflated using a further parameter $\psi_n$ between 0 and 1:
 
 $$
@@ -1418,7 +1428,7 @@ $\hat{S} = \sum_n \hat{\epsilon}_n ^ 2 w_n w_n^\top$, $\hat{\epsilon}_n$ being t
 The linear model is often inappropriate if the conditional
 distribution of $y$ is asymmetric. In this case, a common solution is
 to use $\ln y$ instead of $y$ as the response: $\ln y_n = \gamma ^ \top z_n + \epsilon$.
-This is of course possible only if $y_n > 0\, \forall n$, which is usually not the case with count data. An alternative is to use an exponential linear conditional mean model [@MULL:97], with additive ($y_n = e^{\gamma^\top z_n} + \epsilon_n$) or multiplicative errors ($y_n = e^{\gamma^\top z_n} \nu_n$).
+This is of course possible only if $y_n > 0\, \forall n$, which is usually not the case with count data. An alternative is to use an exponential linear conditional mean model [@MULL:97]\index[author]{Mullahy}, with additive ($y_n = e^{\gamma^\top z_n} + \epsilon_n$) or multiplicative errors ($y_n = e^{\gamma^\top z_n} \nu_n$).
 
 With additive errors, if all the covariates are exogenous, the theoretical moment conditions are $\mbox{E}\left(y - e^{\gamma^\top z} \mid x\right) = 0$ and the corresponding empirical moments are: $Z^ \top \left(y - e ^ {Z \gamma}\right) / N = 0$, which define a non-linear system of $K+1$ equations with $K+1$ unknown parameters ($\gamma$). This corresponds to the first order conditions for the Poisson model with a log link, but it can be used with any non-negative response. If some of the covariates are endogenous, an IV
 estimator can be defined. The empirical moments are then:
@@ -1464,7 +1474,7 @@ covariates.
 
 #### Cigarette smoking behaviour
 
-@MULL:97 estimates a demand function for cigarettes which depends on
+@MULL:97\index[author]{Mullahy} estimates a demand function for cigarettes which depends on
 the stock of smoking habits. This variable is quite similar to a
 lagged dependent variable and is likely to be endogenous as the
 unobservable determinants of current smoking behaviour should be
@@ -1532,7 +1542,7 @@ we conclude that the exogeneity of the instruments hypothesis is not rejected.
 
 ### Sample selection and endogenous switching for count data
 
-In two seminal papers, @HECK:76 and @HECK:79 considered the case where
+In two seminal papers, @HECK:76\index[author]{Heckman} and @HECK:79\index[author]{Heckman} considered the case where
 two variable are jointly determined, a binomial variable and an
 outcome continuous variable. For example, the continuous variable can
 be the wage and the binomial variable the labor force
@@ -1694,7 +1704,7 @@ $$
 
 The ML estimator is computing intensive as the integral has no closed
 form. One alternative is to use non-linear least squares, by first
-computing the expectation of $y$. @TERZ:98 showed that this expectation is:
+computing the expectation of $y$. @TERZ:98\index[author]{Terza} showed that this expectation is:
 
 $$
 \mbox{E}(y_n\mid z_{n1}, z_{n2}) = \exp\left(\gamma_2 ^ \top z_{n2} + \ln \frac{\Phi\left(q_n(\gamma_1 ^\top
@@ -1705,7 +1715,7 @@ $$
 \mbox{E}(y_n\mid z_{n1}, z_{n2}, w_n = 1) = \exp\left(\gamma_2 ^\top z_{n2} + \ln \frac{\Phi(\gamma_1 ^\top z_{n1} + \theta)}{\Phi(\gamma_1 ^ \top z_{n1})}\right)
 $$
 for the sample selection case, where $\theta = \sigma\rho$.
-@GREE:01 noted that, taking a first order Taylor series of $\ln
+@GREE:01\index[author]{Greene} noted that, taking a first order Taylor series of $\ln
 \frac{\Phi(\gamma_1 ^\top z_{n1} + \theta)}{\Phi(\gamma_1 ^ \top z_{n1})}$
 around $\theta = 0$ gives: $\theta \phi(\gamma_1 ^ \top z_{n1}) /
 \Phi(\gamma_1 ^ \top z_{n1})$, which is the inverse mills ratio that is
@@ -1724,7 +1734,7 @@ As it is customary for a two-steps estimator, the covariance
 matrix of the estimators should take into account the fact that
 $\gamma_1$ has been estimated in the first step. Moreover, only $\theta
 = \rho \sigma$ is estimated. To retrieve an estimator of $\sigma$,
-@TERZ:98 proposed to insert into the log-likelihood function the
+@TERZ:98\index[author]{Terza} proposed to insert into the log-likelihood function the
 estimated values of $\gamma_1$, $\gamma_2$ and $\theta$ and then to
 maximize it with respect to $\sigma$.^[These once again requires the use of
 Gauss-Hermite quadrature, but the problem is considerably simpler as
@@ -1746,7 +1756,7 @@ Gauss-Hermite quadrature method.
 
 #### Physician advice and alcohol consumption
 
-@KENK:TERZ:01 investigate the effect of physician's advice on alcohol
+@KENK:TERZ:01\index[author]{Kenkel}\index[author]{Terza} investigate the effect of physician's advice on alcohol
 consumption, the data set is called `drinks`. The outcome variable `drinks` is the number of drinks in
 the past two weeks and the selection variable `advice` is a dummy based
 on the respondents' answer to the question "Have you ever been told

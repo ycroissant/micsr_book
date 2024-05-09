@@ -30,7 +30,7 @@ $$
 $$ {#eq-diff_means_est}
 
 Moreover the data can be either **experimental** or **observational**, the difference between the two being that in the first case, the treatment is randomly assigned to some individuals. With experimental data, @eq-diff_means_est should be a reliable estimator of the effect of the treatment. On the contrary, in case of observational data, the observed and unobserved characteristics of the individuals in the two groups may be different and therefore, the estimator given in @eq-diff_means_est may include partly these differences and therefore may be biased. 
-To overcome these difficulties, different estimators have been suggested for observational data, which rely on different assumptions that are detailed, for example, in @CAME:TRIV:05, pp. 862-865.
+To overcome these difficulties, different estimators have been suggested for observational data, which rely on different assumptions that are detailed, for example, in @CAME:TRIV:05\index[author]{Cameron}\index[author]{Trivedi}, pp. 862-865.
 
 @sec-randomized_experiment presents the estimation of the treatment effect with experimental data. @sec-iv_te explains how the instrumental variable estimator can be used to estimate the effect of a treatment. @sec-reg_discont presents the regression discontinuity estimator, @sec-diff_diff the difference in difference estimator and @sec-matching the matching estimator. Finally, @sec-synth_control is devoted to the synthetic control estimator.
 
@@ -42,7 +42,7 @@ individuals that are randomly drawn from the same population and therefore the a
 both groups should be similar.
 
 To illustrate the use of randomized experiment, we consider the study
-of @BURD:LIND:13 who study the effect of village-based schools on
+of @BURD:LIND:13\index[author]{Linden}\index[author]{Linden} who study the effect of village-based schools on
 children's academic performance. The sample comprises villages from
 Ghor province in northwestern Afghanistan. More specifically, 31
 villages were selected and formed 11 village groups. 5 of them
@@ -143,7 +143,7 @@ chisq.test(table(afghan_girls$group, afghan_girls$ethny)) %>% gaze
 ```
 
 and the hypothesis of independence is not rejected. The whole table of balance is often called "Table 1", as it is the first table that appears in most articles in medical reviews. It 
-can be computed using the `gtsummary::tbl_summary` function, which has a `by` argument that indicates the grouping variable.  `tbl_summary` has a lot of arguments and auxiliary function that enables to customize the results.^[Detailed documentation of the package can be found on the web site of the package <https://www.danieldsjoberg.com/gtsummary/> and on @SJOB:21.]. The balance table for the `afghan_girls` data set is
+can be computed using the `gtsummary::tbl_summary` function, which has a `by` argument that indicates the grouping variable.  `tbl_summary` has a lot of arguments and auxiliary function that enables to customize the results.^[Detailed documentation of the package can be found on the web site of the package <https://www.danieldsjoberg.com/gtsummary/> and on @SJOB:21.\index[author]{Sjoberg}\index[author]{Whiting}\index[author]{Curry}\index[author]{Lavery}\index[author]{Larmarange}]. The balance table for the `afghan_girls` data set is
 presented in @tbl-balance_afghan.^[Note that we also used some functions of the **kableExtra** package for fine-tuning of the table.]
 
 ```{r }
@@ -216,7 +216,7 @@ The coefficient is slightly lower but still very significant.
 
 ## Instrumental variable estimator {#sec-iv_te}
 
-@IMBE:ANGR:94 and @ANGR:IMBE:RUBI:96 consider the use of instrumental
+@IMBE:ANGR:94\index[author]{Imbens}\index[author]{Angrist} and @ANGR:IMBE:RUBI:96\index[author]{Imbens}\index[author]{Angrist}\index[author]{Rubin} consider the use of instrumental
 variables in the context of the potential outcome
 model. We consider the simple case where the treatment $d$ is
 binary and the instrument $w$ is also binary.^[This is the setting of the Wald estimator that was presented in @sec-wald_estimator.] 
@@ -231,7 +231,7 @@ function of the treatment variable only: $y_n(w_n, d_n) = y_n(d_n)$
 and $d_n$ can be expressed as a function of $d_n$: $d_n(w_n)$.
 The next assumption is that in average, $w$ has a causal effect on
 $d$: $\mbox{E}\left(d(1)  - d(0)\right) \neq 0$.
-The last assumption is **monotonicity** [@IMBE:ANGR:94] which states
+The last assumption is **monotonicity** [@IMBE:ANGR:94]\index[author]{Imbens}\index[author]{Angrist} which states
 that $d_n(1) \geq d_n(0) \; \forall n$. 
 With these assumptions in hand, the causal effect of $w$ on $y$ is:
 
@@ -276,7 +276,7 @@ $$ {#eq-late}
 
 The numerator is the average causal effect of $w$ on $y$ for the
 compliers and the denominator is the share of compliers in the
-population. @ANGR:IMBE:RUBI:96 call @eq-late the **local average
+population. @ANGR:IMBE:RUBI:96\index[author]{Imbens}\index[author]{Angrist}\index[author]{Rubin} call @eq-late the **local average
 treatment effect** (**LATE** in short) to stress the fact that what is estimated
 using the instrumental variable estimator is an average treatment
 effect for only a subset of the population called the compliers, ie
@@ -285,7 +285,8 @@ value of $d$.
 The numerator is also called the **reduced form** equation, as it measures the effect of the instrument on the outcome. The denominator is called the **intention to treat** equation, it measures the effect of the instrument on the treatment dummy.
 
 As an example, we use the data set of 
-@ANGR:BETT:BLOO:KING:KREM:02 called `paces`. The authors investigate the effect of a large
+@ANGR:BETT:BLOO:KING:KREM:02
+\index[author]{Angrist}\index[author]{Bettinger}\index[author]{King}\index[author]{Kremer}called `paces`. The authors investigate the effect of a large
 school voucher program in Columbia called PACES. This voucher
 covers more than half of the cost of private secondary school and may
 induce parents to enroll their children in private schools, which are
@@ -341,7 +342,7 @@ effect much smaller than the OLS estimator, which may be the symptom
 that unobserved determinants of the outcome are positively correlated
 with the enrollment in private school.
 Covariates can easily be added to the analysis. In their study,
-@ANGR:BETT:BLOO:KING:KREM:02 use two covariates that indicates the
+@ANGR:BETT:BLOO:KING:KREM:02\index[author]{Angrist}\index[author]{Bettinger}\index[author]{King}\index[author]{Kremer} use two covariates that indicates the
 type of survey (`pilot` is one if the individual was surveyed during
 the "pilot" survey and `housvisit` is one if the survey was conducted
 in person and not by phone), `smpl` is a factor indicating the three
@@ -386,7 +387,7 @@ Two variants of regression discontinuity designs can be considered:
   threshold.
   
 We'll consider, in this chapter, two data sets. 
-The first one, called `probation`, is from @LIND:SAND:OREO:10 who studied the effects of academic probation on academic performance in Canadian universities. If a student's grade point average
+The first one, called `probation`, is from @LIND:SAND:OREO:10\index[author]{Lindo}\index[author]{Sanders}\index[author]{Oreopoulos} who studied the effects of academic probation on academic performance in Canadian universities. If a student's grade point average
 (GPA) is below a certain threshold, he is placed on academic
 probation. GPA is between 0 and 4.5 and there are three campus in the
 sample, denoted `"1"`, `"2"` and `"3"`; for the first two, the
@@ -414,7 +415,7 @@ probation %>% mutate(eligible = as.numeric(distcut < 0)) %>%
 Although the discontinuity is sharp, the probability of being on
 probation is not exactly equal to one for eligible students and equal
 to 0 for ineligible students because of administrative errors in data
-reporting.^[see @LIND:SAND:OREO:10, footnote 20 page 104.] We remove these misleading observations:
+reporting.^[see @LIND:SAND:OREO:10@LIND:SAND:OREO:10\index[author]{Lindo}\index[author]{Sanders}\index[author]{Oreopoulos}, footnote 20 page 104.] We remove these misleading observations:
 
 ```{r }
 #| label: probation_rm_errors
@@ -427,7 +428,7 @@ probation <- probation %>%
 <!-- program started in 2003 and, in 2009, the index changed, so that some -->
 <!-- former eligible households lost the grant and some previously ineligible households received it.  -->
 
-@BUSE:15 analyzed the effect of income on religiousness. He considered 
+@BUSE:15\index[author]{Buser} analyzed the effect of income on religiousness. He considered 
 the BDH (Bono Desarollo Humano) program in Ecuador which consists on a 
 cash transfer for the poorest families. The eligibility is based on a
 wealth index called Selben, households in the four first deciles being eligible. The data
@@ -517,6 +518,7 @@ is similar for males and females.
 
 
 The `rdrobust::rdplot` function performs the same task (see @fig-rdplot). There are numerous options available to customize the graphic, described in details in @CALI:CATT:TITI:15.
+\index[author]{Calonico}\index[author]{Cattaneo}\index[author]{Titiunik}
 
 ```{r}
 #| eval: false
@@ -656,7 +658,7 @@ and of the value of the cutoff may manipulate their value of the
 forcing variable in order to be on one specific side of the cutoff. In
 this case, the distribution of the forcing variable should also
 exhibit a discontinuity at the cutoff. The first manipulation test was proposed by
-@MCCR:08. The `rddensity:rddensity` function performs an extension of this test. 
+@MCCR:08\index[author]{McCrary}. The `rddensity:rddensity` function performs an extension of this test. 
 
 ```{r }
 #| warning: false
@@ -698,7 +700,7 @@ $$ {#eq-diff_diff}
 
 Each term is the mean difference of the outcome between the two periods for the two groups and the estimator is the difference of these differences. Consider as an example that the treatment is a job-training program implemented in 2021 and that the outcome is wage observed in 2022. If the first term of @eq-diff_diff is 1000 $, this means that the average annual wage in the treatment group increased by 1000 $ in 2022 compared to 2021. This would be a relevant estimator of the effect of the program if nothing had changed on the labor market in 2022 compared to 2021. But if the economic situation improved, then the average wages will increase even for those who haven't been treated. This is measured by the second term in @eq-diff_diff (say 600 $). Therefore, the effect of the treatment is the difference between the two terms, which is 400 $.
 
-As an example, @DITE:SCHA:04 sought to estimate the causal
+As an example, @DITE:SCHA:04\index[author]{Di Tella}\index[author]{Schargrodsky} sought to estimate the causal
 effect of police on crime. This task is difficult using non
 experimental data as there may be a reverse casualty relationship
 between police and crime: more police reduces crime (negative causal relationship),
@@ -706,7 +708,7 @@ but an increase in crime may lead authorities to increase police (positive rever
 In July 18, 1994, a terrorist attack destroyed the main Jewish center
 in Buenos Aires, Argentina, killing 85 people, and the federal government decided to
 provide 24 hour police protection to Jewish
-institutions. @DITE:SCHA:04 collected data on three "barrios" in
+institutions. @DITE:SCHA:04\index[author]{Di Tella}\index[author]{Schargrodsky} collected data on three "barrios" in
 Buenos Aires at the block level on a monthly basis. The outcome of
 interest is the number of car thefts. Denoting $x$ a dummy
 equal to 1 if the block contains or is close to a Jewish institution
@@ -784,7 +786,7 @@ t.test(dt ~ distance, diffs, var.equal = TRUE) %>% gaze
 
 The difference-in-differences can be extend to the case where the
 observation units before and after the implementation of the treatment
-are not the same. This is the case in @HONG:13's article, who
+are not the same. This is the case in @HONG:13's\index[author]{Hong} article, who
 studied the impact of the introduction of Napster on music
 expenditure. The study is based on the Consumer Expenditure Survey,
 which is performed on a quarterly basis and the data set is called `napster`. Napster was introduced in June
@@ -835,11 +837,11 @@ response being a dummy for treated individuals. Then, each treated
 individual is matched with the observation in the control group which
 has the closest propensity score. Finally, the estimation of the treatment effect is performed on the subset of the sample composed by all the observations of the treatment group and those of the control group that match these observations.
 
-The matching estimator was first proposed by @ROSE:RUBI:83 and the interest in matching methods in econometrics really started with   @DEHE:WAHB:99 and @DEHE:WAHB:02. These two articles revisited the results of @LALO:86 who showed that the estimation of treatment effect with observational data can be 
+The matching estimator was first proposed by @ROSE:RUBI:83\index[author]{Rosenbaum}\index[author]{Rubin} and the interest in matching methods in econometrics really started with @DEHE:WAHB:99\index[author]{Dehejia}\index[author]{Wahba} and @DEHE:WAHB:02\index[author]{Dehejia Wahba}\index[author]{Wahba}. These two articles revisited the results of @LALO:86\index[author]{Lalonde} who showed that the estimation of treatment effect with observational data can be 
 seriously biased. Using
 Lalonde's data, they showed that matching methods can be used to
 estimate consistently treatment effects on observational data. They
-also proposed an algorithm, implemented in Stata by @BECK:ICHI:02:
+also proposed an algorithm, implemented in Stata by @BECK:ICHI:02\index[author]{Becker}\index[author]{Ichino}:
 
 - first compute the propensity scores using a probit or a logit model
   with a rich set of covariates, eventually with squares and
@@ -863,7 +865,7 @@ variance of the estimated treatment effect can be computed with or without the
 hypothesis of equal variance between stratas, between groups or
 both. 
   
-As an example, we replicate the results of @ICHI:MEAL:NANN:08 who studied
+As an example, we replicate the results of @ICHI:MEAL:NANN:08\index[author]{Ichino}\index[author]{Mealli}\index[author]{Nannicini} who studied
 the effect of temporary work agency (TWA) jobs on the probability of
 finding a stable job. The data set, called `twa` contains $2030$ observations ($511$
 treated and $1519$ untreated) for two regions, Tuscany and
@@ -903,7 +905,7 @@ the first one indicating the group and the second one
 the outcome. The group variable can be either a dummy or a factor with
 two levels, the second one indicating the treated individuals. 
 To estimate the propensity score, we use the same formula as
-@ICHI:MEAL:NANN:08 and in particular, we use a square term for the
+@ICHI:MEAL:NANN:08\index[author]{Ichino}\index[author]{Mealli}\index[author]{Nannicini} and in particular, we use a square term for the
 distance to the next agency and an interaction between self-employed
 status and the city of Livorno:
 
@@ -923,7 +925,7 @@ ps <- pscore(ftusc, tuscany)
 Three supplementary arguments of `pscore` can be used: the maximum number of iterations
 (default 4), the tolerance level for the t-tests (default 0.005) and
 the link for the binomial model (default to logit). For the tolerance
-level, @BECK:ICHI:02 advice to use a low level with the following
+level, @BECK:ICHI:02\index[author]{Becker}\index[author]{Ichino} advice to use a low level with the following
 argument: with for example 20 covariates, using a 5% level, if the
 tests are mutually independent, the probability that one of the tests
 rejects the balancing property although it holds is 37%.
@@ -1183,10 +1185,10 @@ studies can then be used to estimate the causal effect of the
 treatment, comparing the situation of the treated unit after the
 treatment to the one of one or several comparable units which haven't
 been treated. Synthetic control methods, introduced by
-@ABAD:GARD:03 are refinement of comparative case studies, where
+@ABAD:GARD:03\index[author]{Abadie}\index[author]{Gardeazabal} are refinement of comparative case studies, where
 the comparison untreated unit is a weighted average of some units
 taken from a set of units called the **donor pool**. The example used
-by @ABAD:GARD:03 is the effect of terrorism in the Basque Country: the
+by @ABAD:GARD:03\index[author]{Abadie}\index[author]{Gardeazabal} is the effect of terrorism in the Basque Country: the
 donor pool is the 17 Spanish regions and the **synthetic control** of
 the Basque Country is a weighted average of two regions, Catalonia (85%)
 and Madrid (15%). The construction of the synthetic control is data
@@ -1195,13 +1197,13 @@ which Spanish regions look much like the Basque Country before the
 beginning of terrorism. Examples of the application of synthetic
 control methods are the analysis of the effect of:
 
-- state fragmentation [@REYN:VANS:22],
-- the Brexit [@DOUC:EDWA:22],
+- state fragmentation [@REYN:VANS:22]\index[author]{Reynaerts}\index[author]{Vanschoonbeek},
+- the Brexit [@DOUC:EDWA:22]\index[author]{Douch}\index[author]{Edwards},
 - a tobacco control program in California,
-  [@ABAD:DIAM:HAIN:10],
-- the reunification of Germany [@ABAD:DIAM:HAIN:15],
-- mafia in southern Italy [@PINO:15] and [@BECK:KLOS:17],
-- the Legal Arizona Workers Act [@BOHN:LOFS:RAPH:14].
+  [@ABAD:DIAM:HAIN:10]\index[author]{Abadie}\index[author]{Diamond}\index[author]{Hainmueller},
+- the reunification of Germany [@ABAD:DIAM:HAIN:15]\index[author]{Abadie}\index[author]{Diamond}\index[author]{Hainmueller},
+- mafia in southern Italy [@PINO:15]\index[author]{Pinotti} and [@BECK:KLOS:17]\index[author]{Becker}\index[author]{Klosner},
+- the Legal Arizona Workers Act [@BOHN:LOFS:RAPH:14]\index[author]{Bohn}\index[author]{Lofstrom}\index[author]{Raphael}.
 
 
 Consider a set of $N+1$ units, the first one being the treated
@@ -1268,10 +1270,10 @@ $$
 y_{nt}\right) ^ 2
 $$ {#eq-mspe}
 
-@ABAD:21 discusses in length different choices for covariates' weights $v$.
+@ABAD:21\index[author]{Abadie} discusses in length different choices for covariates' weights $v$.
 The synthetic control method is implemented in **R** in two
-packages: **Synth** [@ABAD:DIAM:HAIN:11] and **tidysynth**
-[@DUNF:21]. We'll describe the use of the latter as it is written in the tidyverse style. 
+packages: **Synth** [@ABAD:DIAM:HAIN:11]\index[author]{Abadie}\index[author]{Diamond}\index[author]{Hainmueller} and **tidysynth**
+[@DUNF:21]\index[author]{Dunford}. We'll describe the use of the latter as it is written in the tidyverse style. 
 
 ```{r }
 #| label: tidysynth

@@ -129,7 +129,7 @@ elasticity of the GDP with the capital and also the share of
 profits in GDP. A common approximation for the value of this parameter is about
 1/3, which implies: $\beta_i = - \beta_v = \frac{\kappa}{1-\kappa}=0.5$.
 
-@MANK:ROME:WEIL:92 proposed a generalization of the Solow-Swan model
+@MANK:ROME:WEIL:92\index[author]{Mankiw}\index[author]{Romer}\index[author]{Weil} proposed a generalization of the Solow-Swan model
 that includes human capital, denoted $H$. The production function is
 now:
 
@@ -153,9 +153,9 @@ $$ {#eq-growth_equation}
 where $e$ is the per capita level of human capital. The model now contains three covariates and three slopes ($\beta_i$, $\beta_e$ and $\beta_v$). Moreover, the structural model implies a structural restriction ($\beta_i + \beta_e + \beta_v = 0$) that is testable.
 
 ### Data set {#sec-data_solow_mrw}
-`growth` contains the data used by @MANK:ROME:WEIL:92. It
+`growth`\idxdata{growth}{micsr.data} contains the data used by @MANK:ROME:WEIL:92\index[author]{Mankiw}\index[author]{Romer}\index[author]{Weil}. It
 consists on 121 countries for 1985.
-
+\idxfun{print}{base}
 ```{r }
 #| label: growth_print
 growth %>% print(n = 3)
@@ -183,6 +183,8 @@ We first investigate the relationship between the two covariates: `inv`
 and `popgwth`. @fig-invpop presents the scatterplot, the size
 of the points being proportional to GDP per capita.
 
+\idxfun{ggplot}{ggplot2}\idxfun{geom\_point}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{stat\_ellipse}{ggplot2}
+
 ```{r }
 #| label: fig-invpop
 #| fig.cap: "Investment rate and demographic growth"
@@ -197,6 +199,7 @@ and a high investment rate. We also remark that there is an outlier,
 Kuwait, which has a very high demographic growth rate. We then compute
 the variable `v` and we rename `inv` and `school` in `i` and `e` as in @eq-growth_equation:
 
+\idxfun{mutate}{dplyr}\idxfun{rename}{dplyr}
 ```{r }
 #| label: mutate_and_rename_growth
 growth <- mutate(growth, v = popgwth + 0.05) %>% 
@@ -733,6 +736,7 @@ To estimate the multiple linear model, we use as for the single linear
 model the `lm` function; the difference being that now, on the right side of
 the formula, we have several variables (here two), separated by the `+`
 operator. Actually, formulas have a much richer syntax that includes other operators, for example `*` and `:`. This will be discussed in [Chapter -@sec-interpretation_chapter].
+\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r }
 #| label: estimation_solow_model
@@ -744,7 +748,7 @@ slw_tot %>% coef
 ### Computation using matrix algebra
 
 The estimator can also be computed "by hand", using matrix algebra. To start, we use the `model.frame` function which, as `lm`, has `formula` and  `data` arguments. For pedagogical purpose, we add the `group` variable in the formula.
-
+\idxfun{head}{utils}\idxfun{model.frame}{stats}\idxfun{nrow}{base}
 ```{r }
 #| label: model_frame_growth
 #| collapse: true
@@ -764,6 +768,7 @@ Several interesting elements of the model can be extracted from the
 fitted model; the data frame used for the estimation is obtained using
 `model.frame`. The $Z$ matrix is obtained using the `model.matrix` function, which also use a 
 `formula`/`data` interface, the data being the model frame `mf`:
+\idxfun{model.matrix}{stats}\idxfun{head}{utils}
 
 ```{r }
 #| label: model_matrix_growth
@@ -773,6 +778,7 @@ head(Z, 3)
 
 Note that the model matrix includes an intercept^[as seen in @sec-remove_intercept, to remove it, one has to use either `+ 0` or `- 1` in the formula.] and the `group` variable, which is a categorical variable is transformed into a set of dummy variables. More precisely, a dummy variable is created for all the modalities except the first one (`"oecd"`).
 The response is obtained using the `model.response` function:
+\idxfun{model.response}{stats}\idxfun{head}{utils}
 
 ```{r }
 #| label: model_response_growth
@@ -791,6 +797,7 @@ Once the model matrix and the response vector are created, the estimator can eas
     matrix and a vector).
 
 The most straightforward formula to get the OLS estimator is:
+\idxfun{t}{base}\idxfun{solve}{base}
 
 ```{r }
 #| label: ols_straight_formula
@@ -800,6 +807,7 @@ solve(t(Z) %*% Z) %*% t(Z) %*% y
 But `crossprod` is more efficient, $A^\top B$ being obtained using
 `crossprod(A, B)` and $A^\top A$ is either `crossprod(A, A)` or
 `crossprod(A)`. Therefore, $Z^\top Z$ and $Z^\top y$ are respectively obtained using:
+\idxfun{crossprod}{base}
 
 ```{r }
 #| results: hide
@@ -809,6 +817,7 @@ crossprod(Z, y)
 ```
 
 Moreover, `solve` can be used to solve a system of linear equations: `solve(A, z)` compute the vector $w$ such that $Aw=z$, which is $w=A^{-1}z$. Therefore, the OLS estimator can be computed using the more efficient and compact following code:
+\idxfun{solve}{base}\idxfun{crossprod}{base}
 
 ```{r}
 #| results: hide
@@ -818,7 +827,7 @@ solve(crossprod(Z), crossprod(Z, y))
 
 ### Efficient computation: the QR decomposition
 
-The efficient method used by `lm` to compute the OLS estimate is the QR decomposition:^[see @DAVI:MACK:93, section 1.5, pp. 25-31] the matrix of covariate $Z$ can be written as the product of an orthonormal matrix $Q$ of dimension $N \times (K + 1)$ (therefore $Q^\top Q = I$) and an upper triangular matrix $R$ of dimension $(K+1) \times (K+1)$. Then, the linear model can be written as:
+The efficient method used by `lm` to compute the OLS estimate is the QR decomposition:^[see @DAVI:MACK:93\index[author]{Davidson}\index[author]{McKinnon}, section 1.5, pp. 25-31] the matrix of covariate $Z$ can be written as the product of an orthonormal matrix $Q$ of dimension $N \times (K + 1)$ (therefore $Q^\top Q = I$) and an upper triangular matrix $R$ of dimension $(K+1) \times (K+1)$. Then, the linear model can be written as:
 
 $$
 y = Z\gamma + \epsilon = QR\gamma + \epsilon = Q \delta + \epsilon
@@ -853,6 +862,7 @@ Finally, $(X^\top X) ^ {-1} = (R^\top Q^ \top Q R) ^ {-1} = (R ^ \top R) ^{-1} =
 
 We illustrate the computation of the OLS estimator using the QR decomposition using the previously estimated growth model, without the `group` covariate. The QR decomposition is performed using the `qr` function:
 
+\idxfun{model.matrix}{stats}\idxfun{qr}{base}
 ```{r}
 #| label: qr_decomposition
 Z <- model.matrix(log(gdp85) ~ log(i) + log(v), mf)
@@ -860,6 +870,7 @@ qrZ <- qr(Z)
 ```
 
 `qr` returns an object of class `qr` and the `qr.R` and `qr.Q` function can be used to retrieve the two matrices. We check that $R$ is upper triangular and that $Q^\top Q  = I$:
+\idxfun{qr.R}{base}\idxfun{qr.Q}{base}\idxfun{crossprod}{base}
 
 ```{r}
 #| label: extracting_Q_R
@@ -871,6 +882,7 @@ R
 ```
 
 $\hat{\delta}$ is then obtained as the crossproducts of $Q$ and $y$:
+\idxfun{drop}{base}\idxfun{crossprod}{base}
 
 ```{r}
 #| collapse: true
@@ -1062,7 +1074,8 @@ $$
 \hat{V}(\hat{\beta}) = \dot{\sigma}_\epsilon^2(\tilde{X}^\top\tilde{X})^{-1}
 $$ {\#eq-hvbeta}
 
-We now go back to the estimation of the growth model. As @MANK:ROME:WEIL:92, we use a restricted sample by excluding countries for which most part of the GDP is linked to oil extraction and those with low quality data. 
+We now go back to the estimation of the growth model. As @MANK:ROME:WEIL:92\index[author]{Mankiw}\index[author]{Romer}\index[author]{Weil}, we use a restricted sample by excluding countries for which most part of the GDP is linked to oil extraction and those with low quality data. 
+\idxdata{growth}{micsr.data}\idxfun{filter}{dplyr}\idxfun{lm}{stats}
 
 ```{r }
 #| label: growth_subsample
@@ -1072,6 +1085,7 @@ slw_tot <- lm(log(gdp85) ~ log(i) + log(v), growth_sub)
 
 The covariance matrix of the estimators is obtained using the
 `vcov` function:
+\idxfun{vcov}{stats}
 
 ```{r }
 #| label: vcov_function_growth
@@ -1079,6 +1093,7 @@ vcov(slw_tot)
 ```
 
 The `summary` method computes detailed results of the regression, in particular the table of coefficients, a matrix that can be extracted using the `coef` method:
+\idxfun{summary}{base}\idxfun{coef}{stats}
 
 ```{r}
 #| label: summary_growth
@@ -1186,6 +1201,7 @@ $t_{k0}=(\hat{\beta}_k - \beta_{k0})/\hat{\sigma}_{\hat{\beta}_k}$
 is a draw on a normal or a Student distribution if $H_0$ is true.
 
 Remind that "reasonable" values of the two slopes in our growth model should be $+/-0.5$. We check whether these values are in the confidence intervals, using the `confint` function`:
+\idxfun{confint}{stats}
 
 ```{r }
 #| label: confint_growth
@@ -1195,6 +1211,7 @@ confint(slw_tot, level = 0.95)
 $0.5$ and $-0.5$ are not in the the 95% confidence interval for respectively $\hat{\beta}_i$ and for $\hat{\beta}_v$. 
 The hypothesis that the true value of the parameters are 0  is very easy to compute as they are based on the t statistics that are routinely returned by the `summary` method for `lm` objects.
 But, in our example, the hypothesis that $\beta_i = 0$ is the hypothesis that the share of profits is 0, which is of little interest. More interestingly, we could check the hypothesis that the coefficients are equal to $\pm 0.5$. In this case, we can "manually" compute the test statistics by extracting the relevant elements in the matrix returned by `coef(summary(x))`:
+\idxfun{summary}{base}\idxfun{coef}{stats}
 
 ```{r }
 #| label: extraction_summary_coef
@@ -1210,6 +1227,7 @@ $$
 $$
 
 and the two slopes are now equal to 0 under $H_0$.
+\idxfun{summary}{base}\idxfun{coef}{stats}\idxfun{lm}{stats}
 
 ```{r }
 #| label: constrained_coefs_pm05
@@ -1225,6 +1243,7 @@ If the hypothesis is true:
 $\mbox{E}(\hat{\beta}_i + \hat{\beta}_v) = 0$, the variance being:
 $\mbox{V}(\hat{\beta}_i + \hat{\beta}_v) = \hat{\sigma}_{\hat{\beta}_1}^2 + \hat{\sigma}_{\hat{\beta}_2}^2 + 2 \hat{\sigma}_{\hat{\beta}_1\hat{\beta}_2}$.
 The statistic can then be computed by extracting the relevant elements of the covariance matrix of the fitted model:
+\idxfun{coef}{stats}\idxfun{vcov}{stats}\idxfun{df.residual}{stats}\idxfun{unname}{base}\idxfun{pt}{stats}\idxfun{sqrt}{base}
 
 ```{r }
 #| label: test_sum_two_coefficients
@@ -1249,6 +1268,7 @@ $$
 \end{array}
 $$
 We then have a model for which the two covariates are now $\ln i$ and $\ln v / i$, the hypothesis being that the coefficient associated of $\ln i$ is equal to 0.
+\idxfun{lm}{stats}\idxfun{summary}{base}\idxfun{coef}{stats}
 
 ```{r }
 #| label: sum_two_coef_repar
@@ -1386,7 +1406,7 @@ confellipse(slw_tot) +
     labs(x = "ln i", y = "ln v", linetype = NULL)
 ```
 
-The confidence ellipse is a "fat sausage"^[@STOC:WATS:15, p. 235.] with the long part of the
+The confidence ellipse is a "fat sausage"^[@STOC:WATS:15, p. 235.]\index[author]{Stock}\index[author]{Watson} with the long part of the
 sausage slightly oriented in the lower-left/upper-right direction. This
 is because, as we have seen previously (see @fig-invpop), the two covariates exhibit a
 small negative correlation, which implies a small positive correlations
@@ -1417,6 +1437,7 @@ The statistic is computed using the elements of the matrix returned by
 `coef(summary(x))`, which contains in particular the estimations and
 their standard deviations. We first compute the t statistics
 corresponding to the two simple hypothesis $\beta_i = 0.5$ and $\beta_v = -0.5$:
+\idxfun{summary}{base}\idxfun{coef}{stats}
 
 ```{r }
 #| label: student_coefs_pm05
@@ -1438,7 +1459,8 @@ c(St2, Mt2)
 ```
 
 for which the distributions under $H_0$ are respectively a $\chi ^ 2$
-and a $F$, with the folowing critical values:
+and a $F$, with the following critical values:
+\idxfun{qchisq}{stats}\idxfun{qf}{stats}\idxfun{df.residual}{stats}
 
 ```{r }
 #| collapse: true
@@ -1455,6 +1477,8 @@ using the data frame of the fitted model, which is obtained using the
 `model.frame` function. Using the initial data frame `growth` wouldn't
 give the correct value because the estimation is not performed on the
 full data set because of missing data and because the estimation is performed on a subsample with some groups of countries excluded:
+\idxfun{summarise}{dplyr}\idxfun{model.frame}{stats}\idxfun{pull}{dplyr}
+
 
 ```{r }
 #| collapse: true
@@ -1581,6 +1605,8 @@ Consider the augmented Solow model:
 $y = \alpha + \beta_i i + \beta_v v + \beta_e e + \epsilon$,
 with $\beta_i = \frac{\kappa}{1 - \kappa - \lambda}$, $\beta_v = -\frac{\kappa + \lambda}{1 - \kappa - \lambda}$ and $\beta_e = \frac{\lambda}{1 - \kappa - \lambda}$.
 For convenience, we compute the logarithm of the variables before using `lm`:
+\idxfun{mutate}{dplyr}\idxfun{lm}{stats}
+
 
 ```{r}
 #| label: compute_logs
@@ -1601,6 +1627,8 @@ y + e - v = \alpha + \beta_i (i + 2e - 3v) + (\beta_e-2\beta_i+1)(e-v)+(\beta_i 
 $$
 
 Therefore, the unconstrained model can be written as a model with $y + e - v$ as the response and $i + 2 e - 3 v$, $e-v$ and $v$ as the three covariates and the constrained model as a model with the same response but with $i + 2 e - 3$ as unique covariate.
+\idxfun{lm}{stats}\idxfun{coef}{stats}\idxfun{summary}{base}
+
 
 ```{r}
 #| label: constrained_unconstr_models_growth
@@ -1618,6 +1646,7 @@ The two hypothesis can be tested one by one as the test is that:
 - the slope of $v$ equals 0 for the hypothesis that $\beta_i+\beta_e+\beta_v=0$.
 
 Both hypothesis are not rejected, even at the 10% level. To test the join hypothesis, we can first use the approximative formula which is the sum or the mean of the squares of the t statistics (respectively a $\chi^2$ with 2 degrees of freedom and a F with 2 and 71 degrees of freedom):
+\idxfun{pf}{stats}\idxfun{pchisq}{stats}
 
 ```{r}
 #| label: approx_results_joint_hyp
@@ -1654,6 +1683,7 @@ $$
 \right) 
 $$
 The matrix $R$ and the vector $q$ are created in **R**:
+\idxfun{matrix}{base}
 
 ```{r}
 #| label: R_constraints_growth
@@ -1668,6 +1698,7 @@ $$
 $$ {#eq-wald_test_formula}
 
 is asymptotically a $\chi^2$ with $J=2$ degrees of freedom. Dividing by $J$, we get a F statistic with $2$ and $71$ degrees of freedom.
+\idxfun{coef}{stats}\idxfun{solve}{base}\idxfun{vcov}{stats}\idxfun{t}{base}
 
 ```{r}
 #| label: wald_test_growth
@@ -1678,6 +1709,7 @@ t(R %*% coef(mrw2) - q) %*%
 ```
 
 `car::linearHypothesis` performs Wald tests with a nice syntax: the first argument is a fitted model and the second one is a vector of characters which contains the character representation of the hypothesis:
+\idxfun{linearHypothesis}{car}\idxfun{gaze}{micsr}
 
 ```{r}
 #| label: linear_hypothesis
@@ -1688,6 +1720,7 @@ car::linearHypothesis(mrw2, c("i + v + e = 0", "e = 2 * i - 1")) %>% gaze
 #### Likelihood ratio test
 
 The computation of the likelihood ratio statistic is very simple once the two models have been estimated. The sum of squares of the two models are extracted using the `deviance` method and we divide the difference of the two sums of squares by $\dot{\sigma}_\epsilon^2$ (the `sigma` method is used to extract the residual standard error) and by 2 to get a F statistic.
+\idxfun{deviance}{stats}\idxfun{sigma}{stats}
 
 ```{r}
 #| label: lr_test_growth
@@ -1698,6 +1731,7 @@ The computation of the likelihood ratio statistic is very simple once the two mo
 #### Score test
 
 For the score test, we consider the reparametrized model and we define $Z_1$ as a matrix containing a column of one and $i + 2  e - 3  v$ and $X_2$ as a matrix containing $e-v$ and $v$.
+\idxfun{model.matrix}{stats}\idxfun{model.frame}{stats}
 
 ```{r}
 #| label: score_test_model_matrix
@@ -1706,6 +1740,7 @@ Z1 <- model.matrix(~i2, model.frame(mrw_nc))
 ```
 
 The test is based on the vector $X_2 ^ \top \hat{\epsilon}_c$, where $\hat{\epsilon}_c$ is the vector of the residuals for the constrained model. Under $H_0$, the expected value of $X_2 ^ \top \hat{\epsilon}_c$ is 0 and its variance is $\sigma_\epsilon ^ 2 X_2^ \top M_1 X_2$. $M_1 X_2$ is a matrix of residuals of all the columns of $X_2$ on $Z_1$.
+\idxfun{resid}{stats}\idxfun{lm}{stats}
 
 ```{r}
 ec <- resid(mrw_c)
@@ -1715,6 +1750,7 @@ M1X2 <- resid(lm(X2 ~ Z1))
 Note that we've just used `lm` with only a formula argument. In this case, the response and the covariates are vectors or matrices and not columns of a tibble. Note also that the left-hand side of a formula is a matrix and not a vector; in this case, each column is supposed to be a response and `lm` fit as many models than there are columns in this matrix. Then, the `resid` method no longer returns a vector, but a matrix, each column being a vector of residuals for one of the fitted models.
 
 The statistic is then $\hat{\epsilon}_c^\top X_2 \left[X_2^ \top M_1 X_2\right]^{-1} X_2 \hat{\epsilon}_c / \sigma_\epsilon^2$. The statistic can be computed using an estimator of $\sigma_\epsilon^2$, and dividing by $J=2$ to get a F statistic.
+\idxfun{crossprod}{base}\idxfun{t}{base}\idxfun{sigma}{stats}\idxfun{solve}{base}
 
 ```{r}
 #| collapse: true
@@ -1750,6 +1786,7 @@ $$
 and the asymptotic $\chi^2$ statistic as $N R^2$.
 
 There is no easy way to extract the $R^2$ and the $F$ statistic with **R**. Both are computed by the `summary` method of `lm`:
+\idxfun{summary}{base}\idxfun{names}{base}
 
 ```{r}
 #| label: summary_lm_names
@@ -1766,6 +1803,7 @@ slm$fstatistic
 ```
 
 More simply, `micsr:rsq` and `micsr:ftest` can be used:
+\idxfun{rsq}{micsr}\idxfun{ftest}{micsr}\idxfun{gaze}{micsr}
 
 ```{r}
 #| label: extracting_r2_f_micsr
@@ -1775,6 +1813,7 @@ slw_tot %>% ftest %>% gaze
 ```
 
 The interest of this testing strategy is not limited to the test that all the slopes of a real model is 0. It can also be used to test any set of hypothesis, using reparametrization and the Frisch-Waugh theorem. Consider for example the hypothesis that $\kappa = 0.5$ and $\beta_i + \beta_e + \beta_v=0$. We have seen previously that, after reparametrization, this corresponds to the model:
+\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r}
 #| label: constrained_reparam_growth
@@ -1784,6 +1823,7 @@ mrw_nc %>% coef
 ```
 
 with, if the two hypothesis are true, the two slopes associated with `e2` and `v` equal to 0. Now, using the Frisch-Waugh theorem, and denoting $Z_1 = (j, i_2)$ and $X_2 = (e_2, v)$:
+\idxfun{lm}{stats}\idxfun{coef}{stats}\idxfun{resid}{stats}
 
 ```{r}
 #| label: frisch_waugh_growth
@@ -1797,6 +1837,7 @@ mrw_ncb %>% coef
 
 We get exactly the same estimators as previously for `e2` and `v`, but now the joint hypothesis is that all the slopes of the second model are 0. Therefore, the test is based on the F statistic that is returned by `summary(lm(x))` and doesn't require any further calculus:
 
+\idxfun{ftest}{micsr}\idxfun{gaze}{micsr}
 ```{r}
 #| label: frisch_waugh_growth_fstat
 #| collapse: true
@@ -1945,8 +1986,8 @@ restrictions; for example, the coefficient of $p_1^*$ in the cost
 equation should be equal to the intercept of the cost share for the
 first factor. 
 
-We estimate the translog cost function with the `apples` data set of
-@IVAL:LADO:OSSA:SIMI:96 who studied the production cost of apple
+We estimate the translog cost function with the `apples` data set \idxdata{apples}{micsr} of
+@IVAL:LADO:OSSA:SIMI:96\index[author]{Ivaldi}\index[author]{Ladoux}\index[author]{Ossard}\index[author]{Simioni} who studied the production cost of apple
 producers. Farms in this sample produce apples and other fruits
 (respectively `apples` and `otherprod`). The authors observe the sales
 of apples and other fruits but also the quantity of apple
@@ -1960,6 +2001,7 @@ prices are `pc`, `pl` and `pm`. The data set is an unbalanced panel of
 173 farms observed for three years (1984, 1985 and 1986). We consider
 only one year (1985) and, for a reason that we'll be clear latter, we
 divide all the variables by their sample mean:
+\idxfun{filter}{dplyr}\idxfun{transmute}{dplyr}
 
 ```{r }
 #| label: apples
@@ -1989,7 +2031,7 @@ case, the trans-equations restrictions are ignored. The whole system can also be
 estimated directly by stacking the three vectors of responses and
 constructing a block diagonal matrix of covariates, each block being
 the relevant set of covariates for one equation. We use for this
-purpose the **Formula** package [@ZEIL:CROI:10]. This package provided extended usual formulas in two directions: first, several covariates can be indicated in the left hand side of the formula (using the `+` operator) and several parts can be defined on both sides of the formula, using the `|` sign. For example:
+purpose the **Formula** package [@ZEIL:CROI:10]\index[author]{Zeileis}\index[author]{Croissant}. This package provided extended usual formulas in two directions: first, several covariates can be indicated in the left hand side of the formula (using the `+` operator) and several parts can be defined on both sides of the formula, using the `|` sign. For example:
 
 ```{r}
 #| results: false
@@ -2009,6 +2051,7 @@ example, turns the original column names of `Z_l` (`(Intercept)`, `pl`
 and `pm`) to `sl_cst`, `sl_pl` and `sl_pm`. We then construct the
 block diagonal matrix (using the `Matrix::bdiag` function) and use our
 customized names:
+\idxfun{Formula}{Formula}\idxfun{model.frame}{stats}\idxfun{model.matrix}{stats}\idxfun{paste}{base}\idxfun{bdiag}{Matrix}\idxfun{head}{utils}
 
 ```{r }
 #| label: bdiag_covariates
@@ -2026,6 +2069,7 @@ head(Zs, 2)
 ```
 
 `Formula::model.part` enables to retrieve any part of the model. Here, we want to extract the three responses which are the only left side of the formula. Therefore, we set `lrs` and `rhs` respectively to 1 and 0. The result is a data frame with three variables `ct`, `sl` and `sm`. We then use `dplyr::pivot_longer`, to stack the three responses in one column. Note the use of the optional argument `cols_vary` that is set to `"slowest"`, so that the elements are stacked columnwise:
+\idxfun{model.part}{Formula}\idxfun{pivot\_longer}{dplyr}\idxfun{print}{base}
 
 ```{r }
 #| label: stack_responses
@@ -2037,6 +2081,7 @@ print(ys, n = 2)
 
 The estimation can be performed using the response vector and the
 matrix of covariates:
+\idxfun{lm}{stats}
 
 ```{r }
 #| results: false
@@ -2047,6 +2092,7 @@ lm(ys$response ~ Zs - 1)
 However, nicer input is obtained by constructing a tibble by biding
 the columns of `ys` and `Zs` and then using the usual formula-data
 interface. 
+\idxfun{bind\_cols}{dplyr}\idxfun{print}{base}
 
 ```{r}
 stack_data <- ys %>% bind_cols(Zs)
@@ -2058,6 +2104,7 @@ covariates, the dot can be used in the right hand side of the formula,
 which means in this context all the variables (except the response
 which is on the left hand side of the formula). The intercept and the
 `equation` variable should be omitted from the regression.
+\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r }
 #| label: system_estimation_tibble
@@ -2163,6 +2210,7 @@ estimators is then a linear combination of the excess of the linear
 constraints of the model evaluated for the unconstrained model.
 For the system of cost and factor shares for apple production
 previously described, we have 14 coefficients and 6 restrictions:
+\idxfun{matrix}{base}
 
 ```{r }
 #| label: restrict_matrix_apples
@@ -2173,6 +2221,7 @@ R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
 
 For example, the first line of `R` returns the difference between the 4^th^ coefficient (`cost_pl`) and the 9^th^ coefficient (`sl_cst`). As the vector $q$ is 0 in our example, this means that the coefficient of $p_l^*$ in the cost equation should equal the intercept in the labor share equation.
 Applying @eq-const_lm, we get:
+\idxfun{coef}{stats}\idxfun{crossprod}{base}\idxfun{solve}{base}\idxfun{drop}{base}\idxfun{model.matrix}{stats}
 
 ```{r }
 #| label: constrained_ls_manual
@@ -2184,7 +2233,7 @@ beta_c <- coef(ols_unconst) -
          solve(R %*% solve(XpX) %*% t(R)) %*% excess)
 beta_c
 ```
-More simply, `micsr::clm` can be used, which computes the constrained
+More simply, `micsr::clm` \idxfun{clm}{micsr} can be used, which computes the constrained
 least squares estimator with, as arguments, a `lm` object (the
 unconstrained model) and `R`, the matrix of restrictions (and
 optionally a `q` vector):
@@ -2195,8 +2244,8 @@ ols_const <- clm(ols_unconst, R)
 ```
 and returns a `lm` object.
 
-Finally, the **systemfit** package [@HENN:HAMA:07] is devoted to system
-estimation and provide a `systemfit` function. Its main arguments are a list of equations and a data
+Finally, the **systemfit** package [@HENN:HAMA:07]\index[author]{Henningsen]\index[author]{Hamann} is devoted to system
+estimation and provide a `systemfit`\idxfun{systemfit}{systemfit} function. Its main arguments are a list of equations and a data
 frame, but it also has a `restrict.matrix` and a `restrict.rhs`
 arguments to provide respectively $R$ and $q$.
 

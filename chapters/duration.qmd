@@ -16,7 +16,7 @@ Denote $t$ the duration response. Its distribution is given by a
 probability $\mbox{P}(T \leq t) =F(t)$ and a density function $f(t)$.
 The survival function is often used, which is
 $S(t) = P(T > t) = 1 - F(t)$.^[The survival function is sometimes defined as
-    $S(t) = P(T \geq t)$, see @CAME:TRIV:05.] For example, if $T$ is measured in
+    $S(t) = P(T \geq t)$, see @CAME:TRIV:05\index[author]{Cameron}\index[author]{Trivedi}.] For example, if $T$ is measured in
 month and if $t = 12$, $F(12) = 0.8$ means that 80% of unemployment
 spells are less than one year and $S(12) = 0.2$ means that 20% of
 unemployment spells are more than one year. For a small variation of the
@@ -85,7 +85,7 @@ developping more complicated parametric models.
 ### Uncensored sample
 
 To demonstrate this estimator, it is convenient to use first uncensored
-data. This is the case of the `oil` [@FAVE:PESA:SHAR:94] data set which
+data. This is the case of the `oil` [@FAVE:PESA:SHAR:94]\index[author]{Favero}\index[author]{Pesaran}\index[author]{Sharma} data set which
 indicate the number of months between the discovery of an oil field and
 the beginning of development. For each failure times $t_k$, we count the
 number of events $d_k$ (the number of spells ending at time $t_k$) and
@@ -203,7 +203,7 @@ There is a `plot` method for `survfit` objects that draw the survival curve and 
 ### Censored sample
 
 When there are censored observations, the computation is modified.
-Consider the `retirement` data set [@an2004]. It contains the join
+Consider the `retirement` data set [@AN:CHRI:GUPT:04]\index[author]{An}\index[author]{Christensen}\index[author]{Gupta}. It contains the join
 duration until retirement for both spouses of 243 couples in Denmark.
 
 ```{r }
@@ -282,7 +282,7 @@ When the observations belongs to 2 or more groups, the survival curves
 can be estimated for each group. 
 <!-- We now use the `recall` data set, initially used by @KATZ:86 and latter by @SUEY:95. It contains 1045 spells of unemployment from 1980.  -->
 
-We now use the `unemp_teachers` data set, initially used by @KAST:VAND:22. It contains 3064 observations of unemployed dutch teachers. Some of them performed a training, they are identified by a dummy called `training`. We restrict the sample to those who didn't performed a training:
+We now use the `unemp_teachers` data set, initially used by @KAST:VAND:22\index[author]{Kastoryano}\index[author]{van der Klaauw}. It contains 3064 observations of unemployed dutch teachers. Some of them performed a training, they are identified by a dummy called `training`. We restrict the sample to those who didn't performed a training:
 
 ```{r}
 unteach <- unemp_teachers %>% filter(! training) %>% 
@@ -402,7 +402,7 @@ The hypothesis of identical survival for males and females is highly rejected.
 
 ## Parametric and semi-parametric estimators {#sec-param_duration}
 
-In this section, we introduce covariates that may explain the length of the duration, or the value of the hazard function. Two kind of models can be developed. The full parametric model specify the whole distribution of the hazard function. On the contrary, in a semi parametric approach, the hazard is the product of two component, the first one depending on time and some parameters and the second one depending only on the covariates and some other parameters. Then, only the second component is estimated and therefore, the shape of the hazard doesn't need to be specified. We'll first consider the benchmark exponential model, for which the hazard is constant.^[This section relies heavily on @LANC:90., pp.17-20.]
+In this section, we introduce covariates that may explain the length of the duration, or the value of the hazard function. Two kind of models can be developed. The full parametric model specify the whole distribution of the hazard function. On the contrary, in a semi parametric approach, the hazard is the product of two component, the first one depending on time and some parameters and the second one depending only on the covariates and some other parameters. Then, only the second component is estimated and therefore, the shape of the hazard doesn't need to be specified. We'll first consider the benchmark exponential model, for which the hazard is constant.^[This section relies heavily on @LANC:90., pp.17-20.\index[author]{Lancaster}]
 
 ### Constant hazard and the exponential distribution
 
@@ -758,7 +758,7 @@ belongs to the AFM and the PH family.
 Two more specifications of proportional hazard models are often used,
 namely the generalized Weibull model and the Gompertz models.
 
-The Cox proportional hazard model [@COX:72; @COX:75] is semi-parametric as only the $f()$
+The Cox proportional hazard model [@COX:72; @COX:75]\index[author]{Cox} is semi-parametric as only the $f()$
 function is estimated and not the baseline hazard function. It is better
 understood using a simple example. Without lack of generality, consider
 that the observations are arranged in an increasing order of duration.
@@ -886,7 +886,7 @@ modelsummary::msummary(list("Weibull (AFT)" = weib_aft,
 
 ## Heterogeneity {#sec-heter_duration}
 
-Consider a population with two groups characterized by two different constant hazard rates, 0.4 for the first group and 0.1 for the second group.^[This example is from @CAME:TRIV:05, p.611.] If there are 100 individuals in both groups, the number of events (observations at risk) for the first group is $0.4 \times 100 = 40$ (60) for the first period, $0.4 \times 60 = 24$ (36) for the second one and $0.4 \times 36 = 21.6$ (12.96) for the third one. For the second group, we get $0.1 \times 100 = 10$ (90) for the first period, $0.1 \times 90 = 9$ (81), $0.1 \times 81 = 8.1$ (72.9) and $0.1 \times 72.9 = 7.29$ (65.61). Summing for the two groups, we get 50 (150), 33 (117), 22.5 (94.5). The hazard is then $50 / 200 = 0.25$ for the first period, $33/150 = 0.22$ for the second one and $22.5 / 117 = 0.1923$ for the third period. The hazard rate for the whole population is therefore decreasing, although it is constant for every individual. This result is easy to understand as, as times going, the proportion of individuals with the low hazard rate in the observations at risk is increasing.
+Consider a population with two groups characterized by two different constant hazard rates, 0.4 for the first group and 0.1 for the second group.^[This example is from @CAME:TRIV:05, p.611.\index[author]{Cameron}\index[author]{Trivedi}] If there are 100 individuals in both groups, the number of events (observations at risk) for the first group is $0.4 \times 100 = 40$ (60) for the first period, $0.4 \times 60 = 24$ (36) for the second one and $0.4 \times 36 = 21.6$ (12.96) for the third one. For the second group, we get $0.1 \times 100 = 10$ (90) for the first period, $0.1 \times 90 = 9$ (81), $0.1 \times 81 = 8.1$ (72.9) and $0.1 \times 72.9 = 7.29$ (65.61). Summing for the two groups, we get 50 (150), 33 (117), 22.5 (94.5). The hazard is then $50 / 200 = 0.25$ for the first period, $33/150 = 0.22$ for the second one and $22.5 / 117 = 0.1923$ for the third period. The hazard rate for the whole population is therefore decreasing, although it is constant for every individual. This result is easy to understand as, as times going, the proportion of individuals with the low hazard rate in the observations at risk is increasing.
 It is therefore important to detect the presence of heterogeneity and, in presence of heterogeneity, to fit models that take heterogeneity into account.
 
 ### Detecting heterogeneity
@@ -1013,15 +1013,15 @@ The **competing risk** model is a very simple multi-state model which extend the
 - for the first one, the event is $a$ and censoring occurs either if the observation is censored or if the event is $b$,
 - for the second one, the event is $b$ and censoring occurs either if the observation is censored or if the event is $a$,
 
-For example, [@bierens2007] consider the duration between prison release and a new crime for former prisoners. The event can take the form of a felony or a misdemeanor and the duration is censored if no new crime has been committed during the period of survey. The survey stops on April 16, 1988 and, as the date of release depends on the individuals, so does the censoring time. The sample contains $16355$  individuals from $11$ states.
+For example, [@BIER:CARV:07]\index[author]{Bierens}\index[author]{Carvalho} consider the duration between prison release and a new crime for former prisoners. The event can take the form of a felony or a misdemeanor and the duration is censored if no new crime has been committed during the period of survey. The survey stops on April 16, 1988 and, as the date of release depends on the individuals, so does the censoring time. The sample contains $16355$  individuals from $11$ states.
 
-Consider the `recall` data set, initially used by @KATZ:86 and latter by @SUEY:95. It contains 1045 spells of unemployment in 1980.
+Consider the `recall` data set, initially used by @KATZ:86\index[author]{Katz} and latter by @SUEY:95\index[author]{Sueyoshi}. It contains 1045 spells of unemployment in 1980.
 
 ```{r}
 recall %>% head(3)
 ```
 
-The analysis of @KATZ:86 showed that an important transition form unemployment was a recall from the previous employer. The `end` covariate indicates the different modalities of transition:
+The analysis of @KATZ:86\index[author]{Katz} showed that an important transition form unemployment was a recall from the previous employer. The `end` covariate indicates the different modalities of transition:
 
 ```{r}
 recall %>% count(end)
@@ -1263,9 +1263,9 @@ $$
 An interesting case of interval response occurs in ecological
 economics, for which one of the method used to estimate the value of
 non-market resources is contingent valuation. Consider for example
-the `kakadu` data set, which was used by @CARS:WILK:IMBE:94 and
-@WERN:99. The study concerns the Kakadu Conservation zone, a part of the Kakadu National park and the survey aimed to measure the willingness to pay to preserve this zone from mining. The double-bounded,
-discrete-choice elicitation method of @HANE:91 is used; a respondent
+the `kakadu` data set, which was used by @CARS:WILK:IMBE:94\index[author]{Carson}\index[author]{Wilks}\index[author]{Imber} and
+@WERN:99\index[author]{Werner}. The study concerns the Kakadu Conservation zone, a part of the Kakadu National park and the survey aimed to measure the willingness to pay to preserve this zone from mining. The double-bounded,
+discrete-choice elicitation method of @HANE:91\index[author]{Hanemann} is used; a respondent
 is asked whether he is willing to pay a pre-chosen randomly assigned
 amount to preserve the zone. If the answer is yes (no), he is asked
 wheter he is willing to pay a higher (lower) pre-chosen amount. Four
@@ -1281,7 +1281,7 @@ lower and the upper bonds are respectively `lower` and `upper` and
 regression model can be estimated using the `survival::survreg`
 function. The response should be a `Surv` object with the `time` and `time2` arguments set to the lower and to the upper bounds and the `type` argument set to
 `"interval2"`. The set of covariates is the one used by [@WERN:99,
-table 4 p. 484]. The results are presented on table @tbl-intkakadu.
+table 4 p. 484]\index[author]{Werner}. The results are presented on table @tbl-intkakadu.
 
 ```{r }
 #| label: tbl-intkakadu

@@ -61,7 +61,7 @@ compute the inverse of this matrix.
 In a linear model: $y_n = \alpha + \beta x_n + \epsilon_n$, 
 heteroskedasticity occurs when the conditional variance of the response
 $y_n$ (the variance of $\epsilon_n$) is not a constant. 
-As an example, @HOUT:51 analyzed electric consumption in the United Kingdom and his data set (called `uk_elec`) is a sample of 42 British cities.^[This data set is used extensively by @BERN:91, chapter 7.] The response is the per capita consumption in kilowatt hours. Denoting $c_{ni}$ the consumption of an individual $i$ in city $n$, the response is then $y_n =\frac{1}{I_n}\sum_i^{I_n} c_{ni}$ where $I_n$ is the total number of consumers in city $n$. Then, if the standard
+As an example, @HOUT:51\index[author]{Houthakker} analyzed electric consumption in the United Kingdom and his data set (called `uk_elec`)\idxdata{uk\_elec}{micsr.data} is a sample of 42 British cities.^[This data set is used extensively by @BERN:91\index[author]{Berndt}, chapter 7.] The response is the per capita consumption in kilowatt hours. Denoting $c_{ni}$ the consumption of an individual $i$ in city $n$, the response is then $y_n =\frac{1}{I_n}\sum_i^{I_n} c_{ni}$ where $I_n$ is the total number of consumers in city $n$. Then, if the standard
 deviation of the individual consumption is $\sigma_c$ (the same in every
 city), the variance of $y_n$ is $\sigma_c ^ 2 / I_n$ and therefore
 depends on the number of consumer units of the city. Even
@@ -111,15 +111,16 @@ observed several times, for example for different periods like years
 or months. Such a data set is called a **panel data**. 
 
 In the subsequent sections, we'll use two data sets. The first one, called `twins`, 
-is from @BONJ:CHERK:KASK:03 who studied the return to education with a
+is from @BONJ:CHERK:KASK:03\idxdata{twins}{micsr.data}
+\index[author]{Bonjour}\index[author]{Cherkas}\index[author]{Haskel}\index[author]{Hawkes}\index[author]{Spector} who studied the return to education with a
 sample of twins. The sample contains 428 observations (214 couples
 of twins) and it is reasonable to assume that, for a given pair of twins,
 the two errors are correlated as they partly contain unobserved
 characteristics that are common to both twins.
-The second one, called `tobinq`, is from @SCHA:90 who tested the relevance of Tobins' Q theory of investment by
+The second one, called `tobinq`, is from @SCHA:90\index[author]{Schaller} who tested the relevance of Tobins' Q theory of investment by
 regressing the investment rate (the ratio of the investment and the
 stock of capital) to Tobin's Q, which is the ratio of the value of the
-firm and the stock of capital. The data set is a panel of 188 firms observed for 35 years (from 1951 to 1985).
+firm and the stock of capital. The data set is a panel of 188 firms observed for 35 years (from 1951 to 1985).\idxdata{tobinq}{micsr.data}
 
 For such data, we'll denote $n = 1, 2, \ldots N$ the entity /
 individual index and $t = 1, 2, \ldots T$ the index of the observation in the
@@ -324,7 +325,7 @@ residuals to analyze the unknown features of the errors.
 
 ### Testing for heteroskedasticity
 
-[@BREU:PAGA:79] consider the following heteroskedastic model: $y_n = \gamma ^ \top z_n + \epsilon_n$ with $\epsilon_n \sim \mathcal{N}(0, \sigma_n ^ 2)$. Assume that $\sigma_n^2$ is a
+[@BREU:PAGA:79]\index[author]{Breusch}\index[author]{Pagan} consider the following heteroskedastic model: $y_n = \gamma ^ \top z_n + \epsilon_n$ with $\epsilon_n \sim \mathcal{N}(0, \sigma_n ^ 2)$. Assume that $\sigma_n^2$ is a
 function of a set of $J$ covariates denoted $w_n$:
 
 $$
@@ -360,7 +361,6 @@ $$
 
 To get the information matrix, we take the expectation of the opposite
 of this matrix. If the errors are homoskedastic, the first term disappears and $h'_n = h'_0$ so that:
-
 
 $$
 I_0 = \mbox{E}\left(- \frac{\partial \ln ^ 2 L}{\partial \delta \partial\delta ^ \top}(\delta_0)\right) = \frac{h_0^{'2}}{2\sigma ^ 4}\sum_nw_n w_n'
@@ -398,16 +398,17 @@ $$
 N R^2 = \frac{f^\top P_W f}{f'f / N}
 $$
 
-@WHIT:80 proposed a test that is directly linked to its proposition of
+@WHIT:80\index[author]{White} proposed a test that is directly linked to its proposition of
 the heteroskedasticity-robust matrix of covariance of the OLS
 estimates. This matrix depends on the squares and on the
 cross-products of the covariates. Therefore, he proposed to run a
 regression of the squares of the first-step residuals on the covariates,
 their squares and their cross-product. $N R^2$ of this regression is
-asymptotically distributed as a $\chi ^ 2$ with $K(K+1)/2$ degrees of freedom. Therefore, @WHIT:80's test
-can be viewed as a special case of @BREU:PAGA:79's test.
+asymptotically distributed as a $\chi ^ 2$ with $K(K+1)/2$ degrees of freedom. Therefore, @WHIT:80's\index[author]{White} test
+can be viewed as a special case of @BREU:PAGA:79's test\index[author]{Breusch}\index[author]{Pagan}.
 
-In his electric consumption regression, @HOUT:51 used as covariates `inc` (average yearly income in pounds), the inverse of `mc6` (the marginal cost of electricity), `gas6` (the marginal price of gas) and `cap` (the average holdings of heavy electric equipment). The OLS estimation is:
+In his electric consumption regression, @HOUT:51\index[author]{Houthakker} used as covariates `inc` (average yearly income in pounds), the inverse of `mc6` (the marginal cost of electricity), `gas6` (the marginal price of gas) and `cap` (the average holdings of heavy electric equipment). The OLS estimation is:
+\idxfun{lm}{stats}\idxdata[(]{uk\_elec}{micsr.data}
 
 ```{r}
 #| label: lm_elec
@@ -415,6 +416,7 @@ lm_elec <- lm(kwh ~ inc + I(1 / mc6) +  gas6 + cap, uk_elec)
 ```
 
 The $f$ vector in @eq-bp_heteros_ESS is:
+\idxfun{resid}{stats}\idxfun{mean}{base}
 
 ```{r}
 #| label: f_bp_heterosc
@@ -422,6 +424,7 @@ f <- 1 - resid(lm_elec) ^ 2 / mean(resid(lm_elec) ^ 2)
 ```
 
 We then regress $f$ on $W$ (which is here a constant and the inverse of `cust`) and get half the explained sum of squares:
+\idxfun{lm}{stats}\idxfun{sum}{base}\idxfun{fitted}{stats}
 
 ```{r}
 #| label: bp_heterosc_1
@@ -429,6 +432,7 @@ lm_elec_resid <- lm(f ~ I(1 / cust), uk_elec)
 bp1_elec <- sum(fitted(lm_elec_resid) ^ 2) / 2
 ```
 For the second version of the test we compute $N$ times the $R ^ 2$:
+\idxfun{nobs}{stats}\idxfun{rsq}{micsr}
 
 ```{r}
 #| label: bp_heterosc_2
@@ -436,6 +440,7 @@ bp2_elec <- nobs(lm_elec_resid) * rsq(lm_elec_resid)
 ```
 
 The values and the probability values for the two versions of the Breusch-Pagan test are:
+\idxfun{pchisq}{stats}
 
 ```{r}
 #| label: bp_heterosc_print
@@ -446,6 +451,7 @@ pchisq(c(bp1_elec, bp2_elec), lower.tail = FALSE, df = 1)
 
 The homoskedasticity hypothesis is therefore highly rejected.
 The `lmtest::bptest` computes automatically the Breusch-Pagan test for heteroskedasticity, with two formulas: the first one being the formula of the model and the second one being a one-side formula for the skedasticity equation. An alternative syntax is to provide a `lm` model as the first argument:
+\idxfun{bptest}{lmtest}
 
 ```{r}
 #| label: lmtest_bptest
@@ -456,11 +462,12 @@ lmtest::bptest(lm_elec, ~ I(1 / cust),
                data = uk_elec, studentize = FALSE) %>% gaze
 ```
 
-Note that we set the `studentize` argument to `FALSE`. The default value is `TRUE` and in this case, a modified version of the test due to @KOEN:81 is used.
+Note that we set the `studentize` argument to `FALSE`. The default value is `TRUE` and in this case, a modified version of the test due to @KOEN:81\index[author]{Koenker} is used.
+\idxdata[)]{uk\_elec}{micsr.data}
 
 ### Testing for individual effects
 
-@BREU:PAGA:80 extend their Lagrange multiplier test for detecting
+@BREU:PAGA:80\index[author]{Breusch}\index[author]{Pagan} extend their Lagrange multiplier test for detecting
 heteroskedasticity to the problem of individual (or entity) effects in a panel (or
 in a pseudo-panel) setting. Assuming a normal distribution, the joint density for the whole sample is:
 
@@ -584,7 +591,9 @@ $$ {#eq-bp_panel}
 which is asymptotically distributed as a $\chi^2$ with 1 degree of
 freedom.
 
-@BONJ:CHERK:KASK:03 estimated a Mincer equation with a sample of twins, the entity index being `family`. The response is the log of wage and the covariates are education (`educ`) and potential experience and its square (approximated by the age `age`):
+\idxdata[(]{twins}{micsr.data}
+@BONJ:CHERK:KASK:03\index[author]{Bonjour}\index[author]{Cherkas}\index[author]{Haskel}\index[author]{Hawkes}\index[author]{Spector} estimated a Mincer equation with a sample of twins, the entity index being `family`. The response is the log of wage and the covariates are education (`educ`) and potential experience and its square (approximated by the age `age`):
+\idxfun{lm}{stats}\idxfun{coef}{base}
 
 ```{r}
 #| label: twins_lm 
@@ -594,6 +603,7 @@ lm_twins %>% coef
 ```
 
 We then add the residuals to the data an we compute the individual mean of the residuals by grouping by entities and then using `mutate` and not `summarise` to compute the mean,  $B\epsilon$ being a vector of length $N \times T$ where each value is returned $T$ times.
+\idxfun{add\_column}{tibble}\idxfun{resid}{stats}\idxfun{group\_by}{dplyr}\idxfun{ungroup}{dplyr}\idxfun{mean}{base}
 
 ```{r}
 #| label: twins_resid_Bresid
@@ -603,6 +613,7 @@ twins <- twins %>% add_column(e = resid(lm_twins)) %>%
 ```
 
 We finally compute the statistic using @eq-bp_panel:
+\idxfun{pull}{dplyr}\idxfun{unique}{base}\idxfun{length}{base}\idxfun{sum}{base}\idxfun{summarise}{dplyr}
 
 ```{r}
 #| label: bp_twins_manual
@@ -615,7 +626,8 @@ twins %>%
 ```
 
 
-The **plm** package [@CROI:MILL:08; @CROI:MILL:18.] provides different tools to deal with panel or pseudo-panel data. In particular, @BREU:PAGA:80's test can easily be obtained using `plm::plmtest`. We set the `type` argument to `"bp"` to get the statistic of the original Breusch-Pagan test:
+The **plm** package [@CROI:MILL:08; @CROI:MILL:18]\index[author]{Croissant}\index[author]{Millo} provides different tools to deal with panel or pseudo-panel data. In particular, @BREU:PAGA:80's\index[author]{Breusch}\index[author]{Pagan} test can easily be obtained using `plm::plmtest`. We set the `type` argument to `"bp"` to get the statistic of the original Breusch-Pagan test:
+\idxfun{plmtest}{plm}\idxfun{gaze}{micsr}
 
 ```{r}
 #| label: bp_twins_plmtest
@@ -624,22 +636,26 @@ library(plm)
 plmtest(log(earning) ~ poly(age, 2) + educ, twins, type = "bp") %>% gaze
 ```
 
+\idxdata[)]{twins}{micsr.data}
 The absence of individual effects is rejected at the 5% level, but not at the 1% level.
 
-The model fitted by @SCHA:90 is a simple linear model, the response being the rate of investment (`ikn`)  and the unique covariate Tobin's Q (`qn`):
+The model fitted by @SCHA:90\index[author]{Schaller} is a simple linear model, the response being the rate of investment (`ikn`)  and the unique covariate Tobin's Q (`qn`):
+\idxfun{print}{base}\idxdata[(]{tobinq}{micsr.data}
 
 ```{r}
 tobinq %>% print(n = 3)
 ```
 
 The first two columns contain the firm and the time index. The Breusch-Pagan statistic is:
+\idxfun{plmtest}{plm}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
 plmtest(ikn ~ qn, tobinq, type = "bp") %>% gaze
 ```
 
-The statistic is huge, the hypothesis of no individual effects is therefore very strongly rejected, which is a quite customary result for panel data, especially when the time dimension is high, which is the case for the `TobinQ` data (35 years).
+The statistic is huge, the hypothesis of no individual effects is therefore very strongly rejected, which is a quite customary result for panel data, especially when the time dimension is high, which is the case for the `tobinq` data (35 years).
+\idxdata[)]{tobinq}{micsr.data}
 
 ### System of equations {#sec-bptest_system}
 
@@ -680,7 +696,7 @@ R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
 ols_const <- clm(ols_unconst, R)
 ```
 
-@BREU:PAGA:80 also proposed a test for the absence of correlation between equations in a system of equation. Reminds that in this case, the covariance matrix of the errors for the whole system is $\Omega = \Sigma \otimes I$, where $\Sigma$ contains the variances (on the diagonal) and the covariances (off diagonal) of the errors of the $L$ equations. This symmetric matrix contains $L \times (L + 1) / 2$ distinct elements, $L \times (L + 1) / 2 - L = L \times (L - 1) / 2$ being covariances. The Breusch-Pagan test is based on the estimation of the the covariance matrix using OLS residuals. Denoting $\hat{\Xi} = (\hat{\epsilon}_1, \hat{\epsilon}_2, \ldots \hat{\epsilon}_L)$ the matrix where each column contains the vector of residuals for one equation:
+@BREU:PAGA:80\index[author]{Breusch}\index[author]{Pagan} also proposed a test for the absence of correlation between equations in a system of equation. Reminds that in this case, the covariance matrix of the errors for the whole system is $\Omega = \Sigma \otimes I$, where $\Sigma$ contains the variances (on the diagonal) and the covariances (off diagonal) of the errors of the $L$ equations. This symmetric matrix contains $L \times (L + 1) / 2$ distinct elements, $L \times (L + 1) / 2 - L = L \times (L - 1) / 2$ being covariances. The Breusch-Pagan test is based on the estimation of the the covariance matrix using OLS residuals. Denoting $\hat{\Xi} = (\hat{\epsilon}_1, \hat{\epsilon}_2, \ldots \hat{\epsilon}_L)$ the matrix where each column contains the vector of residuals for one equation:
 
 $$
 \hat{\Omega} = \hat{\Xi} ^ \top \hat{\Xi}=
@@ -701,6 +717,7 @@ $$
 The statistic is then $N \sum_{l=1} ^ {L-1} \sum_{m = l + 1} ^ L \hat{\rho}_{lm}^2$ and is a $\chi^2$ with $L(L-1) / 2$ degrees of freedom if the hypothesis of no correlation is true.
 
 We use the apple production example estimated in @sec-system_equation. The estimation for the whole system by OLS taking constrains into account was stored in an object called `ols_const`. We extract the residuals and arrange them in a $N\times L$ matrix. Taking the cross-product of this matrix and dividing by $N$, we get $\hat{\Sigma}$:
+\idxfun{nobs}{stats}\idxfun{resid}{stats}\idxfun{matrix}{base}\idxfun{crossprod}{base}
 
 ```{r }
 #| label: est_Sigma
@@ -711,6 +728,7 @@ Sigma
 ```
 
 We then compute the estimated standard deviation of the errors for every equation $\hat{\sigma}_l$ and we divide $\hat{\Sigma}$ by a matrix containing the products of the standard deviations, using the `outer` function:
+\idxfun{stder}{micsr}\idxfun{outer}{base}
 
 ```{r }
 #| label: est_corr_matrix
@@ -722,12 +740,14 @@ d
 so that we get a matrix with ones on the diagonal and coefficients of
 correlations off-diagonal. Then, we extract the off-diagonal elements
 using `upper.tri`, which returns a logical matrix with values of `TRUE` above the diagonal:
+\idxfun{upper.tri}{base}
 
 ```{r}
 upper.tri(d)
 ```
 
 Then, indexing `d` by `upper.tri(d)` returns a vector containing the three elements of the matrix that are above the diagonal:^[As the matrix is symmetric, `lower.tri` could also have been used.]
+\idxfun{upper.tri}{base}
 
 ```{r}
 #| collapse: true
@@ -735,6 +755,7 @@ d[upper.tri(d)]
 ```
 
 Finally, we sum the squares of the elements of this vector and multiply by the sample size to get the statistic:
+\idxfun{sum}{base}\idxfun{upper.tri}{base}\idxfun{pchisq}{stats}
 
 ```{r}
 #| label: bptest_panel
@@ -800,7 +821,7 @@ The first possibility is to take only the diagonal terms of this matrix,
 which is relevant if we maintain the hypotheses that the errors are
 uncorrelated. In this case, we get the so-called
 **heterosckedastic-consistent** (or **HC**) estimator of
-$\sigma_{\hat{\beta}}$ proposed by @WHIT:80:
+$\sigma_{\hat{\beta}}$ proposed by @WHIT:80:\index[author]{White}
 
 $$
 \hat{\sigma}_{\mbox{HC}\hat{\beta}} ^ 2 = \frac{1}{S_{xx} ^ 2}\sum_{n = 1}
@@ -854,7 +875,7 @@ which is consistent with the hypothesis that errors are correlated
 *within* a group, but uncorrelated *between* group.
 
 To illustrate the computation of robust covariance estimators, we use
-the data set `urban_gradient` of @DURA:PUGA:20. It contains, the
+the data set `urban_gradient` of @DURA:PUGA:20\index[author]{Duranton}\index[author]{Puga}. It contains, the
 population, the area and the distance to the central business district
 for 2315 block groups in Alabama.^[Actually, the whole data set covers the whole United States, but we use here the small subsample that concerns the state of Alabama.]
 
@@ -876,6 +897,8 @@ $$
 
 We first compute the `density` variable and then estimate the urban
 gradient model.
+\idxdata[(]{urban\_gradient}{micsr.data}
+\idxfun{mutate}{dplyr}\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r}
 #| label: urban_gradient_lm
@@ -891,6 +914,7 @@ errors are heteroskedastic and/or correlated. We first plot the data
 and the regression line on @fig-dataug, the shape of the points
 depending on the metropolitan statistical area (MSA in short, there are 12 of them in
 the sample).
+\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{scale\_shape\_manual}{ggplot2}
 
 ```{r}
 #| label: fig-dataug
@@ -904,6 +928,7 @@ urban_gradient %>% ggplot(aes(distance, log(density))) +
 Heteroskedasticity seems to be present in this data set, as the size of
 the residuals seems to be an increasing function of the unique
 covariate. We first compute the HC standard deviation of the slope, computing the mean of the covariate and $S_{xx}$ and then applying @eq-vcovHC:
+\idxfun{pull}{dplyr}\idxfun{mean}{base}\idxfun{sum}{base}\idxfun{sqrt}{base}\idxfun{resid}{stats}\idxfun{summarise}{dplyr}
 
 ```{r}
 #| label: hc_urban_gradient
@@ -925,6 +950,7 @@ are correlated (because of some unobserved common features of block
 groups in the same county or MSA). In this case the covariance matrix of
 the OLS estimates would be biased. We compute the estimation of the
 clustered standard deviation of the slope (@eq-vcovCL) at the MSA level:
+\idxfun{pull}{dplyr}\idxfun{unique}{base}\idxfun{length}{base}\idxfun{add\_column}{tibble}\idxfun{group\_by}{dplyr}\idxfun{resid}{stats}\idxfun{summarise}{dplyr}\idxfun{sum}{base}\idxfun{sqrt}{base}
 
 ```{r }
 #| label: cl_urban_gradient
@@ -1053,11 +1079,13 @@ $$
 \frac{1}{N} \sum_{g=1} ^ G \hat{\psi}_g \hat{\psi}_g ^ \top
 $$ {#eq-clustered_meat}
 
+\idxdata[(]{uk\_elec}{micsr.data}
 Going back to the electricity consumption estimation, `lm_elec` is the
 model fitted by OLS. We first compute the estimator manually,
 computing the meat (the cross products of the model matrix multiplied
 by the vector of residuals divided by the sample size) and the bread
 (the inverse of the cross products of the model matrix divided by the sample size). The covariance matrix is then computed using @eq-sandwich_hc_multi and we extract the standard deviations of the estimates, ie the square root of the diagonal elements of this matrix:
+\idxfun{nobs}{stats}\idxfun{model.matrix}{stats}\idxfun{resid}{stats}\idxfun{crossprod}{base}\idxfun{solve}{base}
 
 ```{r}
 #| label: vcov_hc_multi_manual
@@ -1069,7 +1097,8 @@ B <- solve(crossprod(Z) / N_el)
 (B %*% M %*% B / N_el) %>% stder
 ```
 
-The **sandwich** package [@ZEIL:04; @ZEIL:06; @ZEIL:KOLL:NATH:20.], provides specialized functions to construct the different pieces of the estimator, namely `estfun`, `meat` and `bread`:
+The **sandwich** package [@ZEIL:04; @ZEIL:06; @ZEIL:KOLL:NATH:20.]\index[author]{Zeileis}\index[author]{Köll}\index[author]{Graham}, provides specialized functions to construct the different pieces of the estimator, namely `estfun`, `meat` and `bread`:
+\idxfun{estfun}{sandwich}\idxfun{meat}{sandwich}\idxfun{bread}{sandwich}\idxfun{stder}{micsr}
 
 ```{r}
 #| label: vcov_hc_multi_pieces
@@ -1089,8 +1118,9 @@ heteroskedasciticy-robust estimator can be obtained by setting the
 freedom correction. For example, when `type = "HC1"` (which is the default), the covariance
 matrix is multiplied by $N / (N - K)$:[^non_spherical-2]
 
-[^non_spherical-2]: See @ZEIL:06 for more details concerning the other
+[^non_spherical-2]: See @ZEIL:06\index[author]{Zeileis} for more details concerning the other
     values of the `type` argument.
+\idxfun{vcovHC}{sandwich}
 
 ```{r}
 #| label: vcov_hc_multi_auto
@@ -1099,6 +1129,7 @@ vcovHC(lm_elec, type = "HC0") %>% stder
 ```
 
 Comparing the standard and the robust estimation of the standard deviations of the estimates, we get:
+\idxfun{vcovHC}{sandwich}\idxfun{vcov}{base}\idxfun{stder}{micsr}\idxfun{rbind}{base}
 
 ```{r}
 #| label: robust_standard_sd
@@ -1108,12 +1139,15 @@ rbind(standard = standard_sd, robust = robust_sd,
       ratio = robust_sd / standard_sd)
 ```
 
+\idxdata[)]{uk\_elec}{micsr.data}
 In this example, the robust standard errors are very close to the ones obtained using the simple formula, although the Breusch-Pagan test rejected the hypothesis of homoskedasticity. This is because the source of heteroskedasticity (the number of customers) is not a covariate of the model.
 
+\idxdata[(]{twins}{micsr.data}
 To illustrate the use of the clustered sandwich estimator, we use the `twins` data set. `lm_twins` is the OLS estimation of the Mincer equation. In this context, the meat can easily be computed using the `apply` and `tapply` functions:
 
 - `apply` performs an operation on one of the margin (1 for rows, 2 for columns) of a matrix,
 - `tapply` performs an operation (the third argument) on a vector conditional (the first argument) on the values of an other vector (the second argument).
+\idxfun{model.matrix}{stats}\idxfun{resid}{stats}\idxfun{crossprod}{base}\idxfun{tapply}{base}\idxfun{apply}{base}\idxfun{solve}{base}
 
 ```{r}
 Z <- model.matrix(lm_twins)
@@ -1125,7 +1159,7 @@ B <- solve(crossprod(Z) / N_tw)
 V_1 <- (B %*% M %*% B / N_tw)
 ```
 
-We can more simply use the `sandwich::vcovCL` function [@ZEIL:KOLL:NATH:20] to compute the clustered estimator. The clustering variable is defined using the `cluster` argument
+We can more simply use the `sandwich::vcovCL` function [@ZEIL:KOLL:NATH:20]\index[author]{Zeileis}\index[author]{Köll}\index[author]{Graham} to compute the clustered estimator. The clustering variable is defined using the `cluster` argument
 that can be set to a one-sided formula. The `type` argument is similar
 to the one of `vcovHC` and there is also a `cadjust` argument which, if
 `TRUE`, multiplies the covariance matrix by $G / (G - 1)$, $G$ being the
@@ -1133,12 +1167,14 @@ number of clusters. The default behavior of `vcovCL` is to set `cadjust` to `TRU
 `type` to `"HC1"`, so that the adjustment is done for the number of
 observations and for the number of groups.
 For the `twins` data set, the clustering variable is `family`:
+\idxfun{vcovCL}{sandwich}
 
 ```{r}
 V_2 <- vcovCL(lm_twins, ~ family, type = "HC0", cadjust = FALSE)
 ```
 
 Finally, `twins` being a pseudo-panel, the `plm` package can also be used. To OLS estimate can be fitted with `plm::plm` by setting the `model` argument to `"pooling"`.
+\idxfun{plm}{plm}
 
 ```{r}
 plm_twins <- plm(log(earning) ~ poly(age, 2) + educ, twins, 
@@ -1146,12 +1182,14 @@ plm_twins <- plm(log(earning) ~ poly(age, 2) + educ, twins,
 ```
 
 A `plm` object is returned and the `vcovHC` method for `plm`s objects by default returns the same clustered covariance matrix as previously:
+\idxfun{vcovHC}{sandwich}
 
 ```{r}
 V_3 <- vcovHC(plm_twins)
 ```
 
 The `vcovHC` and `vcovCL` functions are particularly useful while using the testing functions of the **lmtest** package. For example, `lmtest::coeftest` computes the usual table of coefficients (the same as the one obtained using `summary`), but a matrix or a function that computes a covariance matrix can be passed as a supplementary argument. Therefore, `lmtest::coeftest(lm_twins)` returns exactly the same table of coefficients as `summary(lm_twins)`, but other standard errors are obtained by filling the second argument. For example, to get the clustered standard errors with our preferred specification without degrees of freedom correction (`type = "HC0", cadjust = FALSE`), we can use any of the following three equivalent syntax:
+\idxfun{vcovCL}{sandwich}\idxfun{coeftest}{lmtest}\idxfun{function}{base}
 
 ```{r}
 #| results: false
@@ -1166,6 +1204,7 @@ coeftest(lm_twins, vcovCL, cluster = ~ family,
 
 In the first expression, we provide a matrix previously computed. In the second expression, we use an anonymous function with our preferred options. In the last one, the two arguments of `vcovCL` are indicated as arguments of `coeftest` and are passed internally to `vcovCL`.
 We finally compare the ordinary and the robust estimates of the standard deviations of the OLS estimate:
+\idxfun{vcov}{stats}\idxfun{stder}{micsr}\idxfun{rbind}{base}
 
 ```{r}
 ord_se <- vcov(lm_twins) %>% stder
@@ -1174,7 +1213,7 @@ rbind(ordinary = ord_se, cluster = cl_se,
 ratio = cl_se / ord_se)
 ```
 
-As for the electricity consumption example, we can see that the robust standard errors are almost the same as those computed using the simple formula.
+As for the electricity consumption example, we can see that the robust standard errors are almost the same as those computed using the simple formula.\idxdata[)]{twins}{micsr.data}
 
 <!-- Finally, for our panel data example, we get: -->
 
@@ -1260,7 +1299,7 @@ $C\Omega^{-1}C^\top = C (C^\top C)^{-1} C^\top = C C ^ {-1} C^{\top-1}C^\top=I$[
 and therefore, @eq-glsvar simplifies to:
 
 [^non_spherical-3]: $(AB) ^ {-1} = B^{-1} A^{-1}$ if the inverse of the
-    two matrix exists, see @GREE:18, online appendix p 1074.
+    two matrix exists, see @GREE:18\index[author]{Greene}, online appendix p 1074.
 
 $$
 \mbox{V}(\hat{\gamma}) = \left(Z^{*\top}Z^*\right)^{-1}
@@ -1329,6 +1368,7 @@ Note that there is no intercept in the third estimation as the
 with typical element $1/\hat{\sigma}_n$.
 
 For the electricity consumption example, we know that the unconditional variance of $y$ in city $n$ is $\sigma_{yn} ^ 2 = \sigma_c ^ 2 / I_n$, $I_n$ being the number of consumption units in city $n$ and $\sigma_c ^ 2$ the variance of the individual consumption. Assuming that the same relation applies for the conditional variance, then $\sigma_{\epsilon n} ^ 2 = \sigma ^ 2 / I_n$ and, therefore, the weights ($1 / \sigma_{\epsilon_n} ^ 2$) are proportional to $I_n$. The WLS estimator can then be obtained by computing OLS on series multiplied by $\sqrt{I_n}$:
+\idxdata[(]{uk\_elec}{micsr.data}\idxfun{lm}{stats}
 
 ```{r}
 wls_elec <- lm(I(kwh * sqrt(cust)) ~ sqrt(cust) + I(inc * sqrt(cust)) + 
@@ -1337,6 +1377,7 @@ wls_elec <- lm(I(kwh * sqrt(cust)) ~ sqrt(cust) + I(inc * sqrt(cust)) +
 ```
 
 Or more simply by setting the `weights` argument of `lm` to `cust`:
+\idxfun{lm}{stats}
 
 ```{r}
 wls_elec2 <- lm(kwh ~ inc + I(1 / mc6) +  gas6 + cap, uk_elec, 
@@ -1344,6 +1385,7 @@ wls_elec2 <- lm(kwh ~ inc + I(1 / mc6) +  gas6 + cap, uk_elec,
 ```
 
 Comparing the robust standard errors of the OLS estimator and those of the WLS estimator, we get:
+\idxfun{vcov}{stats}\idxfun{vcovHC}{sandwich}\idxfun{stder}{micsr}\idxfun{tibble}{tibble}
 
 ```{r}
 std_ols <- vcovHC(lm_elec) %>% stder
@@ -1351,7 +1393,7 @@ std_wls <- vcov(wls_elec2) %>% stder
 tibble(ols = std_ols, wls = std_wls, ratio = wls / ols)
 ```
 
-The efficiency gain of using WLS is consequent, as the standard errors reduce by about 25/50% depending on the coefficient.
+The efficiency gain of using WLS is consequent, as the standard errors reduce by about 25/50% depending on the coefficient.\idxdata[)]{uk\_elec}{micsr.data}
 
 ### Error component model {#sec-error_component_gls}
 
@@ -1451,13 +1493,16 @@ Several estimators of the two components of the variance have been
 proposed in the literature. They all consist on replacing
 $\epsilon_{nt}$ in the previous two equations by consistent estimates
 (and for some of them by applying some degrees of freedom correction).
-The estimator proposed by @WALL:HUSS:69 is particularly simple because
+The estimator proposed by @WALL:HUSS:69\index[author]{Wallace}\index[author]{Hussain} is particularly simple because
 it uses the residuals of an OLS estimation.[^non_spherical-4]
 
-[^non_spherical-4]: See also @SWAM:AROR:72, @AMEM:71 and @NERL:71
+[^non_spherical-4]: See also @SWAM:AROR:72\index[author]{Swamy}\index[author]{Arora}, @AMEM:71\index[author]{Amemiya} and @NERL:71\index[author]{Nerlove}.
 
+\idxdata[(]{twins}{micsr.data}
 The residuals of the OLS regression were already added to the `twins` data set and 
 $B \hat{\epsilon}$ was computed. We then compute $W\hat{\epsilon} = \hat{\epsilon} - B \hat{\epsilon}$ and we use @eq-varmxt and @eq-varidios to compute $\hat{\sigma}_\iota ^ 2$, $\hat{\sigma}_\nu ^ 2$, $\theta = 1 - \hat{\sigma}_\nu / \hat{\sigma}_\iota$ and then $\hat{\sigma}_\eta ^ 2 = (\hat{\sigma}_\iota ^ 2 - \hat{\sigma}_\nu^2) / T$.
+\idxfun{mutate}{dplyr}\idxfun{summarise}{dplyr}\idxfun{sqrt}{base}\idxfun{sum}{base}
+
 
 ```{r}
 #| collapse: true
@@ -1472,6 +1517,7 @@ sigs
 ```
 
 `plm` function performs the GLS estimation, ie an OLS regression on data transformed using quasi-differences ($w_{nt} ^ * = w_{nt} - \theta \bar{w}_{n.}$) if the `model` argument is set to `"random"`:
+\idxfun{plm}{plm}\idxfun{summary}{base}
 
 ```{r}
 gls_twins <- plm(log(earning) ~ poly(age, 2) + educ, twins, 
@@ -1481,6 +1527,7 @@ summary(gls_twins)
 
 Note that we set the `method` argument to `"walhus"` to select the Wallace and Hussain estimator.
 The output is quite similar to the one for `lm`' objects, except the two parts that appear at the beginning. The dimensions of the panel are indicated (number of individuals / entities and number of time series / observations in each entity) and whether the data set is balanced or not. A panel data is balanced if all the individuals are observed for the same set of time periods. In a pseudo-panel (which is the case here), the data set is balanced if there is the same number of observations for each entity (which is obviously the case for our sample of twins). This information can be obtained using `pdim`. The first argument is a data frame, the second one, called `index`, is a vector of two characters indicating the name of the individual and of the time index. It can be omitted if the first two columns contains these indexes, which is the case for the `twins` data set:
+\idxfun{pdim}{plm}
 
 ```{r}
 #| collapse: true
@@ -1488,6 +1535,7 @@ pdim(twins, index = c("family", "twin"))
 ```
 
 The second specific part of the output gives information about the variances of the two components of the error. We can see here that the individual effects (in this example a family effect) account for only 15% of the total variance of the error. Therefore, only a small part of the individual mean is removed while performing GLS (14.3%). This information can be obtained using the `ercomp` function:
+\idxfun{ercomp}{plm}
 
 ```{r}
 #| label: ercomp
@@ -1496,6 +1544,7 @@ ercomp(log(earning) ~ poly(age, 2) + educ, twins, method = "walhus")
 ```
 
 The model can also be estimated by maximum likelihood, using `pglm::pglm`. This function adapts the behavior of the `stats::glm` function which fits generalized linear model for panel data. In particular, it has a `family` argument that is set to `"gaussian"`:
+\idxfun{pglm}{pglm}\idxfun{gaze}{micsr}
 
 ```{r}
 ml_twins <- pglm::pglm(log(earning) ~ poly(age, 2) + educ, 
@@ -1505,6 +1554,7 @@ ml_twins %>% gaze
 
 $\sigma_\eta$ and $\sigma_\nu$ are now two parameters that are directly estimated. We can see that the estimated values are very close to the ones obtained using GLS and that $\sigma_\eta$ is statistically significant.
 Comparing OLS and GLS standard deviations, we get:
+\idxfun{vcov}{stats}\idxfun{vcovCL}{sandwich}\idxfun{stder}{micsr}\idxfun{rbind}{base}
 
 ```{r}
 ols_se <- vcovCL(lm_twins, ~ family, type = "HC0", cadjust = FALSE) %>% stder
@@ -1512,7 +1562,9 @@ gls_se <- vcov(gls_twins) %>% stder
 rbind(ols = ord_se, gls = gls_se, ratio = gls_se / ols_se)
 ```
 
+\idxdata[)]{twins}{micsr.data}
 and therefore, there seems to be no gain of efficiency while using OLS instead of GLS. With the Tobin's Q example, we get:
+\idxdata[(]{tobinq}{micsr.data} \idxfun{plm}{plm}\idxfun{ercomp}{plm}
 
 ```{r}
 gls_q <- plm(ikn ~ qn, tobinq, model = "random")
@@ -1520,6 +1572,7 @@ ercomp(gls_q)
 ```
 
 The share of the individual effect is now 27.5% and the GLS is now OLS on series for which 73.5% of the individual mean has been removed, mostly because the time dimension of the panel is high (35 years). Comparing the robust standard errors of OLS and those of GLS, we get:
+\idxfun{lm}{stats}\idxfun{vcovCL}{sandwich}\idxfun{stder}{micsr}\idxfun{vcov}{stats}\idxfun{rbind}{base}
 
 ```{r}
 ols_q <- lm(ikn ~ qn, tobinq)
@@ -1529,13 +1582,14 @@ rbind(ols = sd_ols_q, gls = sd_gls_q, ratio = sd_gls_q / sd_ols_q)
 ```
 
 GLS is much more efficient that OLS as the standard error of the slope are 4 about times smaller.
+\idxdata[)]{tobinq}{micsr.data}
 
 ### Seemingly unrelated regression {#sec-sur}
 
 Because of the inter-equations correlations, the efficient estimator is
 the GLS estimator:
 $\hat{\gamma}=(Z^\top\Omega^{-1}Z)^{-1}Z^\top\Omega^{-1}y$. This
-estimator, first proposed by @ZELL:62, is known by the acronym **SUR**
+estimator, first proposed by @ZELL:62\index[author]{Zellner}, is known by the acronym **SUR**
 for **seemingly unrelated regression**. It can be obtained by applying
 OLS on transformed data, each variable being pre-multiplied by
 $\Omega^{-0.5}$. This matrix is simply
@@ -1585,11 +1639,13 @@ such that $C^\top C=\Sigma^{-1}$.
 
 <!-- clarifier lower/uper triangular -->
 
+\idxdata[(]{data}{micsr.data}
 To illustrate the use of the **SUR** estimator, we go back to the
 estimation of the system of three equations (one cost
 function and two factor shares equations) for the production of apples
 started in @sec-system_equation. In this section, we computed a tibble containing the three responses `Y` and the model matrices for the three equations `Z_c`, `Z_l` and `Z_m` (respectively for the cost, the labor and the materials equations). In @sec-bptest_system, we estimated the covariance matrix of the errors of the three equations `Sigma`.
 To implement the **SUR** estimator, we compute the Cholesky decomposition of the inverse of the estimated covariance matrix of the errors of the three equations:
+\idxfun{transmute}{dplyr}\idxfun{filter}{dplyr}\idxfun{model.frame}{stats}\idxfun{model.matrix}{stats}\idxfun{model.response}{stats}\idxfun{mean}{base}\idxfun{Formula}{Formula}\idxfun{paste}{base}\idxfun{bdiag}{Matrix}\idxfun{as.matrix}{base}\idxfun{model.part}{Formula}\idxfun{pivot\_longer}{dplyr}\idxfun{bind\_cols}{dplyr}\idxfun{nobs}{stats}\idxfun{clm}{micsr}\idxfun{lm}{base}\idxfun{resid}{stats}\idxfun{crossprod}{base}\idxfun{matrix}{base}\idxfun{colnames}{base}
 
 ```{r }
 #| eval: false
@@ -1631,6 +1687,7 @@ EPS <- ols_const %>% resid %>% matrix(ncol = 3)
 Sigma <- crossprod(EPS) / N_ap
 ```
 
+\idxfun{chol}{base}\idxfun{solve}{base}
 
 ```{r }
 V <- chol(solve(Sigma))
@@ -1638,6 +1695,7 @@ V
 ```
 
 We then transform the response and the covariates using @eq-transformation_sur:
+\idxfun{rbind}{base}\idxfun{as.matrix}{base}\idxfun{t}{base}\idxfun{as.numeric}{base}
 
 ```{r}
 Zs <- rbind(cbind(V[1, 1] * Z_c, V[1, 2] * Z_l, V[1, 3] * Z_m),
@@ -1648,6 +1706,7 @@ ys <- as.matrix(Y) %*% t(V) %>% as.numeric
 
 Then the SUR estimator is computed, using `lm` on the transformed
 data and the using `clm` in order to impose the linear restrictions.
+\idxfun{lm}{stats}\idxfun{clm}{micsr}\idxfun{coef}{stats}
 
 ```{r }
 sur <- lm(ys ~ Zs - 1) %>% clm(R = R)
@@ -1655,6 +1714,7 @@ sur %>% coef
 ```
 
 More simply, the `systemfit::systemfit` function can be used, ^[The **systemfit** package was presented in @sec-constrained_ls.] with the `method` argument set to `"SUR"`:^[Note the use of the `methodResidCov` argument: setting it to `"noDfCor"`, the cross-product of the vectors of residuals is divided by the number of observations to get the estimation of the covariance matrix. Other values of this argument enables to perform different kinds of degrees of freedom correction.]
+\idxfun{systemfit}{systemfit}
 
 ```{r }
 library(systemfit)
@@ -1672,7 +1732,7 @@ $$
 $$
 
 Denote $B$ the matrix containing the coefficients $\beta_{ij}$. Remind that, imposing the homogeneity of degree one of the cost function, we imposed that $\beta_{iI} = - \sum_{i=1}^{I-1}\beta_{ij}$. Therefore $\beta_{iI}$ was not estimated and we must added to the $B$ matrix using this formula:
-
+\idxfun{matrix}{base}\idxfun{coef}{stats}\idxfun{apply}{base}\idxfun{cbind}{base}\idxfun{rbind}{base}\idxfun{mean}{base}\idxfun{sum}{base}\idxfun{diag}{base}\idxfun{outer}{base}\idxfun{list}{base}\idxfun{dimnames}{base}
 
 ```{r }
 B <- matrix(coef(sur)[- (1:8)], ncol = 2)[-1, ]
@@ -1690,6 +1750,7 @@ elast
 The three factors are substitutes all the Allen elasticities of
 substitution being positive. 
 The price elasticities are given by: $\epsilon_{ij} = s_j \sigma_{ij}$.
+\idxfun{rbind}{base}
 
 ```{r }
 elast * rbind(shares, shares, shares)
@@ -1701,4 +1762,4 @@ is the elasticity of the demand of labor with the price of materials.
 The price elasticities indicate that the demand for the three inputs are
 inelastic, and it is particularly the case for labor and materials.
 
-
+\idxdata[)]{data}{micsr.data}

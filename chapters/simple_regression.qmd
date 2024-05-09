@@ -10,6 +10,8 @@ source("../_commonR.R")
 
 # Simple linear regression model {#sec-simple_ols}
 
+<!-- \newcommand{\indexfunction}[2]{\index[functions]{#1}} -->
+
 Obviously there will be rarely a deterministic relationship between
 a response and one or several covariates. As education has a positive
 causal effect on wage, there are many other variables that affect
@@ -18,7 +20,7 @@ large set of relevant covariates are observed, some are not (this
 is in particular the case for abilities). Therefore, we won't try to
 modelize the value of $y$ as a function of covariates $x$ and some
 unknown parameters $\gamma$: $y = f(x, \gamma)$ but, more modestly,
-the **conditional expectation** of $y$:\index{conditional expectation}
+the **conditional expectation** of $y$: 
 
 $$
 \mbox{E}(y | x) = f(x, \gamma)
@@ -51,9 +53,9 @@ randomly drawn from this population.
 
 To understand what the
 hypothesis of the simple linear model implies, we consider two data
-sets. The first one is called `birthwt` \index{dataset!birthwt} [@MULL:97] and contains birth weights
+sets. The first one is called `birthwt`\idxdata{birthwt}{micsr} [@MULL:97]\index[author]{Mullbauer} and contains birth weights
 (`birthwt` in ounces) of babies and smoking habits of mothers. The
-`cigarettes` variable is the number of cigarettes smoked per day
+`cigarettes`\idxdata{cigarettes}{micsr} variable is the number of cigarettes smoked per day
 during pregnancy (for about 85% of the mothers, it is equal to 0). We first compute a binary variable for smoking mothers:
 
 
@@ -95,7 +97,7 @@ $\hat{\alpha} = `r round(alpha, 1)`$ and the estimation of $\alpha +
 \beta$ is $`r round(alpha_beta, 1)`$, so that $\hat{\beta} =
 `r round(alpha_beta, 1)` - `r round(alpha, 1)` = `r round(beta, 1)`$
 ounces, which is the estimation of birth weight's loss caused by smoking during pregnancy.
-This can be illustrated using a scatter plot (see @fig-birthwt), with
+This can be illustrated using a scatter plot (see @fig-birthwt)\idxdata{cigarettes}{micsr}, with
 `smoke` on the horizontal axis and `birthwt` on the vertical axis, all
 the points having only two possible abscissa values, 0 and 1. The conditional means
 are represented by large points and we also drew the line that
@@ -116,7 +118,7 @@ birthwt %>% ggplot(aes(smoke, birthwt)) + geom_point(size = 0.2) +
 ```
 
 Consider now the relationship between education and wage. The
-`adoptees` data set [@PLUG:04] \index{dataset!adoptees} contains the number of years of education `educ`
+`adoptees`\idxdata{adoptees}{micsr.data} data set [@PLUG:04]\index[author]{Plug} contains the number of years of education `educ`
 and the annual income `income` (in thousands of US$) for 16481
 individuals. We restrict the sample to individuals with an education level
 between 12 (high school degree) and 15 years (bachelor degree).
@@ -148,7 +150,7 @@ adoptees %>% ggplot(aes(educ, income)) + geom_point(size = 0.1) +
     scale_y_continuous(limits = c(5E01, 1E02))
 ```
 
-This time, we have 4 distinct values of the covariate and we can estimate 4 conditional sample means, but there are only two parameters to estimate in the simple linear model. Therefore, we can't estimate directly $\alpha$ and $\beta$ using the conditional means, except in the improbable case where the 4 conditional means lie on a straight line, which means that, for one additional year of education, the average wage increases exactly by the same amount. We can see on @fig-adoptees that it is not the case: the increase of income is `r round(diff(cond_means$income[1:2]), 1)` for a 13^th^ year of education, `r round(diff(cond_means$income[2:3]), 1)` for a 14^th^ year and `r round(diff(cond_means$income[3:4]), 1)` for a 15^th^ year. We therefore need a formal method of estimation which enable us to obtain values of $\hat{\alpha}$ and $\hat{\beta}$. The remaining of this chapter is devoted to the presentation of this estimator, which is called the **ordinary least squares** (or **OLS**) estimator. 
+This time, we have 4 distinct values of the covariate and we can estimate 4 conditional sample means, but there are only two parameters to estimate in the simple linear model. Therefore, we can't estimate directly $\alpha$ and $\beta$ using the conditional means, except in the improbable case where the 4 conditional means lie on a straight line, which means that, for one additional year of education, the average wage increases exactly by the same amount. We can see on @fig-adoptees\idxdata{adoptees}{micsr.data} that it is not the case: the increase of income is `r round(diff(cond_means$income[1:2]), 1)` for a 13^th^ year of education, `r round(diff(cond_means$income[2:3]), 1)` for a 14^th^ year and `r round(diff(cond_means$income[3:4]), 1)` for a 15^th^ year. We therefore need a formal method of estimation which enable us to obtain values of $\hat{\alpha}$ and $\hat{\beta}$. The remaining of this chapter is devoted to the presentation of this estimator, which is called the **ordinary least squares** (or **OLS**) estimator. 
 
 ### Linear model, conditional expectation and covariance
 
@@ -295,9 +297,9 @@ inter-urban transportation. More precisely, considering that a trip
 can be made using one out of two transport modes (air and rail), how can we modelize
 the market shares of both modes? We'll use in this section a popular
 model in transportation economics which is the price-time model.
-`price_time` contains aggregate data about rail
+`price_time`\idxdata{price\_time}{micsr.data} contains aggregate data about rail
 and air transportation between Paris and 13 French towns in 1995, it
-is reproduced from @BONN:04 p. 364-366.
+is reproduced from @BONN:04 p. 364-366\index[author]{Bonnel}.
 
 ```{r }
 #| label: price_time
@@ -452,7 +454,6 @@ $-\frac{a}{b - a}$ and the slope $\frac{1}{b - a}$. Of course, rail's market sha
 #| echo: false
 knitr::include_graphics("./tikz/fig/price_time.png", auto_pdf = TRUE)
 ```
-
 
 ## Computation of the OLS Estimator
 
@@ -658,7 +659,7 @@ which is the case as the term in bracket is the variance of $x$ and is therefore
 
 ## Geometry of least squares, variance decomposition and coefficient of determination
 
-The OLS estimator relies on variances and covariances of several observable ($y$ and $x$) and computed ($\hat{y}$, $\hat{\epsilon}$) variables. Its properties can be nicely illustrated using vector algebra, each variable being represented by a vector, and by plotting these vectors.^[For a detailed presentation of the geometry of least squares, see @DAVI:MACK:04, chapter 2.]
+The OLS estimator relies on variances and covariances of several observable ($y$ and $x$) and computed ($\hat{y}$, $\hat{\epsilon}$) variables. Its properties can be nicely illustrated using vector algebra, each variable being represented by a vector, and by plotting these vectors.^[For a detailed presentation of the geometry of least squares, see @DAVI:MACK:04, chapter 2.]\index[author]{Davidson}\index[author]{McKinnon}
 
 ### Vectors, variance and covariance
 
@@ -670,7 +671,7 @@ deviations from their sample mean. Then, $\|z\| ^ 2 / N$ is the
 variance of the variable, or the norm of the vector is $\sqrt{N}$ times
 the standard deviation of the corresponding variable.
 The inner (or scalar) product of two vectors is denoted
-$z ^ \top w = w ^ \top z = \sum_{n=1} ^ N z_n w_n$ (note that the inner
+$z ^ \top w = w ^ \top z = \sum_{n=1} ^ N z_n w\index[author]{Davidson}\index[author]{McKinnon}_n$ (note that the inner
 product is commutative). For corresponding variables expressed in
 deviations from their respective means it is, up to the $1/N$ factor, the
 covariance between the two variables. Denoting $\theta$ the angle formed
@@ -836,7 +837,7 @@ halpha <- stats$yb - hbeta * stats$xb
 halpha
 ```
 
-Much simply, the OLS estimator can be obtained using the `lm` function (for linear model). It is a very important function in **R**, not only because it implements efficiently the most important estimator used in econometrics, but also because **R** functions that implement other estimators often mimic the features of the `lm` function. Therefore, once one is at ease with using the `lm` function, using other estimating function of **R** will be straightforward. `lm` is a function that has many arguments, but the first two of them are fundamental and almost mandatory:^[Actually, the second argument `data` is not mandatory because estimation can be performed without using a data frame.]
+Much simply, the OLS estimator can be obtained using the `lm` function (for linear model). It is a very important function in **R**, not only because it implements efficiently the most important estimator used in econometrics, but also because **R** functions that implement other estimators often mimic the features of the `lm`\idxfun{lm}{stats} function. Therefore, once one is at ease with using the `lm` function, using other estimating function of **R** will be straightforward. `lm` is a function that has many arguments, but the first two of them are fundamental and almost mandatory:^[Actually, the second argument `data` is not mandatory because estimation can be performed without using a data frame.]
 
 - `formula` is a symbolic description of the model to be
   estimated,
@@ -853,11 +854,11 @@ lm(sr ~ h, prtime)
 pxt <- lm(sr ~ h, prtime)
 ```
 
-writing directly `pxt` is like writing `print(pxt)`, the side effect
+writing directly `pxt` is like writing `print(pxt)`\idxfun{print}{base}, the side effect
 is to print a short description of the results, namely a reminding of
 the function call and the name and the values of the fitted
 coefficients.
-`lm` returns an object of class `lm` which is a list of 12 elements; their names can be retrieved using the `names` function:
+`lm` returns an object of class `lm` which is a list of 12 elements; their names can be retrieved using the `names` \idxfun{names}{base}function:
 
 ```{r}
 #| label: names_lm
@@ -881,8 +882,9 @@ coef(pxt)
 resid(pxt)
 fitted(pxt)
 ```
+\idxfun{coef}{stats}\idxfun{resid}{stats}\idxfun{fitted}{stats}
 
-There are other functions that extract important information about the model, as the number of observation (`nobs`) and the sum of square residuals (`deviance`):
+There are other functions that extract important information about the model, as the number of observation (`nobs`)\idxfun{nobs}{stats} and the sum of square residuals (`deviance`)\idxfun{deviance}{stats}:
 
 ```{r}
 #| label: other_lm_methods
@@ -927,7 +929,7 @@ slope <- unname(coef(pxt)["h"])
 c(int, slope)
 ```
 
-Note that we use the `unname` function in order to remove the name of the extracted coefficient. Once the intercept (`int`) and the slope (`slope`) are extracted, the
+Note that we use the `unname`\idxfun{unname}{base} function in order to remove the name of the extracted coefficient. Once the intercept (`int`) and the slope (`slope`) are extracted, the
 structural parameters can be retrieved as the intercept is $\alpha =
 -\frac{a}{b-a}$ and the slope $\beta =\frac{1}{b-a}$. 
 Therefore, $a = -\frac{\alpha}{\beta}$ and $b =
@@ -1000,7 +1002,7 @@ and $\sum_{n = 1} ^ N c_{n} = 0$, we finally get:
 The deviation of the estimator of the slope of the OLS regression line
 $\hat{\beta}$ from the true value $\beta$ is therefore a linear
 combination of the $N$ errors.
-Consider our sample used to estimate the price-time model. From a DGP perspective, this sample has been generated using the formula: $y=\alpha + \beta x + \epsilon$. Consider now that the "true" values of $\alpha$ and $\beta$ are $-0.2$ and $0.032$, we can in this case compute the vector of errors for our sample ($\epsilon = y - \alpha - \beta x$):
+Consider our sample used to estimate the price-time model. From a DGP perspective, this sample has been generated using the formula: $y=\alpha + \beta x + \epsilon$. Consider now that the "true" values of $\alpha$ and $\beta$ are $-0.2$ and $0.032$, we can in this case compute the vector of errors for our sample ($\epsilon = y - \alpha - \beta x$):\idxfun{pull}{dplyr}
 
 ```{r}
 #| label: error_computation
@@ -1010,7 +1012,7 @@ y <- prtime %>% pull(sr)
 x <- prtime %>% pull(h)
 eps = y - alpha - beta * x
 ```
-We then compute the OLS estimator and we retrieve $\hat{\epsilon}$ and $\hat{y}$.
+We then compute the OLS estimator and we retrieve $\hat{\epsilon}$ and $\hat{y}$.\idxfun{lm}{stats}
 
 ```{r}
 #| label: resid_fitted_extraction
@@ -1057,7 +1059,7 @@ arrow. For our specific sample, we have a specific vector of
 $\epsilon_n$, which means a specific set of points and a specific
 regression line, the dashed line on the figure. Each value of $y_n$ is then also the sum of the fitted value (the one returned by the regression line for $x=x_n$) and the residual, represented by a dashed arrow. 
 
-We can check that the residuals sums to 0 and are uncorrelated with the covariate and the fitted values:
+We can check that the residuals sums to 0 and are uncorrelated with the covariate and the fitted values:\idxfun{sum}{base}
 
 ```{r}
 #| collapse: true
@@ -1075,7 +1077,7 @@ sum(eps)
 sum(eps * x)
 sum(eps * hat_y)
 ```
-We can also check that the residuals are "smaller" than the errors by computing their standard deviations:
+We can also check that the residuals are "smaller" than the errors by computing their standard deviations:\idxfun{sd}{base}
 
 ```{r}
 #| label: smaller_residuals
@@ -1086,7 +1088,7 @@ sd(hat_eps)
 
 ### Random numbers and simulations {#sec-random_numbers_simulations}
 
-Now consider an other fictive sample for the same values of $x$, ie consider that the values of the threshold values of time are the same, but that the other factors that influence rail's shares (the $\epsilon$) are different. To generate such a fictive sample, we need to generate the $\epsilon$ vector, using a function that generates random numbers^[More precisely, a function that generates a sequence of numbers that looks like random numbers.]. With **R**, these functions have a name composed by the letter `r` (for random) and the abbreviated name of the statistical distribution: for example `runif` draws numbers in a uniform distribution (by default with a 0-1 range) and `rnorm` draws numbers in a normal distribution (by default with zero expectation and unit standard deviation). These functions have a mandatory argument which is the number of draws. For example, to get 5 numbers drawn from a standard normal distribution:
+Now consider an other fictive sample for the same values of $x$, ie consider that the values of the threshold values of time are the same, but that the other factors that influence rail's shares (the $\epsilon$) are different. To generate such a fictive sample, we need to generate the $\epsilon$ vector, using a function that generates random numbers^[More precisely, a function that generates a sequence of numbers that looks like random numbers.]. With **R**, these functions have a name composed by the letter `r` (for random) and the abbreviated name of the statistical distribution: for example `runif`\idxfun{runif}{stats} draws numbers in a uniform distribution (by default with a 0-1 range) and `rnorm`\idxfun{rnorm}{stats} draws numbers in a normal distribution (by default with zero expectation and unit standard deviation). These functions have a mandatory argument which is the number of draws. For example, to get 5 numbers drawn from a standard normal distribution:
 
 ```{r}
 #| include: false
@@ -1108,7 +1110,7 @@ rnorm(5)
 ```
 
 
-As stated previously, the `rnorm` function doesn't draw random numbers but computes a sequence of numbers that looks like a random sequence. Imagine that `rnorm` actually computes a sequence of thousands of numbers, what is obtained using `rnorm(5)` is 5 consecutive numbers in this sequence, for example from the 5107^th^ to the 5111^th^ number. The position of the first element is called the **seed** and it can be set as an integer using the `set.seed` function. Using the same seed while starting a simulation, we would then get exactly the same pseudo-random numbers and therefore the same results:
+As stated previously, the `rnorm`\idxfun{rnorm}{stats} function doesn't draw random numbers but computes a sequence of numbers that looks like a random sequence. Imagine that `rnorm` actually computes a sequence of thousands of numbers, what is obtained using `rnorm(5)` is 5 consecutive numbers in this sequence, for example from the 5107^th^ to the 5111^th^ number. The position of the first element is called the **seed** and it can be set as an integer using the `set.seed`\idxfun{set.seed}{base} function. Using the same seed while starting a simulation, we would then get exactly the same pseudo-random numbers and therefore the same results:
 
 ```{r}
 #| label: setting_seed
@@ -1121,7 +1123,7 @@ rnorm(5)
 rnorm(5)
 ```
 The DGP is completely described by specifying the distribution of $\epsilon$. We'll consider here a normal distribution with mean 0 and standard deviation $\sigma_\epsilon = 0.08$. 
-A pseudo-random sample can then be constructed as follow:
+A pseudo-random sample can then be constructed as follow:\idxfun{pull}{dplyr}\idxfun{rnorm}{stats}\idxfun{tibble}{tibble}
 
 ```{r}
 #| label: a_small_sample
@@ -1133,7 +1135,7 @@ y <- alpha + beta * x + eps
 asmpl <- tibble(y, x)
 ```
 
-which gives the following OLS estimates:
+which gives the following OLS estimates:\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r}
 #| label: lm_on_small_random_sample
@@ -1198,7 +1200,7 @@ The important point is that $\beta$ is, in practice, an unknown
 fixed parameter. $\hat{\beta}$ depends on the $N$ observations of the sample and therefore the $N$ values of the errors. Each sample is characterized by a specific
 vector of errors and therefore by a different value of the estimator.
 
-More generally, we denote $R$ the number of replications and we construct a data frame with $R \times N$ lines. The columns are the 13 values of $x$ (fixed in this simulation), the vector $\epsilon$ drawn in a normal distribution with a standard deviation equal to 0.08 and $y = \alpha + \beta x + \epsilon$, with $\alpha = 0.2$ and $\beta = 0.032$ as previously. Finally we add a variable `smpls` that is a vector containing integers from 1 to $R$ repeated 13 times that will be used to identify the sample:
+More generally, we denote $R$ the number of replications and we construct a data frame with $R \times N$ lines. The columns are the 13 values of $x$ (fixed in this simulation), the vector $\epsilon$ drawn in a normal distribution with a standard deviation equal to 0.08 and $y = \alpha + \beta x + \epsilon$, with $\alpha = 0.2$ and $\beta = 0.032$ as previously. Finally we add a variable `smpls` that is a vector containing integers from 1 to $R$ repeated 13 times that will be used to identify the sample:\idxfun{tibble}{tibble}
 
 ```{r }
 #| label: experience_setting
@@ -1211,14 +1213,14 @@ datas <- tibble(id = rep(1:R, each = N),
 ```
 
 Running regressions on every sample requires to use `lm(y ~ x)` not on the whole data set, but on every subset defined by a value of
-`id`. The `lm` has a `subset` argument that must be a logical expression used to select only a subset of the data frame. For example, to get the fitted model for the 1st sample, the logical expression is `id == 1`  and one can use:
+`id`. The `lm` function\idxfun{lm}{stats} has a `subset` argument that must be a logical expression used to select only a subset of the data frame. For example, to get the fitted model for the 1st sample, the logical expression is `id == 1`  and one can use:
 
 ```{r }
 #| eval: false
 #| label: simulation_with_lm
 lm(y ~ x, data = datas, subset = id == 1)
 ```
-The slope can also be calculated using @eq-linear_estimator, which shows that the OLS estimator is a linear combination of the values of the response:
+The slope can also be calculated using @eq-linear_estimator, which shows that the OLS estimator is a linear combination of the values of the response:\idxfun{filter}{dplyr}\idxfun{mutate}{dplyr}\idxfun{summarise}{dplyr}
 
 ```{r}
 #| label: simulation_using_manual_computation
@@ -1229,7 +1231,7 @@ datas %>% filter(id == 1) %>%
   pull
 ```
 
-To get values of the estimator for every sample, we have to loop on this command for `id` from 1 to `R`. A good practise in **R** is to avoid the use of explicit loops whenever it's possible. The `group_by` / `summarise` couple of functions from the `dplyr` package can be used instead. 
+To get values of the estimator for every sample, we have to loop on this command for `id` from 1 to `R`. A good practice in **R** is to avoid the use of explicit loops whenever it's possible. The `group_by` / `summarise` couple of functions from the `dplyr` package can be used instead. \idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}\idxfun{mean}{base}
 
 ```{r}
 #| label: simulations_group_by_summarise
@@ -1242,7 +1244,7 @@ results
 
 The result is now a tibble with `R` lines, as the computation of the
 OLS estimator is performed for every sample. As we now have a large number of values of $\hat{\beta}$, we can analyse its statistical properties, for example its mean and its standard deviation for the 1000 random samples:
-
+\idxfun{summarise}{dplyr}\idxfun{sd}{base}\idxfun{mean}{base}
 ```{r}
 #| label: simulations_results
 #| collapse: false
@@ -1251,7 +1253,7 @@ results %>% summarise(mean = mean(slope), sd = sd(slope))
 
 We'll see in the next chapter that the expected value of $\hat{\beta}$ is $\beta=0.032$ (we'll say that the OLS estimator is unbiased) and that its standard deviation is $\sigma_\epsilon / \sigma_x / \sqrt{N} = 0.0041$. The mean and standard deviations for our 1000 values of $\hat{\beta}$ are estimates of this two theoretical values. We can see that the mean of $\hat{\beta}$ is actually equal to 0.032 and that the standard deviation equals 0.00437, which is close to the theoretical value.
 
-A more general method to perform simulation is to use list-columns of data frames. To conduct such an analysis step by step, we start with a very small example, with $R = 2$ and $N = 3$.
+A more general method to perform simulation is to use list-columns of data frames. To conduct such an analysis step by step, we start with a very small example, with $R = 2$ and $N = 3$.\idxfun{tibble}{tibble}\idxfun{rnorm}{stats}\idxfun{rep}{base}
 
 ```{r}
 #| label: creating_small_data
@@ -1264,7 +1266,7 @@ small_datas <- tibble(id = rep(1:R, each = N),
 small_datas
 ```
 
- Starting with `small_datas`, we use `tidy::nest` to nest the data frame using the `id` variable (`.by = id`); the name of the results is by default `data`, but it can be customized using the `.key` argument:
+ Starting with `small_datas`, we use `tidy::nest`\idxfun{nest}{tidyr} to nest the data frame using the `id` variable (`.by = id`); the name of the results is by default `data`, but it can be customized using the `.key` argument:
 
 ```{r}
 #| label: nesting_small_data
@@ -1273,14 +1275,14 @@ datalst
 ```
 
 Each line now corresponds to a value of `id` and `smpl` is a list column that contains a tibble,
-
+\idxfun{pull}{dplyr}
 ```{r}
 #| label: extracting_one_tibble
 datalst %>% pull(smpl)
 ```
 
 We now write a function that takes as argument a data frame containing the $x$ and the $y$ columns and returns a one-line tibble that contains the fitted intercept and slope:
-
+\idxfun{tibble}{tibble}\idxfun{mean}{base}\idxfun{function}{base}
 ```{r}
 #| label: ols_function
 ols <- function(s){
@@ -1298,14 +1300,14 @@ ols(small_datas[1:N, ])
 ```
 
 But, as the `smpl` column of `datalst` is a list, the `ols` function can be applied to all the elements of the list, which can be done using the `purrr::map` function which takes as argument a list and a function:
-
+\idxfun{pull}{dplyr}\idxfun{map}{purrr}
 ```{r}
 #| label: ols_on_all_tibbles
 datalst %>% pull(smpl) %>% map(ols)
 ```
 
 and returns a list. But this can more easily be done using `mutate` or `transmute`, so that the result is a tibble:
-
+\idxfun{transmute}{dplyr}\idxfun{map}{purrr}
 ```{r}
 #| label: ols_on_all_tibbles_with_mutate
 results <- datalst %>% transmute(smpl = map(smpl, ols))
@@ -1313,13 +1315,14 @@ results
 ```
 
 Finally, `tidyr::unnest` expands the list column containing tibbles into rows and columns.
-
+\idxfun{unnest}{tidyr}
 ```{r}
 #| label: unnesting_the_result
 results %>% unnest(cols = smpl)
 ```
 
 which returns a standard tibble with one row for each draw and one column for each computed statistic. Going back to the full example with $R = 1000$, we get:
+\idxfun{nest}{tidyr}\idxfun{transmute}{dplyr}\idxfun{map}{purrr}\idxfun{summarise}{dplyr}\idxfun{sd}{base}\idxfun{mean}{base}
 
 ```{r}
 #| label: nest_full_example

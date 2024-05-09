@@ -52,16 +52,18 @@ hearth. Meridians are lines that connect the two poles and the
 longitude is the angular value of the position of a point to the
 reference (Greenwich) meridian.] is $2.33$.
 Most of **sf**'s function starts with `st_`. The `st_point` function can be used to construct a `sfg` (simple feature geometry) for Paris, the argument being a numeric vector containing the longitude and the latitude.
+\idxfun{st\_point}{sf}
 
 ```{r }
 #| results: true
 paris <- st_point(c(2.33, 48.87))
 ```
-We then perform the same operation for Lyon and Marseille:
+We then perform the same operation for Lyon and Marseilles:
+\idxfun{st\_point}{sf}
 
 ```{r }
 lyon <- st_point(c(4.85, 45.76))
-marseille <- st_point(c(5.37, 43.30))
+marseilles <- st_point(c(5.37, 43.30))
 ```
 
 We then construct a `sfc` (simple feature column) which is a set
@@ -71,14 +73,16 @@ the function and a `crs` argument can be used to specify the
 We can use here either `"+proj=longlat +datum=WGS84 +no_defs"` or
 `4326`. The datum is the representation of the earth from which the
 latitudes and the longitudes are computed. 
+\idxfun{st\_sfc}{sf}
 
 ```{r }
-cities_coords <- st_sfc(paris, lyon, marseille, crs = 4326)
+cities_coords <- st_sfc(paris, lyon, marseilles, crs = 4326)
 cities_coords
 ```
 Printing the `sfc` gives interesting information, as the bounding box
 (the coordinates of the rectangle that contains the data) and the **CRS**.
 Finally, we can construct a `sf` object using `st_sf` by binding a data frame containing information about the cities and the `sfc`. 
+\idxfun{tibble}{tibble}\idxfun{st\_sf}{sf}
 
 ```{r }
 cities_data <- tibble(pop = c(2.161, 0.513, 0.861),
@@ -90,6 +94,7 @@ cities
 A `sf` is just a data frame with a specific column that contains the
 coordinates of the observations. This column (called the geometry column) can be
 extracted using the `st_geometry` function:
+\idxfun{st\_geometry}{sf}
 
 ```{r }
 #| results: "hide"
@@ -112,6 +117,7 @@ boundaries of all countries in the world with different administrative
 level. The second argument set to 1 means that we want the boundaries
 of French regions and the third argument set to `"."` means that the
 file is stored in the current directory.]
+\idxfun{gadm}{geodata}
 
 ```{r }
 france <- geodata::gadm("FR", 1, ".")
@@ -119,12 +125,14 @@ france <- geodata::gadm("FR", 1, ".")
 
 `france` is not an object of class `sf`,^[It is actually an object of class `SpatVector`, used by the **terra** package.] so we first coerce it to a
 `sf` using the `st_as_sf` function and then we extract the geometry and the series called `NAME_1` which contains the name of the regions:
+\idxfun{st\_as\_sf}{sf}\idxfun{select}{dplyr}
 
 ```{r }
 france <- france %>% st_as_sf %>%
     select(region = NAME_1)
 ```
 Imported vector data are often large and unnecessary detailed:
+\idxfun{object.size}{utils}\idxfun{format}{base}
 
 ```{r }
 #| collapse: true
@@ -135,6 +143,7 @@ and they can be simplified using the `rmapshaper::ms_simplify`
 function, with a `keep` argument which indicates the degree of
 simplification ($0.01$ means that we seek to obtain a `sf` 100 times
 lighter than the initial one).
+\idxfun{ms\_simplify}{rmapshaper}\idxfun{object.size}{utils}\idxfun{format}{base}
 
 ```{r }
 #| collapse: true
@@ -144,6 +153,7 @@ france %>% object.size %>% format("MB", digits = 2)
 ```
 
 **sf** provides a `plot` method to get quickly a map of the data. Note that a thematic map is plotted for all the series of the `sf` and it is therefore recommended to select first a unique series. If one is only interested in the vectors, they can be extracted before plotting using `st_geometry`:
+\idxfun{st\_geometry}{sf}\idxfun{plot}{base}
 
 ```{r}
 #| results: hide
@@ -151,7 +161,8 @@ france %>% object.size %>% format("MB", digits = 2)
 france %>% st_geometry %>% plot
 ```
 
-For more advanced maps, several specialized packages are available, in particular **tmap** [@TENN:18] and **mapsf** [@GIRA:23]. In this chapter, we'll only use **ggplot**, which provides a `geom_sf` function. This geom is very special compared to other geoms as the kind of geom that is plotted depends on the geometry column of the `sf`: if `cities` is provided as the data argument, points will be plotted but if `france` is provided, polygons will be drawn. In the following code, we start with `france` as the data argument of `ggplot` and then the call to `geom_sf` results in the drawing of the administrative borders of French regions. Then we use a second time `geom_sf` with this time `cities` as data argument, so that points are drawn for the three cities. We use here `aes(size = pop)` so that the size of the points is related to the population of the cities. The result is presented in @fig-map_france.
+For more advanced maps, several specialized packages are available, in particular **tmap** [@TENN:18]\index[author]{Tennekes} and **mapsf** [@GIRA:23]\index[author]{Giraud}. In this chapter, we'll only use **ggplot**, which provides a `geom_sf` function. This geom is very special compared to other geoms as the kind of geom that is plotted depends on the geometry column of the `sf`: if `cities` is provided as the data argument, points will be plotted but if `france` is provided, polygons will be drawn. In the following code, we start with `france` as the data argument of `ggplot` and then the call to `geom_sf` results in the drawing of the administrative borders of French regions. Then we use a second time `geom_sf` with this time `cities` as data argument, so that points are drawn for the three cities. We use here `aes(size = pop)` so that the size of the points is related to the population of the cities. The result is presented in @fig-map_france.
+\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_sf}{ggplot2}
 
 ```{r }
 #| fig-cap: "Map of France with its three main cities"
@@ -161,7 +172,8 @@ france %>% ggplot() + geom_sf() +
 ```
 
 **sf** provides several functions to compute values of interest. For example, to get the distance from
-Paris to Lyon and Marseille, we would use:
+Paris to Lyon and Marseilles, we would use:
+\idxfun{st\_distance}{sf}
 
 ```{r }
 #| collapse: true
@@ -171,6 +183,7 @@ st_distance(cities[1, ], cities[2:3, ])
 first (second) argument being the number of rows (columns) of the matrix. If only
 one argument is supplied, the result is a square matrix with 0 on the
 diagonal. Note that the numbers have a unit of measurement, which is here meters. To define a unit and to convert from one unit to another, the **units** package provides the `set_units` function. Consider the following example: we first provide a numeric ($42.195$), we define its unit as being kilometers, and then we convert it to miles:
+\idxfun{set\_units}{units}
 
 ```{r}
 #| collapse: true
@@ -182,6 +195,7 @@ dkm %>% set_units(miles)
 ```
 
 Even when the conversion is simple, it is advisable to use `set_units` instead of applying the conversion "by hand":
+\idxfun{set\_units}{units}
 
 ```{r}
 #| collapse: true
@@ -191,6 +205,7 @@ dkm * 1000
 ```
 
 The numerical values are the same, but in the second case the unit hasn't changed and is still kilometers. `st_area` computes the area of a polygon:
+\idxfun{set\_units}{units}\idxfun{st\_area}{sf}
 
 ```{r }
 #| collapse: true
@@ -211,12 +226,13 @@ The `us_counties` data set contains the borders of US counties:
 us_counties %>% print(n = 3)
 ```
 
-@KUMA:18 investigates the effect of a legal restriction on home equity
+@KUMA:18\index[author]{Kumar} investigates the effect of a legal restriction on home equity
 extraction which is specific to Texas on mortgage defaults. He
 measures mortgage default rates in Texas and in the bordering states
 and compares mortgage default rates for counties which are closed to
 the Texas border (on both sides). Let's first plot the map of the
 counties, using `ggplot` and `geom_sf` (see @fig-counties):
+\idxfun{filter}{dplyr}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}
 
 ```{r }
 #| label: fig-counties
@@ -233,6 +249,7 @@ statistics computed by the `summarise` function are performed at the state level
 the `geometry` now contains the coordinates of the states. With a void
 call to `summarise`, we get only this new `geometry` and we can use it to
 plot a map of states (see @fig-states):
+\idxfun{filter}{dplyr}\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}
 
 ```{r }
 #| label: fig-states
@@ -252,6 +269,7 @@ of characters (the names of the lines to extract) or a logical
 vector. Here we can index a `sf` by another `sf` and the result is (by
 default) a new `sf` containing the elements of the first one which has
 common points with the second one:
+\idxfun{filter}{dplyr}
 
 ```{r }
 border_states <- states[filter(states, state == "Texas"), ]
@@ -263,6 +281,8 @@ of the borders of Texas and its border states. This is obtained using the
 `st_intersection` function which return 4 lines (one for each border
 state) and the border is then obtain by merging these 4 lines using
 the `st_union` function. The result is presented on @fig-border.
+\idxfun{filter}{dplyr}\idxfun{st\_geometry}{sf}\idxfun{st\_intersection}{sf}\idxfun{st\_union}{sf}
+\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{geom\_sf\_label}{ggplot2}\idxfun{aes}{ggplot2}
 
 ```{r }
 #| fig-cap: Border States and Texas Borders
@@ -283,6 +303,7 @@ we compute the distance to the Texas border. It is defined as the
 distance between the centroid of the county and the closest point of
 the border. The centroids are obtained using the `st_centroid`
 function. We've already used `st_distance` to compute the distance between two points. It can also be used to compute the (shortest) distance between a point and a line:
+\idxfun{filter}{dplyr}\idxfun{pull}{dplyr}\idxfun{st\_geometry}{sf}\idxfun{st\_centroid}{sf}\idxfun{st\_distance}{sf}\idxfun{set\_units}{units}\idxfun{add\_column}{tibble}\idxfun{head}{utils}
 
 ```{r }
 #| collapse: true
@@ -299,6 +320,7 @@ to a line of the second argument. As here there is only one line, we
 convert this matrix to a vector by taking its first column. The unit of the returned values is meter, we convert it in miles, like in the original article and we add this column to the sf.
 As in the original article, we fill with different colors on @fig-close_counties_dist counties
 which are less than 25, 50, 75 and 100 miles from the border:
+\idxfun{mutate}{dplyr}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{scale\_fill\_grey}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{aes}{ggplot2}
 
 ```{r }
 #| label: fig-close_counties_dist
@@ -315,6 +337,7 @@ border_counties %>%
 Finally, we select the relevant series from the data set of the
 paper, called `mortgage_default`, and we merge it with
 `border_counties`:
+\idxfun{full\_join}{dplyr}\idxfun{mutate}{dplyr}\idxfun{st\_sf}{sf}
 
 ```{r}
 #| include: false
@@ -325,6 +348,7 @@ mortdef_sf <- mortgage_defaults %>%
     mutate(dists = ifelse(state == "Texas", dists, - dists))
 ```
 
+\idxfun{right\_join}{dplyr}\idxfun{mutate}{dplyr}\idxfun{ifelse}{base}
 
 ```{r }
 mortdef_sf <- border_counties %>% 
@@ -335,6 +359,8 @@ mortdef_sf <- border_counties %>%
 Note the use of the quite unusual `dplyr::right_join` function. By using `right_join` with `border_counties` as the first argument and `mortgage_defaults` as the second argument, we get an object of the class of the first argument (therefore a `sf`) and we get all the lines of the `mortgage_defaults` tibble and only those of `us_counties` that match.
 We use the convention that the distance is positive for Texan's counties and negative for neighboring states.
 Finally, we plot the discontinuity on @fig-disc_texas.
+\idxfun{filter}{dplyr}\idxfun{mutate}{dplyr}\idxfun{ggplot}{ggplot2}\idxfun{geom\_binmeans}{micsr}
+\idxfun{aes}{ggplot2}\idxfun{geom\_smooth}{ggplot2}
 
 ```{r }
 #| warning: false
@@ -353,7 +379,7 @@ The intercept is a bit more than 7% outside the border and about 4.5% inside the
 
 ## Two examples
 
-To illustrate the techniques presented in the subsequent sections, we'll use two data sets. The first one, from @WHEE:03 is called `agglo_growth` and deals with the topic of economies and diseconomies of agglomeration. The second one, called `sp_growth` is from  @ERTU:KOCH:07 and is used to fit an extension of Solow's growth model.
+To illustrate the techniques presented in the subsequent sections, we'll use two data sets. The first one, from @WHEE:03\index[author]{Wheeler} is called `agglo_growth` and deals with the topic of economies and diseconomies of agglomeration. The second one, called `sp_growth` is from @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} and is used to fit an extension of Solow's growth model.
 
 ### Agglomeration economies and diseconomies
 
@@ -364,7 +390,7 @@ agglo_growth
 ```
 
 `emp_gr` and `pop_gr` are the employment and the population growth in each county between 1980 and 1990 and `emp` and `pop` the level of employment and of the population in 1980. 
-@WHEE:03 investigates the existence of:
+@WHEE:03\index[author]{Wheeler} investigates the existence of:
 
 - agglomeration economies, which implies that the growth of a given
   territory will be positively correlated with its size, 
@@ -445,7 +471,7 @@ louisiana %>% ggplot(aes(pop, pop_gr)) +
 
 ### Solow model {#sec-solow_model}
 
-The second example is from @ERTU:KOCH:07 who estimated a growth model for
+The second example is from @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} who estimated a growth model for
 the countries of the world taking spatial correlation into account:
 
 ```{r}
@@ -480,7 +506,7 @@ countries() %>% check_join(sp_solow, by = "code")
 
 The two problems are that the D.R. Congo (`iso3` code `COD`) used to be
 called Zaire (`iso3` code `ZAR`) and that Hong Kong, which is a part
-of China for the **countries** package, but was considered as a sovereign country in @ERTU:KOCH:07's study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
+of China for the **countries** package, but was considered as a sovereign country in @ERTU:KOCH:07's\index[author]{Ertur}\index[author]{Koch} study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
 
 ```{r eval = TRUE}
 sp_solow <- sp_solow %>% 
@@ -568,7 +594,7 @@ between them is less than, say, 100 kilometers. Once the set of
 neighboors have been defined for every observations, weights can be
 computed. The weights can be equal or may depend on the distance
 between the observation and its neighbors.
-These two operations of defining the set of neighbors and their weights are performed by the **spdep** package [@PEBE:BIVA:23].
+These two operations of defining the set of neighbors and their weights are performed by the **spdep** package [@PEBE:BIVA:23]\index[author]{Pebesma}\index[author]{Bivand}.
 
 ### Contiguity and weights
 
@@ -729,7 +755,7 @@ mrn <- moran.test(louisiana$pop_gr, W_louis) %>% .[["estimate"]] %>% unname %>% 
 The value of the statistic is $`r round(stat_mor, 3)`$ in our example.  Under the
 hypothesis of no correlation, the expected value of this statistic is
 $- 1 / (N-1) = `r round(mu_mor, 3)`$ and the standard deviation is $`r round(sd_mor, 3)`$.^[The expression of the variance of the Moran statistic can be found in
-@BIVA:WONG:18] The standardized statistic ($`r round((stat_mor - mu_mor) / sd_mor, 3)`$) is asymptotically normal and the hypothesis of no spatial correlation is rejected.
+@BIVA:WONG:18\index[author]{Bivand}\index[author]{Wong}] The standardized statistic ($`r round((stat_mor - mu_mor) / sd_mor, 3)`$) is asymptotically normal and the hypothesis of no spatial correlation is rejected.
 An alternative to Moran's $I$ test is Geary's $C$ test, which is
 defined as:
 
@@ -766,7 +792,7 @@ The hypothesis of no spatial correlation is still rejected at the 5%
 level, but the p-value is much higher than the one associated with the
 unconditional test. 
 
-@ERTU:KOCH:07 computed the Moran test for the residuals of the OLS estimation of the standard Solow's growth model. The set of neighbors is obtained with setting an infinite maximum distance, so that all countries are neighbors to each other. Two matrices of weights are computed: one with $w_{nm} = d_{nm}^{-2}$ (`W1`) and the other with $w_{nm} = \mbox{exp}(-2 d_{nm})$ (`W2`):
+@ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} computed the Moran test for the residuals of the OLS estimation of the standard Solow's growth model. The set of neighbors is obtained with setting an infinite maximum distance, so that all countries are neighbors to each other. Two matrices of weights are computed: one with $w_{nm} = d_{nm}^{-2}$ (`W1`) and the other with $w_{nm} = \mbox{exp}(-2 d_{nm})$ (`W2`):
 
 ```{r}
 #| collapse: true
@@ -812,7 +838,7 @@ be 0. On the contrary, in case of positive spatial correlation, a
 majority of points should be of the *"low-low"* or *"high-high"*
 category and the regression line should have a positive slope. 
 
-@ANSE:95 proposed local versions of Moran's $I$ and Geary's $C$ statistics. We then
+@ANSE:95\index[author]{Anselin} proposed local versions of Moran's $I$ and Geary's $C$ statistics. We then
 have for each observation $I_n$ and $G_n$ so that $\sum_n I_n$ and
 $\sum_n G_n$ are respectively proportional to the global Moran and
 Geary statistics. Local Moran's statistics are defined as:
@@ -916,7 +942,7 @@ Therefore, the values of $y$ depends on all the values of $\epsilon$
 and $\tilde{y}_{n}$ is therefore correlated with $\epsilon_n$. The
 OLS estimator is therefore biased and inconsistent. Moreover, in
 @eq-sar, the spatial dependence in the parameter $\rho_y$ feeds back
-[@BIVA:MILL:PIRA:21, page 6], which is not the case for @eq-sem. This means
+[@BIVA:MILL:PIRA:21, page 6]\index[author]{Bivand}\index[author]{Millo}\index[author]{Piras}, which is not the case for @eq-sem. This means
 that for the SEM model, the marginal effect of a covariate is the
 corresponding coefficient, but this is not the case for the SAR model.
 Moreover, the matrix $(I - \rho_y W) ^ {-1}$ can be written as an
@@ -1009,11 +1035,11 @@ y =  Z\gamma + (I - \rho_y W) ^{-1} \epsilon
 $$
 which is the SEM model, as denoting $\eta = (I -\rho_y W) ^ {-1} \epsilon$ the errors of this model, we have $y = Z\gamma + \eta$, with $\eta = \rho_y W \eta + \epsilon$. 
 
-Once it has been established that there is some spatial dependence, one has to choose the "right" specification. Several tests have been proposed, based on the three tests principle. Lagrange multiplier tests proposed by @ANSE:BERA:FLOR:YOON:96, are popular as they only require the OLS estimation. Different flavors of tests have been proposed, testing $\rho_y = 0$, $\rho_\epsilon = 0$ or $\rho_y = \rho_\epsilon = 0$. The basic version of, for example the first test ($\mbox{H}_{0}: \rho_y = 0$) has, as a maintained hypothesis that $\rho_\epsilon = 0$. A robust version of the test has been proposed which doesn't impose this maintained hypothesis. The common factor hypothesis can easily be tested using a likelihood ratio test. The Wald statistic is less easy to compute, has a set of non-linear hypothesis $\theta = - \rho_y \beta$ is tested.
+Once it has been established that there is some spatial dependence, one has to choose the "right" specification. Several tests have been proposed, based on the three tests principle. Lagrange multiplier tests proposed by @ANSE:BERA:FLOR:YOON:96\index[author]{Anselin}\index[author]{Bera}\index[author]{Florax}\index[author]{Yoon}, are popular as they only require the OLS estimation. Different flavors of tests have been proposed, testing $\rho_y = 0$, $\rho_\epsilon = 0$ or $\rho_y = \rho_\epsilon = 0$. The basic version of, for example the first test ($\mbox{H}_{0}: \rho_y = 0$) has, as a maintained hypothesis that $\rho_\epsilon = 0$. A robust version of the test has been proposed which doesn't impose this maintained hypothesis. The common factor hypothesis can easily be tested using a likelihood ratio test. The Wald statistic is less easy to compute, has a set of non-linear hypothesis $\theta = - \rho_y \beta$ is tested.
 
 ### Application to the growth model
 
-To overcome the irrelevant empirical results of the standard Solow model, @ERTU:KOCH:07 consider an endogenous growth model with spillovers. The production function is as usual a Cobb-Douglas:
+To overcome the irrelevant empirical results of the standard Solow model, @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} consider an endogenous growth model with spillovers. The production function is as usual a Cobb-Douglas:
 
 $$
 Y_n(t) = A_n(t) K_n ^ \kappa(t) L_n ^ {1 -\kappa}(t)
@@ -1024,8 +1050,8 @@ $$
 A_n(t) = \Omega(0) e ^ {\mu t} k_n ^ \phi(t) \prod_{m \neq n} ^ N A_n^{\gamma w_{nm}}(t)
 $$
 
-where $k_n(t) = K_n(t) / L_n(t)$ is the physical capital per worker, $\Omega(0)$ is the initial level of the technology and $\mu$ is a constant rate of technological growth, as in the Solow model. The next term takes into account the spillover effect of domestic investment, following @ROME:86, and the strength of this spillover effect is measured by $\phi$. The last term is specific to the model of @ERTU:KOCH:07, for which the spillovers are not restricted to domestic investment, but concerns also the technology of neighboring countries. The effect of the technology of country $m$ on the technology of country $n$ is the product of a constant parameter $\gamma$ and a specific weight, $w_{nm}$, which is a decreasing function of the distance between both countries.
-@ERTU:KOCH:07 showed (equation 10, page 1038) that, at the steady state, the output per capita is:
+where $k_n(t) = K_n(t) / L_n(t)$ is the physical capital per worker, $\Omega(0)$ is the initial level of the technology and $\mu$ is a constant rate of technological growth, as in the Solow model. The next term takes into account the spillover effect of domestic investment, following @ROME:86\index[author]{Romer}, and the strength of this spillover effect is measured by $\phi$. The last term is specific to the model of @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch}, for which the spillovers are not restricted to domestic investment, but concerns also the technology of neighboring countries. The effect of the technology of country $m$ on the technology of country $n$ is the product of a constant parameter $\gamma$ and a specific weight, $w_{nm}$, which is a decreasing function of the distance between both countries.
+@ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} showed (equation 10, page 1038) that, at the steady state, the output per capita is:
 
 $$
 \begin{array}{rcl}
@@ -1043,7 +1069,7 @@ $$
 y = \alpha i + X \beta + WX \theta + \rho_y Wy + \epsilon
 $$
 
-if $\gamma = 0$, the model reduces to the model of @ROME:86 and the last two terms disappear. Note that in this case $\kappa$ and $\phi$ are not identified, but only their sum. Moreover, if $\phi$ is also 0, we get the Solow model. Wheter $\phi$ equals zero or not, the resulting model is a standard linear model already estimated in @sec-solow_model:
+if $\gamma = 0$, the model reduces to the model of @ROME:86\index[author]{Romer} and the last two terms disappear. Note that in this case $\kappa$ and $\phi$ are not identified, but only their sum. Moreover, if $\phi$ is also 0, we get the Solow model. Wheter $\phi$ equals zero or not, the resulting model is a standard linear model already estimated in @sec-solow_model:
 
 ```{r}
 ols_solow <- lm(log(gdp95) ~ log(i) + log(v), sp_solow2)
@@ -1063,7 +1089,7 @@ The hypothesis of $\gamma = 0$ can be tested using Lagrange multipliers tests, t
 lm.LMtests(ols_solow, W1, test = "all") %>% gaze
 ```
 
-All the tests reject the hypothesis of uncorrelated errors or/and spatial lag, except the robust test of uncorrelated errors. Therefore, these tests seems to indicate that the correct model is a spatial lag model. We then estimate the three spatial models using the **spatialreg** package [@PEBE:BIVA:23] which provides three functions: `lagsarlm` for SAR models, `sacsarlm` for SEM model and `errorsarlm` for SAR-SEM models. The three first arguments are `formula`, `data` and `listw`, which should be a `listw` object containing the weights. The `Durbin` argument enables to estimate the Durbin's versions of the model; this can be done either by setting it to `TRUE` (a spatial lag is then added for all the covariates) or a formula indicating the subset of covariates for which spatial lags have to be added. We estimate also, as for the OLS estimator, the variant of the model that imposes the theoretical restrictions on the coefficients. The results are presented in in @tbl-results_ertu_koch.
+All the tests reject the hypothesis of uncorrelated errors or/and spatial lag, except the robust test of uncorrelated errors. Therefore, these tests seems to indicate that the correct model is a spatial lag model. We then estimate the three spatial models using the **spatialreg** package [@PEBE:BIVA:23]\index[author]{Pebesma}\index[author]{Bivand} which provides three functions: `lagsarlm` for SAR models, `sacsarlm` for SEM model and `errorsarlm` for SAR-SEM models. The three first arguments are `formula`, `data` and `listw`, which should be a `listw` object containing the weights. The `Durbin` argument enables to estimate the Durbin's versions of the model; this can be done either by setting it to `TRUE` (a spatial lag is then added for all the covariates) or a formula indicating the subset of covariates for which spatial lags have to be added. We estimate also, as for the OLS estimator, the variant of the model that imposes the theoretical restrictions on the coefficients. The results are presented in in @tbl-results_ertu_koch.
 
 
 ```{r}
@@ -1096,7 +1122,7 @@ lrtest(m1, m1c) %>% gaze
 ```
 
 As seen previously, the theoretical restrictions are rejected at the 5% level using a Wald test for the Solow model. This is not the case for the spatial lag model. Note also that the Wald and the likelihood ratio tests give very similar results.
-An interesting feature of the model of @ERTU:KOCH:07 is that their specification enables the identification of all the structural parameters of the model, $\kappa$, $\phi$ and $\gamma$. If $\phi = 0$, $\theta = \gamma \beta$ and $\rho_y = \gamma$, so that: $y = \alpha + (I - \gamma W)X\beta + \gamma y + \epsilon$, the reduced form of the model is, in matrix form:
+An interesting feature of the model of @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} is that their specification enables the identification of all the structural parameters of the model, $\kappa$, $\phi$ and $\gamma$. If $\phi = 0$, $\theta = \gamma \beta$ and $\rho_y = \gamma$, so that: $y = \alpha + (I - \gamma W)X\beta + \gamma y + \epsilon$, the reduced form of the model is, in matrix form:
 
 $$
 y = \alpha \iota + X \beta + (I - \gamma W) ^ {-1} \epsilon
@@ -1198,7 +1224,7 @@ rownames(struct_par) <- names(s)
 struct_par
 ```
 
-The value of $\kappa$ is compatible with the observable share of the profits in the national product. $\phi$ is significant only at the 10% level. Finally, $\gamma$ is highly significant, which is a confirmation of the relevance of the model of @ERTU:KOCH:07.
+The value of $\kappa$ is compatible with the observable share of the profits in the national product. $\phi$ is significant only at the 10% level. Finally, $\gamma$ is highly significant, which is a confirmation of the relevance of the model of @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch}.
 
 
 

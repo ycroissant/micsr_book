@@ -20,18 +20,17 @@ one-parameter distribution functions:
     integer values,
 -   the exponential distribution, which is often used for responses that
     represent a time span (for example an unemployment spell).
-\index{Poisson distribution}
 
 ### Computing the ML estimator for the Poisson distribution {#sec-poisson_ml}
 
-As an example of count data, we consider the `cartel` data set of @MILL:09, who
+As an example of count data, we consider the `cartel` data set of @MILL:09\index[author]{Miller} who
 analyzed the role of commitment to the lenient prosecution of early
 confessors on cartel enforcement. The response `ncaugh` is a count, the
 number of cartel discoveries per 6 months period, for the 1985-2005
-period. \index{R functions!sapply}
+period. 
 A Poisson variable is defined by the following mass probability
 function:
-\index{R functions!lm}
+
 
 $$
 P(y; \theta) = \frac{e ^ {-\theta} \theta ^ y}{y !}
@@ -123,6 +122,7 @@ $$
 The log-likelihood is therefore the sum of three terms and note that the
 last one doesn't depend on $\theta$.
 In our sample, we have:
+\idxfun{length}{base}\idxfun{sum}{base}\idxfun{lfactorial}{base}
 
 ```{r }
 y <- cartels$ncaught
@@ -205,9 +205,10 @@ The expected value and the variance of $y$ are $\mbox{E}(y) =
 for a variable which follows an exponential distribution, the mean
 should be equal to the standard deviation.  To illustrate the use of
 the exponential distribution, we use the `oil` data set of
-@FAVE:PESA:SHAR:94 for which the response `dur` is the time span
+@FAVE:PESA:SHAR:94\index[author]{Favero}\index[author]{Pesaran}\index[author]{Sharma} for which the response `dur` is the time span
 between the discovery of an oil field and the date of the British
 government approval to exploit this field.
+\idxfun{summarise}{dplyr}\idxfun{mean}{base}\idxfun{sd}{stats}
 
 ```{r }
 #| collapse: true
@@ -690,6 +691,7 @@ hypothesis is correct, $\mbox{plim} \,\bar{y} = \mbox{plim}\,
 \hat{\sigma}_y ^ 2 = \theta_0$ so that the 4 estimators are consistent as
 they all converge to $\theta_0 / N$.
 Computing these 4 estimations of the variance of $\hat{\theta}$ for the `ncaught` variable, we get:
+\idxfun{nrow}{base}\idxfun{mean}{base}
 
 ```{r }
 #| collapse: true
@@ -759,7 +761,7 @@ $$
 $$
 
 Computing this 4 estimations of the variance of $\hat{\theta}$, we get for the `oil` variable:
-
+\idxfun{mean}{base}\idxfun{length}{base}\idxfun{sqrt}{base}\idxfun{round}{base}
 
 ```{r }
 #| collapse: true
@@ -881,7 +883,7 @@ X}{\sqrt{N}}\right) \overset{a}{=} \lim_{n\rightarrow \infty} \frac{1}{N}\sum_{n
 1} ^ N \gamma_n(y_n; \theta_0)\gamma_n(y_n; \theta_0)^\top = \mathbf{\mathcal{I}}
 $$
 
-where $w\overset{a}{=}z$ means that $w$ is asymptotically equal to $z$, ie that they tend to the same limit in probability [see @DAVI:MACK:04, 205].
+where $w\overset{a}{=}z$ means that $w$ is asymptotically equal to $z$, ie that they tend to the same limit in probability [see @DAVI:MACK:04, 205]\index[author]{Davidson}\index[author]{McKinnon}.
 Therefore, the asymptotic variance of $\sqrt{N}(\hat{\theta}-\theta_0)$ is
 $\mathbf{\mathcal{H}} ^ {-1} \mathbf{\mathcal{I}} \mathbf{\mathcal{H}}
 ^ {-1}$, which reduces to, applying the information matrix equality
@@ -909,7 +911,7 @@ $$
 
 Two other possible estimators are obtained by evaluating
 the two previous expressions without the expectation. The gradient
-based estimator, also called the **outer product of the gradient** or the **BHHH**^[The initials of the authors of @BERN:HALL:HALL:HAUS:74 who first proposed this estimator.]
+based estimator, also called the **outer product of the gradient** or the **BHHH**^[The initials of the authors of @BERN:HALL:HALL:HAUS:74\index[author]{Berndt}\index[author]{Hall, Browny}\index[author]{Hall, Robert}\index[author]{Hausman} who first proposed this estimator.]
 estimator is:
 
 $$
@@ -989,7 +991,7 @@ desired to the maximum.
 We first begin by describing the model we want to estimate using a
 formula and extracting the relevant components of the model, namely the
 vector of response and the matrix of covariates.
-
+\idxfun{length}{base}\idxfun{model.frame}{stats}\idxfun{model.matrix}{stats}\idxfun{model.response}{stats}
 ```{r }
 form <- dur ~ p98 + varp98
 mf <- model.frame(form, oil)
@@ -1000,6 +1002,7 @@ N <- length(y)
 
 We then define functions for the log-Likelihood, the gradient and
 the hessian, as a function of the vector of parameters $\gamma$.
+\idxfun{function}{base}\idxfun{exp}{base}\idxfun{sqrt}{base}\idxfun{crossprod}{base}\idxfun{apply}{base}\idxfun{drop}{base}
 
 ```{r }
 theta <- function(gamma) theta <- exp(- drop(Z %*% gamma))
@@ -1016,6 +1019,7 @@ concave. This is not the case here but, anyway, the choice of good
 starting values limits the number of iterations. In our example, a
 good candidate is the ordinary least squares estimator, with $\ln y$
 as the response:
+\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r }
 #| collapse: true
@@ -1025,6 +1029,7 @@ g(gamma_0)
 ```
 
 We then update $\gamma$ using @eq-updating_rule:
+\idxfun{solve}{base}
 
 ```{r }
 #| collapse: true
@@ -1042,6 +1047,7 @@ gradient is less than an arbitrary small real value. As a simple
 criteria, we consider the sum of the squares of the elements of the
 score, and we iterate as long as this scalar is greater than
 $10^{-07}$:
+\idxfun{lm}{stats}\idxfun{coef}{stats}\idxfun{mean}{base}\idxfun{paste}{base}\idxfun{cat}{base}\idxfun{solve}{base}
 
 ```{r }
 gamma_0 <- coef(lm(log(dur) ~ p98 + varp98, oil))
@@ -1068,6 +1074,7 @@ g(gamma)
 We then use @eq-exp_dist_lgh and the functions `H` and `G` defined
 previously to compute the three estimations of the information matrix
 and the four estimators of the covariance matrix of the estimator:
+\idxfun{crossprod}{base}\idxfun{solve}{base}
 
 ```{r }
 Info_g <- crossprod(G(gamma))
@@ -1079,7 +1086,8 @@ V_h <- solve(Info_H)
 V_sand <- solve(Info_H) %*% Info_g %*% solve(Info_H)
 ```
 
-We then compare the resulting estimated standard errors of the estimator. To obtain a compact output, we use the `sapply` function, which is a specialized version of `lapply`. `lapply` takes as argument a list and a function and the result is the list containing the result of applying the function to each element of the list. `sapply`, when possible, returns a 
+We then compare the resulting estimated standard errors of the estimator. To obtain a compact output, we use the `sapply` function, which is a specialized version of `lapply`. `lapply` takes as argument a list and a function and the result is the list containing the result of applying the function to each element of the list. `sapply`, when possible, returns a matrix:
+\idxfun{sapply}{base}\idxfun{list}{base}\idxfun{stder}{micsr}\idxfun{function}{base}
                                                                    
 ```{r }
 sapply(list(V_i, V_h, V_g, V_sand), function(x) stder(x))
@@ -1183,11 +1191,12 @@ $$
 $$ {#eq-log_lik_lognorm}
 
 Maximizing @eq-log_lik_lognorm is obviously equivalent to minimizing $\sum_{n = 1} ^ {+\infty}(\ln y_n - \gamma ^ \top z_n)^ 2$ which is the residual sum of squares of a regression with $\ln y_n$ as the response. Therefore the ML estimation of $\gamma$ can be performed using OLS. 
+\idxdata[(]{apples}{micsr.data}
 
 We consider only one year (1986) of production for the `apples` data set, we construct a unique output variable (`y`), we rename for convenience the three factors as `k`, `l` and `m` (respectively for capital, labor and materials) and,
 for a reason that we'll be clear latter, we divide all the variables
 by their sample mean:
-
+\idxfun{filter}{dplyr}\idxfun{transmute}{dplyr}\idxfun{mean}{base}
 ```{r }
 aps <- apples %>%
     filter(year == 1986) %>% # au lieu de 86
@@ -1204,6 +1213,7 @@ $$
 $$ {#eq-cobb_douglas_production}
 
 We then fit @eq-cobb_douglas_production using `lm`:
+\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r}
 #| collapse: true
@@ -1212,6 +1222,7 @@ cobb_douglas %>% coef
 ``` 
 
 The problem of using `lm` is that, although the estimates are the ML estimates, the response is $\ln y$ and not $y$. Therefore, the log likelihood reported by `lm` is computed using the density of $\ln y$:
+\idxfun{logLik}{stats}
 
 ```{r}
 #| label: uncorrect_logLik_lognormal
@@ -1220,6 +1231,7 @@ logLik(cobb_douglas)
 ```
 
 and is incorrect as the term $- \sum_{n=1} ^ N \ln y_n$ in @eq-log_lik_lognorm is missing. Adding this term to the log-likelihood returned by the `logLik` function, we get:
+\idxfun{as.numeric}{base}\idxfun{logLik}{stats}\idxfun{sum}{base}
 
 ```{r}
 #| label: correct_logLik_lognormal
@@ -1228,6 +1240,7 @@ as.numeric(logLik(cobb_douglas)) - sum(log(aps$y))
 ```
 
 The `micsr::loglm` function estimates models for which the response is in logarithm. The estimation of the parameters is performed using `lm`, but the result is a `micsr` object, from which the correct log-likelihood, gradient and hessian can be extracted:
+\idxfun{loglm}{micsr}\idxfun{logLik}{stats}
 
 ```{r}
 #| label: loglm_logLik_lognormal
@@ -1246,6 +1259,7 @@ $$
 $$ {#eq-cobb_douglas_production_reparam}
 
 Therefore, regressing  $\ln y_n$ on $\ln q_j / q_J, \forall j = 1\ldots J-1$ and $\ln q_J$, the hypothesis of constant returns to scale is $\beta_J^* = \sum_{j=1}^{J} \beta_j - 1 = 0$ and the constant returns to scale are imposed if $\ln q_J$ is removed from the regression. Note the presence of a constant term ($\ln q_J$) on the right side of the equation. This is called an offset and can be introduced in a formula with the `offset(w)` syntax:
+\idxfun{loglm}{micsr}\idxfun{coef}{stats}\idxfun{logLik}{stats}
 
 ```{r}
 #| label: cobb_douglass_reparam
@@ -1255,6 +1269,7 @@ cd_repar <- loglm(y ~ log(k / m) + log(l / m) + log(m) +
 coef(cd_repar)
 logLik(cd_repar)
 ```
+\idxfun{unname}{base}\idxfun{coef}{stats}
 
 ```{r}
 #| label: coef_cd_repar_hide
@@ -1262,6 +1277,7 @@ logLik(cd_repar)
 bm <- unname(coef(cd_repar)["log(m)"])
 ```
 
+\idxdata[)]{apples}{micsr.data}
 The log-likelihood is obviously the same as previously and $\beta_J ^ * = `r round(bm, 2)`$, which implies a scale elasticity equal to `r round(1 + bm, 2)`.
 @ZELL:REVA:69 proposed a generalization of the Cobb-Douglas production function of the form:
 
@@ -1356,7 +1372,7 @@ y_n & \frac{1}{\sigma^2} - \frac{3}{\sigma^4}\epsilon_n^2
 \right)
 $$
 
-To estimate the generalized production function, we use the **maxLik** package [see @HENN:TOOM:11], which is dedicated to the ML
+To estimate the generalized production function, we use the **maxLik** package [see @HENN:TOOM:11]\index[author]{Henningsen}\index[author]{Hamann}, which is dedicated to the ML
 estimation of models. This package provides different algorithms to
 compute the maximum of the likelihood, the Newton-Raphson method that
 we used previously being the default. A `maxLik` object is returned, and specific methods as `coef` and `summary` are provided. To use **maxLik**, we need to define a function of the
@@ -1385,6 +1401,8 @@ Finally, the `repar` argument enables to write the likelihood in its
 default). 
 
 We first extract the response and the covariates matrix:
+\idxdata[(]{apples}{micsr.data}
+\idxfun{model.frame}{stats}\idxfun{model.matrix}{stats}\idxfun{model.response}{stats}
 
 ```{r }
 form <- y ~ log(k) + log(l) + log(m) ;
@@ -1394,12 +1412,14 @@ Z <- model.matrix(form, mf)
 ```
 
 We then use as starting values the coefficients of the Cobb-Douglas previously estimated, and we set the starting value of $\lambda$ to 0.
+\idxfun{coef}{stats}
 
 ```{r }
 st_val <- c(coef(cd_repar)[1:4], lambda = 0, coef(cd_repar)[5])
 ```
 
 We now proceed to the estimation. The two mandatory arguments of `maxLik` are the first argument `logLik` which should be a function returning the log-likelihood and `start` which is a vector of starting values. We use also here `y` and `Z` arguments that are passed to `zellner_revankar`:
+\idxfun{maxLik}{maxLik}\idxfun{summary}{base}\idxfun{coef}{stats}
 
 ```{r }
 gpf <- maxLik::maxLik(zellner_revankar, y = y, Z = Z, start = st_val)
@@ -1428,12 +1448,14 @@ tibble(production = c("min", "Q1", "median", "Q3", "max"),
 ```
 
 The "raw" version of the model can also be estimated by setting the `repar` argument to `FALSE`. In this case, the starting values are the coefficients of `cd_loglm` for all the coefficients but $\lambda$ and the starting value for this latter coefficient is set to 0.
+\idxfun{coef}{stats}\idxfun{maxLik}{maxLik}
 
 ```{r}
 st_val2 <- c(coef(cd_loglm)[1:4], lambda = 0, coef(cd_loglm)[5])
 gpf2 <- maxLik::maxLik(zellner_revankar, y = y, Z = Z, 
                        start = st_val2, repar = FALSE)
 ```
+\idxdata[)]{apples}{micsr.data}
 
 
 ## Tests {#sec-ml_tests}
@@ -1449,7 +1471,7 @@ large model are assumed to be the "true" model,
   be zero if the tested hypothesis (for example normality or
   homoskedasticity) is true,
 - tests for non-nested models and especially the test proposed by
-  @VUON:89: in this case, whatever the values of the parameters,
+  @VUON:89\index[author]{Vuong}: in this case, whatever the values of the parameters,
   there is no way for one model to reduce to the other model and the
   test have the interesting feature that the two models are compared
   without hypothesizing that one of them is the true model.
@@ -1529,7 +1551,7 @@ Using @eq-wald_stat and @eq-lm_stat, we get: $W / LM = \hat{\epsilon}_c ^ \top \
 $$
 LM / N = \frac{W / N}{1 + W / N}
 $$
-Denoting $f(x) = \ln (1+x) - x / (1 + x)$, for $x \geq 0$, $f'(x) = x / (1 + x) ^ 2$. Therefore, $f(x)$ is strictly increasing for $x >0$ and, as $f(0) = 0$, $f(x) > 0 \; \forall x >0$. With $x = W / N$, $\ln (1 + W/N) - W/N / (1 + W/N) = LR/N - LM /N > 0$ and therefore $LR > LM$. Therefore, we have proved that:^[see @VAND:81.]
+Denoting $f(x) = \ln (1+x) - x / (1 + x)$, for $x \geq 0$, $f'(x) = x / (1 + x) ^ 2$. Therefore, $f(x)$ is strictly increasing for $x >0$ and, as $f(0) = 0$, $f(x) > 0 \; \forall x >0$. With $x = W / N$, $\ln (1 + W/N) - W/N / (1 + W/N) = LR/N - LM /N > 0$ and therefore $LR > LM$. Therefore, we have proved that:^[see @VAND:81.]\index[author]{Vandaele}
 
 $$
 LM<LR<W
@@ -1561,14 +1583,14 @@ $$
 R ^ 2 = \frac{W}{N + W} = 1 - e^{LR / N} = LM / N
 $$ {#eq-pseudo_r2}
 
-These pseudo-R^2^ can be used for any model computed by maximum likelihood and we'll denote them respectively $R^2_{W}$, $R^2_{LR}$ and $R^2_{LM}$. They have been proposed by @MAGE:90. $R^2_{LR}$ is known as the @COX:SNEL:89's R^2^, but has been
-previously proposed by @MADD:83. A variant, proposed by @ALDR:NELS:84,  is obtained using the formula of $R^2_{W}$, but using the LR statistic: $LR / (N + LR)$. A problem with the pseudo-R^2^ computed using the LR statistic is that, for a perfect or **saturated** model, it can be lower than 1. Denoting $\ln L_0$ and $\ln L_*$ the values of the log-likelihood for the null (intercept only) and the saturated model, the LR statistic for the saturated model is $LR_* = 2(\ln L_* - \ln L_0)$. In case of discrete response (as for the Poisson model developed in the beginning of this chapter), the individual contributions to the log-likelihood are logs of probabilities (all equal to 1 for a saturated model), so that $\ln L_* = 0$ and $LR_* = -2\ln L_0$. Therefore, $R^2_{LR}$ equals $1 - e^{LR_*/N} \neq 1$. Scaled versions of $R^2_{LR}$ and @ALDR:NELS:84's $R^2$ have been proposed respectively by @NAGE:91:^[And previously used by @CRAG:UHLE:70.]
+These pseudo-R^2^ can be used for any model computed by maximum likelihood and we'll denote them respectively $R^2_{W}$, $R^2_{LR}$ and $R^2_{LM}$. They have been proposed by @MAGE:90\index[author]{Magee}. $R^2_{LR}$ is known as the @COX:SNEL:89's\index[author]{Cox}\index[author]{Snell} R^2^, but has been
+previously proposed by @MADD:83\index[author]{Maddala}. A variant, proposed by @ALDR:NELS:84\index[author]{Aldrich}\index[author]{Nelson},  is obtained using the formula of $R^2_{W}$, but using the LR statistic: $LR / (N + LR)$. A problem with the pseudo-R^2^ computed using the LR statistic is that, for a perfect or **saturated** model, it can be lower than 1. Denoting $\ln L_0$ and $\ln L_*$ the values of the log-likelihood for the null (intercept only) and the saturated model, the LR statistic for the saturated model is $LR_* = 2(\ln L_* - \ln L_0)$. In case of discrete response (as for the Poisson model developed in the beginning of this chapter), the individual contributions to the log-likelihood are logs of probabilities (all equal to 1 for a saturated model), so that $\ln L_* = 0$ and $LR_* = -2\ln L_0$. Therefore, $R^2_{LR}$ equals $1 - e^{LR_*/N} \neq 1$. Scaled versions of $R^2_{LR}$ and @ALDR:NELS:84's\index[author]{Aldrich}\index[author]{Nelson} $R^2$ have been proposed respectively by @NAGE:91\index[author]{Nagelkerke}:^[And previously used by @CRAG:UHLE:70\index[author]{Cragg}\index[author]{Uhler}.]
 
 $$
 R^2 = \frac{1 - e ^ {- LR / N}}{1 - e ^ {- LR _ * / N}}
 $$
 
-and by @VEAL:ZIMM:96:
+and by @VEAL:ZIMM:96:\index[author]{Veall}\index[author]{Zimmermann}
 
 $$
 R^2 = \frac{LR / (LR + N)}{LR _ * / (LR _ * + N)}
@@ -1621,6 +1643,8 @@ $$
 W = (R \hat{\theta}_{nc} - q)^\top(R\hat{V}_{\hat{\theta}}R^\top) ^ {-1} (R \hat{\theta}_{nc} - q)
 $$
 With the reparametrized model, denoting $\hat{V}_{\hat{\theta}_2}$ the subset of $\hat{V}_{\hat{\theta}}$ that concern $\theta_2$, the Wald statistic simplifies to $W = \hat{\theta}_2 ^ \top\hat{V}_{\hat{\theta}_2}^{-1}\hat{\theta}_2$. The code bellow demonstrates the equivalence of the two approaches:
+\idxfun{matrix}{base}\idxfun{coef}{stats}\idxfun{vcov}{stats}\idxfun{drop}{base}
+\idxdata[(]{apples}{micsr.data}
 
 ```{r}
 #| collapse: true
@@ -1637,6 +1661,7 @@ c(wald_test, wald_test2)
 ```
 
 We can also use the approximate formula that indicates that the Wald statistic is close to the sum of the squares of the corresponding t statistics if the correlation between the two parameters is not two high:
+\idxfun{coef}{stats}\idxfun{summary}{base}
 
 ```{r}
 #| collapse: true
@@ -1645,6 +1670,7 @@ t1 <- csgpf["log(m)", 3] ; t2 <- csgpf["lambda", 3] ; t1 ^ 2 + t2 ^ 2
 ```
 
 The approximation is very bad, which should be explained by a high correlation between the two coefficients:
+\idxfun{vcov}{stats}
 
 ```{r}
 #| collapse: true
@@ -1661,6 +1687,7 @@ r12
 ```
 
 The statistic can also easily obtained using the `car::linearHypothesis` function described in @sec-wald_test_example:
+\idxfun{linearHypothesis}{car}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
@@ -1675,6 +1702,7 @@ The likelihood ratio statistic is very easy to compute if the two
 models have been estimated as it is simply twice the difference of the
 log-likelihood of the two models. The coefficients of the constrained
 model can be obtained by least squares using the reparametrized version of the Cobb-Douglas (@eq-cobb_douglas_production_reparam) and imposing $\beta_m = 0$. Using `micsr::loglm`, we get:
+\idxfun{offset}{stats}\idxfun{logLik}{stats}\idxfun{loglm}{micsr}\idxfun{as.numeric}{base}
 
 ```{r }
 #| collapse: true
@@ -1699,6 +1727,7 @@ $\theta_1^\top = (\alpha, \beta_l, \beta_k, \sigma)$ is estimated, so that eleme
 derivatives of the log-likelihood with $\theta_1$ should be 0. The other
 elements of the gradient are not 0, but should be close to 0 if the
 hypothesis are true.  Using the `zellner_revankar` function, we compute all the necessary information (the log-likelihood, the gradient and the hessian) for the constrained model, which corresponds to the coefficients of the `crs` object fitted by least squares using `loglm`:
+\idxfun{zellner\_revankar}{micsr}\idxfun{coef}{stats}\idxfun{attr}{base}\idxfun{apply}{base}
 
 ```{r}
 #| collapse: true
@@ -1712,6 +1741,7 @@ g
 ```
 
 Applying @eq-lm_formula, or using only the part of the gradient and of the inverse of the hessian that concerns $\theta_2$, we get:
+\idxfun{drop}{base}\idxfun{solve}{base}
 
 ```{r}
 #| collapse: true
@@ -1723,6 +1753,7 @@ c(lm_test_H, lm_test_H2)
 ```
 
 Instead of using the opposite of the hessian, we could also have used the outer product of the gradient to estimate the information matrix:
+\idxfun{crossprod}{base}\idxfun{solve}{base}\idxfun{drop}{base}
 
 ```{r }
 #| collapse: true
@@ -1755,6 +1786,7 @@ squares. The total sum of squares being: $j ^ \top j = N$, the
 and the test statistic is therefore $N$ times the R-squared of a
 regression on a vector of 1 on the column of the individual
 contributions to the gradient.
+\idxfun{length}{base}\idxfun{lm}{stats}\idxfun{fitted}{stats}\idxfun{rsq}{micsr}\idxfun{rep}{base}
 
 ```{r }
 #| collapse: true
@@ -1782,6 +1814,7 @@ hypothesis, even at the 1% level (the critical value is
 ##### Pseudo R^2^
 
 To compute the pseudo R^2^, we should define the "null" or "intercept-only" model. In the generalized production function, it is a model with only two parameters, $\alpha$ and $\sigma$. Therefore, the $R$ matrix select all the coefficients except these two and, using this matrix, we can compute the Wald statistic:
+\idxfun{diag}{base}\idxfun{coef}{stats}\idxfun{t}{base}\idxfun{vcov}{stats}\idxfun{drop}{base}
 
 ```{r}
 R <- diag(6)[- c(1, 6), ]
@@ -1790,6 +1823,7 @@ W_0 <- drop(t(R %*% coef(gpf2)) %*% solve(R %*% vcov(gpf2) %*% t(R)) %*%
 ```
 
 For the other two tests, the constrained model should be estimated. Actually, this is a log linear model with only an intercept and the LM estimates of $\alpha$ and $\sigma ^ 2$ are simply the mean and the variance of $\ln y$. 
+\idxfun{mean}{base}\idxfun{sqrt}{base}\idxfun{zellner\_revankar}{micsr}\idxfun{sum}{base}\idxfun{apply}{base}\idxfun{attr}{base}
 
 ```{r}
 #| collapse: true
@@ -1803,18 +1837,21 @@ g_c <- apply(G_c, 2, sum)
 ```
 
 The likelihood ratio statistic is just twice the difference between the two values of the log-likelihood:
+\idxfun{as.numeric}{base}\idxfun{logLik}{stats}
 
 ```{r}
 LR_0 <- as.numeric(2 * (logLik(gpf2) - lnL_c))
 ```
 
 Finally, the Lagrange multiplier statistic can be obtained by considering $N$ times the $R^2$ of the regression of a vector of 1 on the matrix of the individual contributions to the gradient:
+\idxfun{rsq}{micsr}\idxfun{lm}{stats}\idxfun{rep}{base}
 
 ```{r}
 LM_0 <- N * rsq(lm(rep(1, N) ~ G_c - 1))
 ```
 
 We can then compute the three pseudo-R^2^:
+\idxfun{exp}{base}\idxfun{print}{base}
 
 ```{r}
 #| collapse: true
@@ -1824,11 +1861,13 @@ R2_lm <- LM_0 / N
 c(wald = R2_w, lik_ratio = R2_lr, lagr_mult = R2_lm) %>% print
 ```
 
+\idxdata[)]{apples}{micsr.data}
+
 ### The conditional moment test {#sec-ml_cond_moment_test}
 
 Compared to the three classical tests, conditional moment test don't
 define two nested models (a "large" one and a "small" one). These
-test, first presented by @TAUC:85 and @NEWE:85 are based on moment conditions that should be 0 under H~0~. They
+test, first presented by @TAUC:85\index[author]{Tauchen} and @NEWE:85\index[author]{Newey} are based on moment conditions that should be 0 under H~0~. They
 are particularly useful for models fitted by maximum likelihood,
 although they can be used for models fitted by other estimation
 methods. Consider the example where the distribution of the response
@@ -1842,7 +1881,6 @@ specified. This is not the case for models fitted by ML. Therefore, if the condi
 is not normal with a constant conditional variance, the estimator may
 be inconsistent. Testing the hypothesis of normality and of
 homoskedasticity is therefore crucial in this context.
-
 
 Denote $\mu_n = \mu(\theta, w_n)$ a vector of length $J$ for observation $n$, that
 depends on a vector of parameters ($\theta$) and on a vector of
@@ -1864,7 +1902,7 @@ and the hypotheses won't be rejected if $\hat{\tau}$  is
 sufficiently close to a vector of 0. The derivation of its variance is
 quite complicated because there are two sources of stochastic
 variations, as both $\hat{\theta}$ and $\hat{\mu}_n$ are
-random.^[@CAME:TRIV:05, page 260.] Using a first order Taylor
+random.^[@CAME:TRIV:05, page 260.\index[author]{Cameron}\index[author]{Trivedi}] Using a first order Taylor
 expansion around the true value $\theta_0$, we have:
 
 $$
@@ -1872,8 +1910,6 @@ $$
 m}{\partial \theta^\top}(\bar{\theta}, Z)
 (\hat{\theta} - \theta_0) 
 $$
-
-
 
 Denote: $\mathcal{W} = \displaystyle\lim_{N\rightarrow \infty}
 \frac{\partial m(\theta, Z)}{\partial \theta^\top} =
@@ -1949,7 +1985,7 @@ $\hat{\mu}_n^\top$) and $\hat{G}$ the a $N \times (K+1)$ matrix containing
 the individual contributions to the gradient (with a $n$^th^ row equal
 to $\hat{\gamma}_n^\top$).
 Replacing $\mathcal{V}$ in @eq-var_sqrtN_tau, developing the quadratic form
-and regrouping terms, we finally get:^[@SKEE:VELL:99, eq. 2.13.]
+and regrouping terms, we finally get:^[@SKEE:VELL:99\index[author]{Skeels}\index[author]{Vella}, eq. 2.13.]
 
 $$
 \mbox{V}(\sqrt{N}\hat{\tau})
@@ -2029,7 +2065,7 @@ But all the columns of $\hat{G}$ sums to 0 ($\hat{G}^\top \iota=0$),
 so that @eq-ess_cmtest reduce $\iota ^ \top \hat{M} C \hat{M} ^ \top
 \iota$, where $C$ is the lower right square matrix in the formula of
 the partitioned inverse of the matrix in @eq-ess_cmtest and is (see
-for example @GREE:03, equation A-74, page 824), the matrix in bracket
+for example @GREE:03\index[author]{Greene}, equation A-74, page 824), the matrix in bracket
 in @eq-opg_cmtest.
 
 The conditional moment test can be used to test the hypothesis of normality, homoskedasticity and omitted variables. For the normality hypothesis,  the theoretical moments are $\mbox{E}(\epsilon_n ^ 3 \mid x_n) = 0$ and $\mbox{E}(\epsilon_n ^ 4 - 3 \sigma ^ 2 \mid x_n) = 0$ and the empirical counterparts are:
@@ -2067,6 +2103,8 @@ We first extract the fitted coefficients of the model `htheta`, we
 compute the likelihood for this vector of parameters and extract the
 matrix of the individual contribution to the gradient `G` and the
 hessian `H`:
+\idxdata[(]{apples}{micsr.data}
+\idxfun{coef}{stats}\idxfun{zellner\_revankar}{micsr}\idxfun{attr}{base}
 
 ```{r }
 htheta <- coef(gpf)
@@ -2079,6 +2117,7 @@ Working on the reparametrized version of the model, we then transform
 the matrix of covariates, compute $\epsilon$ the
 matrix of the individual contribution to the moments $M$ and the
 moment conditions $m$ which is a vector containing the sum of the columns of $M$.
+\idxfun{drop}{base}\idxfun{cbind}{base}\idxfun{apply}{base}
 
 ```{r }
 Zm <- Z
@@ -2091,6 +2130,7 @@ m <- M %>% apply(2, sum)
 
 Then, the derivatives of $m$ with the parameters of the model are
 compute to obtain the $W$ matrix.
+\idxfun{matrix}{base}\idxfun{apply}{base}\idxfun{sum}{base}
 
 ```{r }
 W <- matrix(c(-3 * apply(eps ^ 2 * Z, 2, sum),
@@ -2104,6 +2144,7 @@ W <- matrix(c(-3 * apply(eps ^ 2 * Z, 2, sum),
 We first compute the test using minus the hessian to estimate the
 information and the matrix of the analytic derivatives of $m$ just
 computed:
+\idxfun{length}{base}\idxfun{crossprod}{base}\idxfun{drop}{base}\idxfun{solve}{base}
 
 ```{r }
 #| collapse: true
@@ -2120,6 +2161,7 @@ We then compute the version of the test based on the the OPG to
 estimate the information matrix and on $G^\top M$ to estimate $W$. The
 statistic can be computed using matrix algebra or by taking the explained
 sum of squares in a regression of a column of 1 on $G$ and $M$:
+\idxfun{crossprod}{base}\idxfun{solve}{base}\idxfun{drop}{base}\idxfun{rep}{base}\idxfun{summary}{base}
 
 ```{r }
 #| collapse: true
@@ -2129,6 +2171,7 @@ drop(crossprod(m, solve(Q2, m)))
 j <- rep(1, N)
 summary(lm(j ~ G + M - 1))$r.squared * N
 ```
+\idxdata[)]{apples}{micsr.data}
 
 Note that this second version of the test leads to a much higher value
 of the statistic and a probability value of
@@ -2138,7 +2181,7 @@ of the statistic and a probability value of
 
 #### Vuong test
 
-@VUON:89 proposed a test for non-nested model. He considers two
+@VUON:89\index[author]{Vuong} proposed a test for non-nested model. He considers two
 competing models characterized by densities $f(y|z; \beta)$ and $g(y|z; \gamma)$. Denoting $h(y | z)$ the true conditional density. The distance of the first model to the true model is measured by the minimum Kullback-Leibler information criterion (**KLIK**):
 
 $$
@@ -2330,8 +2373,7 @@ For the overlapping case, the test should be performed in two steps:
 - if the null hypothesis is reject, the second step consists on
   applying the test for non-nested models previously described.
 
-
-@SHI:15 provides an example of simulations of non-nested linear models
+@SHI:15\index[author]{Shi} provides an example of simulations of non-nested linear models
 that shows that the distribution of the Vuong statistic can be very
 different from a standard normal. The data generating process used for
 the simulations is:
@@ -2346,15 +2388,15 @@ and $\epsilon \sim N(0, 1 - a ^ 2)$. $z^f_k \sim N(0, a / \sqrt{K_f})$
 and $z^g_k \sim N(0, a / \sqrt{K_g})$, so that the explained variance
 explained by the two competing models is the same (equal to $a ^ 2$)
 and the null hypothesis of the Vuong test is true. The `micsr::vuong_sim`
-enables to simulate values of the Vuong test. As in @SHI:15, we use a
+enables to simulate values of the Vuong test. As in @SHI:15\index[author]{Shi}, we use a
 very different degree of parametrization for the two models, with $K_f
 = 15$ and $K_G = 1$.
-
+\idxfun{vuong\_sim}{micsr}\idxfun{head}{base}\idxfun{mean}{base}\idxfun{abs}{base}
 
 ```{r }
 #| collapse: true
-Vuong <- micsr::vuong_sim(N = 100, R = 1000,
-                       Kf = 15, Kg = 1, a = 0.5)
+Vuong <- vuong_sim(N = 100, R = 1000,
+                   Kf = 15, Kg = 1, a = 0.5)
 head(Vuong)
 mean(Vuong)
 mean(abs(Vuong) > 1.96)
@@ -2366,6 +2408,7 @@ values of the statistic are greater than the critical value so that
 the Vuong test will lead in such context to a noticeable
 over-rejection. The empirical density function is shown in the following figure,
 along with the normal density.
+\idxfun{ggplot}{ggplot2}\idxfun{geom\_density}{ggplot2}\idxfun{geom\_function}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{data.frame}{base}
 
 ```{r }
 ggplot(data = data.frame(Vuong = Vuong)) +
@@ -2373,7 +2416,7 @@ ggplot(data = data.frame(Vuong = Vuong)) +
     geom_function(fun = dnorm, linetype = "dotted")
 ```
 
-@SHI:15 proposed a non-degenerate Vuong test which correct the small sample bias of the numerator of the Vuong statistic and inflates the denominator by adding a constant. 
+@SHI:15\index[author]{Shi} proposed a non-degenerate Vuong test which correct the small sample bias of the numerator of the Vuong statistic and inflates the denominator by adding a constant. 
 
 #### An example: generalized production function vs translog function
 
@@ -2422,7 +2465,7 @@ The constant returns to scale hypothesis therefore implies that $\sum_j \beta_j 
 
 
 <!-- And the constant return to scale hypothesis implies that $\beta_\lambda ^ *$ and $\beta_{jJ}^*, \forall j = 1\ldots J-1$ equal 0. -->
-
+\idxdata[(]{apples}{micsr.data}
 
 ```{r }
 #| echo: false
@@ -2438,6 +2481,7 @@ trsl <- loglm(y ~ log(k) + log(l) + I(log(k) ^ 2) + I(log(l) ^ 2) + I(log(m) ^ 2
 
 trsl <- loglm(y ~ log(k) + log(l) + log(m) + log(k):log(l) + log(k):log(m) + log(l):log(m) + I(log(k) ^ 2) + I(log(l) ^ 2) + I(log(m) ^ 2), aps)
 ```
+\idxfun{loglm}{micsr}\idxfun{I}{base}
 
 ```{r}
 trsl <- loglm(y ~ log(k) + log(l) + log(m) + log(k):log(l) + 
@@ -2449,6 +2493,7 @@ trsl <- loglm(y ~ log(k) + log(l) + log(m) + log(k):log(l) +
 All is required to compute the Vuong test for non-nested models is the
 contributions to the log-likelihood for both models:^[The object returned by `loglm` contains an element called `logLik` that is a vector of individual contributions to the log-likelihood.]
 
+\idxfun{zellner\_revankar}{micsr}\idxfun{as.numeric}{base}\idxfun{coef}{stats}
 ```{r }
 est_gpf <- zellner_revankar(coef(gpf), y = y, Z = Z)
 lnl_gpf <- as.numeric(est_gpf)
@@ -2457,6 +2502,7 @@ lnl_trsl <- trsl$value
 
 We can then compute the average likelihood ratio statistic (`L`), its
 variance (`w2`) and the statistic:
+\idxfun{length}{base}\idxfun{mean}{base}\idxfun{sqrt}{base}
 
 ```{r }
 #| collapse: true
@@ -2469,6 +2515,7 @@ vuong_stat
 The probability value is `r round(pnorm(abs(vuong_stat), lower.tail = FALSE), 3)`
 so that the test conclude that the two models are indistinguishable,
 although the difference of their log-likelihood is quite high:
+\idxfun{sum}{base}
 
 ```{r }
 #| collapse: true
@@ -2482,3 +2529,4 @@ sum(lnl_trsl)
 nonnest2::vuongtest(gpf, free)
 ```
 
+\idxdata[)]{apples}{micsr.data}
