@@ -20,7 +20,7 @@ large set of relevant covariates are observed, some are not (this
 is in particular the case for abilities). Therefore, we won't try to
 modelize the value of $y$ as a function of covariates $x$ and some
 unknown parameters $\gamma$: $y = f(x, \gamma)$ but, more modestly,
-the **conditional expectation** of $y$: 
+the **conditional expectation** of $y$: \index[general]{contional expectation|(}
 
 $$
 \mbox{E}(y | x) = f(x, \gamma)
@@ -42,6 +42,7 @@ $$ {#eq-lincondexp}
 
 
 ## Conditional expectation and covariance
+\index[general]{covariance|(}
 
 To estimate the two unknown parameters $\alpha$ (the **intercept**) and $\beta$ (the **slope**), we need a
 data set that contains different individuals for which $x$ and $y$ are
@@ -289,6 +290,8 @@ $$
 
 Consider now the case where the average wage is the same for every education level:
 $\bar{y}_b=\bar{y}_l=\bar{y}_m=\bar{y}=9.2$. In this case, the covariance is 0 because $\bar{y}_k-\bar{y}=0\;\forall k$.
+\index[general]{contional expectation|)}
+\index[general]{covariance|)}
 
 ## The model and the data set
 
@@ -431,7 +434,7 @@ share of the population for which the value of time is between $a$ and $h^*$
 the value of time is between $h^*$ and $b$). The simplest probability
 distribution is the uniform distribution, which is defined by a
 constant density equal to $\frac{1}{b-a}$ between $a$ and $b$. It is
-represented in @fig-unifdist.
+represented in @fig-unifdist.\index[general]{uniform distribution}
 
 The area of the rectangle of width $[a,b]$ and height $[0,
 \frac{1}{b-a}]$ is 100%, because the whole population has a time value
@@ -459,7 +462,7 @@ knitr::include_graphics("./tikz/fig/price_time.png", auto_pdf = TRUE)
 
 The model we seek to estimate is: $\mbox{E}(y_n \mid x_n) = \alpha+\beta x_n$. The difference between the observed value of $y$ and
 its conditional expectation is called the **error** for observation
-$n$:
+$n$:\index[general]{errors}
 
 $$
 y_n - \mbox{E}(y_n \mid x_n) = \epsilon_n
@@ -477,7 +480,7 @@ $(\alpha_o, \beta_o)$. For given values of $(\alpha, \beta)$, obtained
 using an estimation method, $\epsilon_n$ will be called the
 **residual** for observation $n$. The residual for an observation is
 therefore the vertical distance between the point for observation $n$
-and the regression line. 
+and the regression line. \index[general]{residuals}
 
 Heuristically, we seek to draw a straight line that is closest as
 possible to all the points of our sample as in @fig-hsfsubsmpl. In the
@@ -659,6 +662,7 @@ which is the case as the term in bracket is the variance of $x$ and is therefore
 
 ## Geometry of least squares, variance decomposition and coefficient of determination
 
+\index[general]{geometry of least squares!simple linear regression model|(}
 The OLS estimator relies on variances and covariances of several observable ($y$ and $x$) and computed ($\hat{y}$, $\hat{\epsilon}$) variables. Its properties can be nicely illustrated using vector algebra, each variable being represented by a vector, and by plotting these vectors.^[For a detailed presentation of the geometry of least squares, see @DAVI:MACK:04, chapter 2.]\index[author]{Davidson}\index[author]{McKinnon}
 
 ### Vectors, variance and covariance
@@ -744,7 +748,10 @@ example, consider the regression of $y$ on $z = 0.5 x$; we would then obtain exa
 knitr::include_graphics("./tikz/fig/OLS2D.png", auto_pdf = TRUE)
 ```
 
+\index[general]{geometry of least squares!simple linear regression model|)}
+
 ### Variance decomposition and the $R^2$ {#sec-vardecomp_R2}
+\index[general]{coefficient of determination|(}
 
 For one observation $n$, we have: 
 
@@ -801,6 +808,7 @@ $$
 
 $R^2$ is therefore simply the square of the coefficient of
 correlation between $x$ and $y$. We have seen previously that, denoting $\theta$ the angle formed by two vectors, $\cos \theta$ is the coefficient of correlation between the two underlying variables (if they are measured in deviations from their means). Therefore, on @fig-smplregmodel, $R^2$ is represented by the square of the cosine of the angle formed by the two vectors $\hat{y}$ and $y$. As this angle tends to 0 (the two vectors point almost on the same direction), $R^2$ tends to 1. On the contrary, if this angle tends to $\pi/2$, the two vectors become almost orthogonal and $R^2$ tends to 0.
+\index[general]{coefficient of determination|)}
 
 ## Computation with R
 
@@ -952,6 +960,7 @@ which is `r round( (ahat + bhat) / 2, 2)` euros per hour.
 Inferential statistics rely on the notions of population and sample. The population is a large and exhaustive set of observations and a sample is a small subset of observations drawn in this population. These notions are relevant in medical sciences and often for economic studies. For example, the first data set we used concerned smoking habits and birth weight. The population of interest is all American pregnant women in 1988 and a sample of 1388 of them was drawn from this population. The second data set concerned the relation between education and wage. The population was American labor force in 1992 and a sample of 16481 workers was drawn from this population. On the contrary, our third data set doesn't fit with this notions of population and sample. The sample consists of major towns in France that are connected on regular basis by rail and air to Paris. It contains 13 observations, which are not 13 observations randomly drawn from a large set of cities, but which are more or less all the relevant cities. 
 
 ### Data generator process
+\index[general]{data generator process|(}
 
 An interesting alternative is the notion of **data generator process** or **DGP** in short. It describes how the data are assumed to have been generated. We assume in the linear regression model that: 
 
@@ -995,9 +1004,9 @@ As $\sum_{n = 1} ^ N x_{n}(x_{n} - \bar{x}) = \sum_{n = 1} ^ N
 (x_{n} - \bar{x}) ^ 2$ 
 and $\sum_{n = 1} ^ N c_{n} = 0$, we finally get:
 
-\begin{equation} 
+$$
 \hat{\beta} = \beta + \sum_{n = 1} ^ N c_{n} \epsilon_{n} 
-\end{equation} 
+$$ 
 
 The deviation of the estimator of the slope of the OLS regression line
 $\hat{\beta}$ from the true value $\beta$ is therefore a linear
@@ -1077,7 +1086,7 @@ sum(eps)
 sum(eps * x)
 sum(eps * hat_y)
 ```
-We can also check that the residuals are "smaller" than the errors by computing their standard deviations:\idxfun{sd}{base}
+We can also check that the residuals are "smaller" than the errors by computing their standard deviations:\idxfun{sd}{stats}
 
 ```{r}
 #| label: smaller_residuals
@@ -1085,10 +1094,13 @@ We can also check that the residuals are "smaller" than the errors by computing 
 sd(eps)
 sd(hat_eps)
 ```
+\index[general]{data generator process|(}
 
 ### Random numbers and simulations {#sec-random_numbers_simulations}
+\index[general]{simulations!simple linear regression model|(}
 
 Now consider an other fictive sample for the same values of $x$, ie consider that the values of the threshold values of time are the same, but that the other factors that influence rail's shares (the $\epsilon$) are different. To generate such a fictive sample, we need to generate the $\epsilon$ vector, using a function that generates random numbers^[More precisely, a function that generates a sequence of numbers that looks like random numbers.]. With **R**, these functions have a name composed by the letter `r` (for random) and the abbreviated name of the statistical distribution: for example `runif`\idxfun{runif}{stats} draws numbers in a uniform distribution (by default with a 0-1 range) and `rnorm`\idxfun{rnorm}{stats} draws numbers in a normal distribution (by default with zero expectation and unit standard deviation). These functions have a mandatory argument which is the number of draws. For example, to get 5 numbers drawn from a standard normal distribution:
+\index[general]{normal distribution}\index[general]{uniform distribution}
 
 ```{r}
 #| include: false
@@ -1122,6 +1134,8 @@ set.seed(7L)
 rnorm(5)
 rnorm(5)
 ```
+
+\index[general]{data generator process|(}
 The DGP is completely described by specifying the distribution of $\epsilon$. We'll consider here a normal distribution with mean 0 and standard deviation $\sigma_\epsilon = 0.08$. 
 A pseudo-random sample can then be constructed as follow:\idxfun{pull}{dplyr}\idxfun{rnorm}{stats}\idxfun{tibble}{tibble}
 
@@ -1199,6 +1213,7 @@ and the slopes from
 The important point is that $\beta$ is, in practice, an unknown
 fixed parameter. $\hat{\beta}$ depends on the $N$ observations of the sample and therefore the $N$ values of the errors. Each sample is characterized by a specific
 vector of errors and therefore by a different value of the estimator.
+\index[general]{data generator process|(}
 
 More generally, we denote $R$ the number of replications and we construct a data frame with $R \times N$ lines. The columns are the 13 values of $x$ (fixed in this simulation), the vector $\epsilon$ drawn in a normal distribution with a standard deviation equal to 0.08 and $y = \alpha + \beta x + \epsilon$, with $\alpha = 0.2$ and $\beta = 0.032$ as previously. Finally we add a variable `smpls` that is a vector containing integers from 1 to $R$ repeated 13 times that will be used to identify the sample:\idxfun{tibble}{tibble}
 
@@ -1244,7 +1259,7 @@ results
 
 The result is now a tibble with `R` lines, as the computation of the
 OLS estimator is performed for every sample. As we now have a large number of values of $\hat{\beta}$, we can analyse its statistical properties, for example its mean and its standard deviation for the 1000 random samples:
-\idxfun{summarise}{dplyr}\idxfun{sd}{base}\idxfun{mean}{base}
+\idxfun{summarise}{dplyr}\idxfun{sd}{stats}\idxfun{mean}{base}
 ```{r}
 #| label: simulations_results
 #| collapse: false
@@ -1322,7 +1337,7 @@ results %>% unnest(cols = smpl)
 ```
 
 which returns a standard tibble with one row for each draw and one column for each computed statistic. Going back to the full example with $R = 1000$, we get:
-\idxfun{nest}{tidyr}\idxfun{transmute}{dplyr}\idxfun{map}{purrr}\idxfun{summarise}{dplyr}\idxfun{sd}{base}\idxfun{mean}{base}
+\idxfun{nest}{tidyr}\idxfun{transmute}{dplyr}\idxfun{map}{purrr}\idxfun{summarise}{dplyr}\idxfun{sd}{stats}\idxfun{mean}{base}
 
 ```{r}
 #| label: nest_full_example
@@ -1332,4 +1347,4 @@ datas %>% nest(.by = id, .key = "smpl") %>%
   summarise(mean = mean(slope), sd = sd(slope))
 ```
 
-
+\index[general]{simulations!simple linear regression model|)}

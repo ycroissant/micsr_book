@@ -57,7 +57,7 @@ systematic error (called the bias) while performing the estimation. The
 variance indicates the **efficiency** (or the precision) of the
 estimator. It measures the amount of the **sampling error**, ie the
 average distance between the value of the estimator and its expected
-value.
+value.\index[general]{bias}\index[general]{efficiency}\index[general]{sampling error}
 
 To analyse the properties of the OLS estimator, we'll make different
 hypothesis and we'll see that if these hypothesis are satisfied, the OLS
@@ -85,7 +85,7 @@ between the initial and the alternative model, as what can be estimated
 is the sum of the intercept and the expected value of the errors
 ($\gamma + \mu_\gamma$) and the two elements of this sum can't be
 estimated separately. This is an illustration of a very important
-problem in econometrics called **identification** that we'll encounter
+problem in econometrics called **identification**\index[general]{identification} that we'll encounter
 in subsequent chapters. We can say here that $\gamma$ and $\mu_\gamma$
 are not identified but that their sum is. Therefore, we can set one of
 the two parameters to any value. For example, we can simply set
@@ -138,7 +138,7 @@ of this hypothesis have dramatic consequences for the OLS estimator. It
 is important to understand that this condition actually implies that
 there is no correlation between the error and the covariate. Starting
 with the expression of the covariance between the error and the
-covariate:
+covariate:\index[general]{conditional expectation}
 $\mbox{cov}(x, \epsilon) = \mbox{E}\left((x - \mu_x)(\epsilon-\mu_\epsilon)\right)$,
 with $\mu_x$ and $\mu_\epsilon$ the expected values of $x$ and
 $\epsilon$, we can rewrite this covariance using conditional
@@ -167,6 +167,7 @@ it is 0) implies that the covariance between the errors and the
 covariate is 0 or, stated differently, that the errors are uncorrelated
 with the covariate. From @eq-linest, the conditional expectation of the
 estimator is:
+\index[general]{unbiasedness!simple linear regression model}
 
 $$
 \mbox{E}(\hat{\beta}\mid x) = \beta + \sum_{n = 1} ^ N
@@ -257,6 +258,7 @@ expected wage:
     share of males, and therefore a higher wage.
 
 The OLS estimator is therefore upward biased.
+\index[general]{bias}
 
 ### Estimator for the variance of the OLS estimator
 
@@ -306,7 +308,7 @@ cat("\\end{array}\n\\right)\n}\n$$")
 ```
 
 #### Uncorrelation and homoskedasticity
-
+\index[general]{uncorrelation|(}\index[general]{homoskedasticity|(}
 $\mbox{V}(\hat{\beta}\mid x)$ is obtained by taking the sum of these
 $N ^ 2$ terms, $N$ terms depending on conditional variances
 ($\mbox{E}(\epsilon_n ^ 2 \mid x_n) = \mbox{V}(\epsilon_n \mid x_n)$)
@@ -345,6 +347,7 @@ $$ {#eq-stder_hat_beta}
 
 It is clear from @eq-stder_hat_beta that the precision of the estimator depends on three components
 which will be described in details in the next subsection.
+\index[general]{uncorrelation|)}\index[general]{homoskedasticity|)}
 
 #### Determinants of the precision of the OLS estimator
 
@@ -455,6 +458,7 @@ x <- pull(prtime, h)
 hsx <- sqrt(mean((x - mean(x)) ^ 2))
 ```
 
+\index[general]{simulations!variance of the Ols estimator|(}
 All these results can be illustrated by simulations. We start with our
 reference case ($\sigma_\epsilon = 0.08$, $N = 9$ and $x$ is the
 vector of the threshold value of time for the 9 selected cities of the
@@ -580,6 +584,7 @@ datasvx %>% group_by(smpls) %>%
   summarise(mean = mean(hbeta), sd = sd(hbeta))
 ```
 
+\index[general]{simulations!variance of the ols estimator|)}
 #### Variance of $\hat{\alpha}$ and covariance between $\hat{\alpha}$ and $\hat{\beta}$
 
 To get the variance of the estimator of the intercept, consider the
@@ -623,7 +628,7 @@ $$
 &=& -\sum_n \left(\bar{x} c_n - \frac{1}{N}\right)\epsilon_n
 \end{array}
 $$
-
+\index[general]{homoskedasticity}\index[general]{uncorrelation}
 With the hypothesis of homoskedastic and uncorrelated errors, the variance simplifies to:
 
 $$
@@ -757,9 +762,11 @@ $$
 $$
 
 $\dot{\sigma}_\epsilon$ is often called the **residual standard error**.
+\index[general]{residual standard error}
 
 #### Exact distribution of the OLS estimator with normal errors {#sec-exact_ols_distribution}
 
+\index[general]{normal distribution|(}
 If the distribution of the errors is normal, as the OLS estimator is a
 linear combination of the errors, its exact distribution is also normal.
 Therefore:
@@ -774,7 +781,7 @@ standard normal deviate:
 $$
 \frac{\hat{\beta}-\beta}{\sigma_\epsilon / (\sqrt{N}\hat{\sigma}_x)} \sim \mathcal{N}(0, 1)
 $$
-
+\index[general]{normal distribution|)}\index[general]{Student t distribution|(}
 $\sigma_\epsilon$ is unknown; replacing it by its unbiased
 estimator $\dot{\sigma}_\epsilon$ induces an increase of the uncertainty
 and the distribution changes from a normal to a Student t distribution:
@@ -792,6 +799,7 @@ sizes of 10, 20, 50 and 100, 5% critical values for a Student are
 `r round(qt(0.975, 50 - 2), 2)` and `r round(qt(0.975, 100 - 2), 2)`, as
 the critical value is `r round(qnorm(0.975), 2)` for the normal
 distribution.
+\index[general]{Student t distribution|)}
 
 #### Computation of the variance of the OLS estimator with R
 
@@ -891,6 +899,7 @@ pxt %>% stder
 
 ### The OLS estimator is BLUE {#sec-simple_ols_blue}
 
+\index[general]{best linear unbiased estimator!simple linear regression model|(}
 We have seen previously that the OLS estimator is a linear estimator (ie
 it is a linear combination of the $N$ values of $y$ for the sample):
 
@@ -898,7 +907,9 @@ $$
 \hat{\beta} = \sum_{n=1} ^ N \left(\frac{ (x_n - \bar{x})}
 {\sum_{n=1} ^ N  (x_n - \bar{x}) ^ 2} \right) y_n =
 \sum_{n=1} ^ N c_n y_n
-$$ Moreover, we have seen that if $\mbox{E}(\epsilon \mid x) = 0$, it is
+$$ 
+
+Moreover, we have seen that if $\mbox{E}(\epsilon \mid x) = 0$, it is
 unbiased and, with the hypothesis of homoskedastic and uncorrelated
 errors, we have established that its variance is:
 $\sigma_\epsilon ^ 2 / S_{xx}$. We'll show in this subsection that among
@@ -1119,9 +1130,13 @@ pxt2 %>% stder
 we confirm that the OLS estimator has a lower standard error than
 the alternative estimator.
 
+\index[general]{best linear unbiased estimator!simple linear regression model|)}
+
 ## Asymptotic properties of the estimator
 
 <!-- !!! consist on mal dit -->
+\index[general]{consistency|(}
+\index[general]{asymptotic properties|(}
 
 Asymptotic properties of an estimator deal with the behavior of this
 estimator when the sample size increases without bound. Compared to
@@ -1134,6 +1149,9 @@ fundamental theorems are used:
     number**,
 -   the convergence in distribution, based on the **central-limit**
     theorem.
+
+\index[general]{convergence!in probability|(}
+\index[general]{law of large numbers|(}
 
 ### Convergence in probability
 
@@ -1150,6 +1168,7 @@ This is denoted:
 $\hat{\beta}_N \xrightarrow{p} \theta \;\mbox{ or } \;\mbox{plim}\,\hat{\beta} = \theta$.
 Convergence in probability implies convergence in mean square, which is
 defined by:
+\index[general]{convergence!in mean square|(}
 
 $$
 \lim_{N\rightarrow + \infty} \mbox{E}\left( (\hat{\beta}_N - \theta) ^
@@ -1177,13 +1196,14 @@ estimator may be inconsistent for two reasons:
 -   the estimator doesn't converge in probability to any value,
 -   the estimator converges in probability to $\theta \neq \beta$.
 
+\index[general]{convergence!in mean square|)}
 The consistency of an estimator shouldn't be confused with the property
 of unbiasedness, even if we often encounter estimators which are
 unbiased *and* consistent:
 
 -   unbiasedness is an exact property (true or false whatever the sample
     size) and it refers only to the expected value of the estimator and
-    doesn't say anything about its variance,
+    doesn't say anything about its variance,\index[general]{unbiasedness}
 -   consistency is an asymptotic property, which implies a limit for the
     expected value ($\beta$) and for the variance (0) of the estimator.
 
@@ -1280,8 +1300,12 @@ $$
 $\theta$ equals $\beta$, in which case the estimator is consistent, if
 $x$ is uncorrelated in the population with $\epsilon$
 ($\sigma_{x\epsilon}=0$).
+\index[general]{convergence!in probability|)}
+\index[general]{law of large numbers|)}
 
 ### Convergence in distribution: the central-limit theorem {#sec-clt}
+\index[general]{convergence!in distribution|(}
+\index[general]{central limit theorem|(}
 
 When $N\rightarrow +\infty$, $\hat{\beta}_N$ has a degenerate
 distribution, as it converges to a constant (which is $\beta$ if the
@@ -1324,7 +1348,7 @@ of $\epsilon$. This is denoted:
 $$
 \sqrt{N}(\hat{\beta}_N - \beta) \xrightarrow{d} \mathcal{N}\left(0, \frac{\sigma_\epsilon}{\hat{\sigma}_x}\right)
 $$
-
+\index[general]{asymptotic distribution}
 Stated differently, the **asymptotic distribution** of $\hat{\beta}$ is
 a normal distribution with an expected value equal to $\beta$ and a standard
 deviation equal to
@@ -1417,8 +1441,13 @@ moments of $z_N$ tend to those of the normal distribution. The asymptotic
 distribution of $z_N$ is therefore normal and doesn't depend on the
 characteristics of the distribution of $x_N$.
 
+\index[general]{convergence!in distribution|)}
+\index[general]{central limit theorem|)}
+
+
 ### Simulations
 
+\index[general]{simulations!convergence of the OLS estimator|(}
 The law of large numbers and the central limit theorem can be
 interestingly illustrated using simulations. Consider errors that follow
 a standardized chi-squared distribution with one degree of freedom.
@@ -1570,6 +1599,9 @@ smpls %>% ggplot(aes(theta)) + geom_histogram(color = "black", fill = "white",
     facet_wrap(~ size) +
     stat_function(fun = dnorm, args = list(mean = 0, sd = seps / sx), xlim = c(-0.03, 0.03))
 ```
+\index[general]{simulations!convergence of the OLS estimator|)}
+\index[general]{consistency|)}
+\index[general]{asymptotic properties|)}
 
 ## Confidence interval and tests {#sec-confint_test_slm}
 
@@ -1604,6 +1636,8 @@ This results enables to perform two tasks:
     for the predictions of the model.
 
 ### Testing hypothesis
+\index[general]{test!simple linear model|(}
+\index[general]{critical value|(}
 
 We want to test the hypothesis that $\mbox{H}_0: \beta = \beta_0$, the
 alternative hypothesis being $\mbox{H}_1: \beta \neq \beta_0$. Denote
@@ -1661,6 +1695,8 @@ rule, say at the 95% confidence level:
     $\hat{\beta}$ and $\beta_0$ is small enough to be caused by sampling
     error, we therefore don't reject the hypothesis.
 
+\index[general]{critical value|)}
+
 ```{r }
 #| label: fig-normal
 #| echo: false
@@ -1689,6 +1725,7 @@ stat
 It is lower, in absolute value, than $1.96$, we therefore don't reject
 the null hypothesis at the 5% error level.
 
+\index[general]{probability value|(}
 A more general tool is the **probability value**. It is the probability
 of drawing a value at least as large as the one we obtained (in absolute
 value) if the hypothesis is true. It is given by:
@@ -1697,7 +1734,7 @@ $$
 p = 2 \left[1 -\Phi\left(\left| \frac{\hat{\beta}-\beta_0}{\sigma_{\hat{\beta}}} \right|\right)\right]
 $$
 
-Probability critics are computed using the `pnorm` function, which takes
+Probability values are computed using the `pnorm` function, which takes
 as argument a value of the variable ($q$) and computes the probability
 for a given value of its argument. The default behavior of `pnorm` is
 to return $p = \mbox{P}(z < q)$, but the upper tail, given by
@@ -1756,8 +1793,13 @@ The p-value is equal to 7.2%:
     the 5% level,
 -   the p-value is lower than 10%, the hypothesis is rejected at the 10%
     level.
+    
+\index[general]{probability value|)}    
+
+\index[general]{test!simple linear model|)}
 
 ### Confidence interval {#sec-confint_simple_ols}
+\index[general]{confidence interval!simple linear regression model|(}
 
 Knowing the distribution of the estimator enables to go beyond the point
 estimation of the unknown parameter and to introduce the uncertainty by
@@ -1787,9 +1829,11 @@ ic
 
 This confidence interval indicates that there is a probability of 95% that the true value of
 $\beta$ is between `r ic[1]` and `r ic[2]`.
+\index[general]{confidence interval!simple linear regression model|)}
 
 ### Exact distribution, the Student distribution
 
+\index[general]{Student t distribution|(}
 In real settings,
 $\sigma_{\hat{\beta}}=\frac{\sigma_\epsilon}{\sqrt{N}\hat{\sigma}_x}$ is
 unknown because $\sigma_\epsilon$ is an unknown parameter. Replacing
@@ -1827,10 +1871,11 @@ qt(0.025, df = c(5, 10, 50, 100, 1000), lower.tail = FALSE) %>% round(3)
 
 Therefore, the normal distribution can be safely used if the
 sample has at least a few hundreds of observations.
+\index[general]{Student t distribution|)}
 
 ### Inference with R
 
-**R** has different functions that extract informations about the
+**R** has different functions that extract information about the
 statistical properties of the fitted model. To illustrate their use, we
 use once again the price-time model:\idxfun{lm}{stats}
 
@@ -1908,9 +1953,10 @@ Finally, the printed output ends with some general indicators (often
 ($\dot{\sigma}_\epsilon$, that can be extracted using the `sigma`
 function), two measures of the coefficient of determination, and the $F$
 statistic that is relevant for the multiple regression model.
+\index[general]{goodness of fit indicators!R}\index[general]{residual standard error!R}
 
 The `confint` function computes the confidence interval for the
-coefficients:\idxfun{confint}{stats}
+coefficients:\idxfun{confint}{stats}\index[general]{confidence interval!R}
 
 ```{r }
 #| label: confint
@@ -1924,6 +1970,8 @@ the true value of the slope is between
 `r round(confint(pxt, level = .9)[2, 2], 3)`.\idxfun{confint}{stats}\idxfun{round}{base}
 
 ### The Delta method
+
+\index[general]{Delta method|(}
 
 It's often the case that the parameters of interest are not the fitted
 parameters, but some functions of them. In the price-time model, the
@@ -1948,11 +1996,11 @@ expansion for $F^a$ and $F^b$:
 $$
 \left\{
 \begin{array}{rcl}
-a &=& F^a(\alpha_0, \beta_0) + 
-(\alpha - \alpha_0) f^a_\alpha(\alpha_0, \beta_0) + 
+a &=& F^a(\alpha_0, \beta_0) +
+(\alpha - \alpha_0) f^a_\alpha(\alpha_0, \beta_0) +
 (\beta - \beta_0) f^a_\beta(\alpha_0, \beta_0)\\
-b &=& F^b(\alpha_0, \beta_0) + 
-(\alpha - \alpha_0) f^b_\alpha(\alpha_0, \beta_0) + 
+b &=& F^b(\alpha_0, \beta_0) +
+(\alpha - \alpha_0) f^b_\alpha(\alpha_0, \beta_0) +
 (\beta - \beta_0) f^b_\beta(\alpha_0, \beta_0)\\
 \end{array}
 \right.
@@ -1964,13 +2012,13 @@ $$
 \left\{
 \begin{array}{rcl}
   \hat{\sigma}_{\hat{a}} ^ 2 &=&
-  f^a_\alpha(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\alpha}} ^ 2 + 
-  f^a_\beta(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\beta}} ^ 2 + 
+  f^a_\alpha(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\alpha}} ^ 2 +
+  f^a_\beta(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\beta}} ^ 2 +
   2 f^a_\alpha(\alpha_0, \beta_0)f^a_\beta(\alpha_0, \beta_0)
   \hat{\sigma}_{\hat{\alpha}\hat{\beta}} \\
   \hat{\sigma}_{\hat{b}} ^ 2 &= &
-  f^b_\alpha(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\alpha}} ^ 2 + 
-  f^b_\beta(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\beta}} ^ 2 + 
+  f^b_\alpha(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\alpha}} ^ 2 +
+  f^b_\beta(\alpha_0, \beta_0) ^ 2  \hat{\sigma}_{\hat{\beta}} ^ 2 +
   2 f^b_\alpha(\alpha_0, \beta_0)f^b_\beta(\alpha_0, \beta_0)
   \hat{\sigma}_{\hat{\alpha}\hat{\beta}} \\
 \end{array}
@@ -1990,7 +2038,7 @@ $$
                            \frac{\hat{\alpha}}{\hat{\beta}}\right) ^ 2} \\
 \hat{\sigma}_{\hat{b}} &=&
 \frac{\dot{\sigma}_\epsilon}{\sqrt{N}\hat{\sigma}_x}\frac{1}{\hat{\beta}}
-  \sqrt{\hat{\sigma}_x ^ 2 + \left(\bar{x} - 
+  \sqrt{\hat{\sigma}_x ^ 2 + \left(\bar{x} -
                            \frac{1 - \hat{\alpha}}{\hat{\beta}}\right) ^ 2}
   \end{array}
 \right.
@@ -2014,6 +2062,7 @@ sab
 ```
 \idxfun{sqrt}{base}\idxfun{mean}{base}\idxfun{coef}{stats}\idxfun{sigma}{stats}\idxfun{unname}{base}\idxfun{nobs}{stats}
 which finally leads to the 95% confidence interval:\idxfun{matrix}{base}
+\index[general]{confidence interval}
 
 ```{r }
 #| echo: false
@@ -2028,8 +2077,10 @@ matrix(ab, 2, 2) + matrix(c(- sab, sab), 2) * cv
 
 There is therefore a 95% probability that the maximum value of time is
 between `r round(maxvt[1], 1)` and `r round(maxvt[2], 1)` euros.
+\index[general]{Delta method|)}
 
 ### Confidence interval for the prediction
+\index[general]{confidence interval!prediction|(}
 
 Once the model is estimated, a prediction for every observation can be
 computed using the formula of the conditional expectation of $y$ for
@@ -2078,6 +2129,7 @@ $$
 $$ Note that when $N \rightarrow \infty$, $\sigma_{y_n}$, contrary
 $\sigma_{\hat{y}_n}$ tends to $\sigma_\epsilon$ and not to 0.
 
+\index[general]{confidence interval}\index[general]{prediction interval}
 A **confidence interval** for $\hat{y}_n$ is obtained by adding and
 subtracting to the point estimator the estimated standard deviation
 $\sigma_{\hat{y}_n}$ times the critical value (here a Student $t$ with
@@ -2095,9 +2147,9 @@ sx2 <- sum( (prtime$h - Mux) ^ 2) / N
 tcv <- qt(0.975, df = df.residual(pxt))
 prtime <- prtime %>%
     mutate(fitted = fitted(pxt),
-           sehy = sigma(pxt) / sqrt(N) * 
+           sehy = sigma(pxt) / sqrt(N) *
              sqrt( 1 + (prtime$h - Mux) ^ 2 / sx2),
-           sey = sigma(pxt) / sqrt(N) * 
+           sey = sigma(pxt) / sqrt(N) *
              sqrt( 1 + (prtime$h - Mux) ^ 2 / sx2 + N),
            lowhy = fitted - tcv * sehy, uphy  = fitted + tcv * sehy,
            lowy  = fitted - tcv *sey, upy   = fitted + tcv * sey)
@@ -2129,7 +2181,7 @@ On @fig-confpredit, the two intervals are represented:
 #| label: fig-confpredit
 #| fig-cap: "Confidence and prediction intervals"
 #| message: false
-prtime %>% ggplot(aes(h, sr)) + geom_point() + 
+prtime %>% ggplot(aes(h, sr)) + geom_point() +
   geom_smooth(method = "lm", color = "black") +
     geom_errorbar(aes(ymin = lowy, ymax = upy))
 ```
@@ -2146,7 +2198,7 @@ features of the Paris-Bordeaux trip and the second one the new features.\idxfun{
 
 ```{r }
 #| label : initial_bordeaux
-initial <- filter(prtime, town == "Bordeaux") %>% 
+initial <- filter(prtime, town == "Bordeaux") %>%
   select(town, pr, pa, tr, ta)
 bordeaux <- add_row(initial, town = "BordeauxSim",
                     pr = 75, pa = 82.6, tr = 180, ta = 165) %>%
@@ -2178,6 +2230,8 @@ predicted market shares are represented by a triangle and by a circle on
 bordeaux <- bind_cols(bordeaux, prd)
 prtime %>% ggplot(aes(h, sr)) + geom_point() +
     geom_smooth(se = FALSE, method = "lm", fullrange = TRUE, color = "black") +
-    geom_point(data = bordeaux, shape = c(2, 1), size = 4, aes(y = fit)) + 
+    geom_point(data = bordeaux, shape = c(2, 1), size = 4, aes(y = fit)) +
     geom_errorbar(data = bordeaux, aes(ymin = lwr, ymax = upr, y = NULL))
 ```
+
+\index[general]{confidence interval!prediction|)}

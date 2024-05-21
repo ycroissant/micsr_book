@@ -214,6 +214,7 @@ st_area(france) %>% units::set_units(km ^ 2)
 
 ### Computation on sf objects {#sec-sf_computation}
 
+\index[general]{regression discontinuity!spatial|(}
 The regression discontinuity framework can be adapted to consider
 geographic discontinuities. Some entities are considered on both sides
 of a border and the forcing variable is then the distance to the
@@ -376,6 +377,7 @@ mortdef_sf %>%
 ```
 
 The intercept is a bit more than 7% outside the border and about 4.5% inside the border, so that the effect of the Texas specific regulation seems significant (a reduction of about 2.5% of the mortgage default rate).
+\index[general]{regression discontinuity!spatial|)}
 
 ## Two examples
 
@@ -384,6 +386,7 @@ To illustrate the techniques presented in the subsequent sections, we'll use two
 ### Agglomeration economies and diseconomies
 
 The `agglo_growth` contains data about US counties in 1990, identified by their fips code.
+\idxdata[(]{agglo\_growth}{micsr.data}
 
 ```{r }
 agglo_growth
@@ -404,6 +407,7 @@ the agglomeration diseconomies becomes dominant. We'll
 reproduce some of his results using the counties of Louisiana. We first
 join the tibble to the `sf` called `us_counties` which contains the
 geometries of the counties that we've already used in the previous section:
+\idxfun{right\_join}{dplyr}\idxfun{filter}{dplyr}
 
 ```{r }
 louisiana <- us_counties %>%
@@ -414,6 +418,7 @@ louisiana <- us_counties %>%
 We first plot a thematic map (@fig-map_louisiana), with colors for counties related to the
 growth of the population (`pop_gr`). It is recommended to create first a
 categorical variable using `base::cut`, because it is easier to visualize a discrete palette of colors than a continuous one. We use `scale_fill_brewer` to use one of the palettes provided by the **RColorBrewer** package, which provides sequential, diverging and qualitative palettes. The first two are suitable to represent the values of numeric variables. Sequential palettes use a color, light for low values of the variable and dark for high values. Divergent palettes use two colors, with light colors for middle range values and dark colors for low and high values. All the available palettes can be displayed using `RColorBrewer::display.brewer.all()`. We use here the `Orange` sequential palette.
+\idxfun{mutate}{dplyr}\idxfun{cut}{base}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{scale\_fill\_brewer}{ggplot2}
 
 ```{r}
 #| eval: false
@@ -422,7 +427,6 @@ louisiana %>%
     ggplot() + geom_sf(aes(fill = pop_gr)) +
     scale_fill_brewer(palette = "Oranges")
 ```
-
 
 ```{r }
 #| label: fig-map_louisiana
@@ -438,11 +442,13 @@ The inverted U shaped hypothesis between the log of the initial
 population and the growth rate can be tested by regressing the growth
 rate on the log population and its square if the later coefficient is
 negative.
+\idxfun{lm}{stats}\idxfun{poly}{stats}\idxfun{gaze}{micsr}
 
 ```{r }
 mod1 <- lm(pop_gr ~ poly(log(pop), 2, raw = TRUE), louisiana)
 mod1 %>% gaze
 ```
+\idxfun{coef}{stats}
 
 ```{r}
 #| echo: false
@@ -458,6 +464,7 @@ growth for the fitted model as a value of `log(pop)` equal to $-`r round(b1, 4)`
 inhabitants. 
 This result is illustrated in @fig-iushaped_louisiana with a scatterplot with the
 growth of the population and the logarithm of its initial value, and a fitting line with a second degree polynomial:
+\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_point}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{poly}{stats}\idxfun{scale\_x\_continuous}{ggplot2}
 
 ```{r }
 #| label: fig-iushaped_louisiana
@@ -469,10 +476,14 @@ louisiana %>% ggplot(aes(pop, pop_gr)) +
   scale_x_continuous(trans = "log10")
 ```
 
+\idxdata[)]{agglo\_growth}{micsr.data}
+
 ### Solow model {#sec-solow_model}
 
 The second example is from @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} who estimated a growth model for
 the countries of the world taking spatial correlation into account:
+\idxdata[(]{sp\_solow}{micsr.data}
+\idxfun{data}{utils}
 
 ```{r}
 data("sp_solow", package = "countries")
@@ -482,6 +493,7 @@ sp_solow
 There are 91 countries in the `sp_solow` data set, the series being the gdp in 1960 and 1995, the saving rate (`saving`) and the growth of the labor force (`labgwth`).
 As in @sec-data_solow_mrw, we denote `i` the saving rate and `v` the sum of the growth rate of the labor force and 0.05.^[0.05 being the sum of the rate of depreciation and the rate of technical progress, assumed to be the same for all countries.] We also compute the annual growth rate, the difference of the logs of the GDP for
   1995 and 1960 divided by 35 (`growth`).
+\idxfun{rename}{dplyr}\idxfun{mutate}{dplyr}
 
 ```{r }
 sp_solow <- sp_solow %>%
@@ -497,6 +509,7 @@ problem of small differences in countries' names. A lot of
 countries of the world are not present in `sp_solow` (especially most
 of the communist countries). We check whether all the the
 countries of `sp_solow` are present in the `countries` object, with the `check_join` function; the `by` argument indicates the series in `sp_solow` that identifies the country:
+\idxfun{check\_join}{countries}\idxfun{countries}{countries}
 
 ```{r }
 #| collapse: true
@@ -507,6 +520,7 @@ countries() %>% check_join(sp_solow, by = "code")
 The two problems are that the D.R. Congo (`iso3` code `COD`) used to be
 called Zaire (`iso3` code `ZAR`) and that Hong Kong, which is a part
 of China for the **countries** package, but was considered as a sovereign country in @ERTU:KOCH:07's\index[author]{Ertur}\index[author]{Koch} study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
+\idxfun{mutate}{dplyr}\idxfun{ifelse}{base}\idxfun{countries}{countries}\idxfun{select}{dplyr}\idxfun{left\_join}{dplyr}
 
 ```{r eval = TRUE}
 sp_solow <- sp_solow %>% 
@@ -524,6 +538,7 @@ borders of the countries (`polygon`) and points for the capitals
 We then draw on @fig-growth_gdp a world map with the color of the countries related to
 the annual growth during the 1960-95 period and a point with a size
 related to the initial (1960) gdp. `countries` provides a `plot` method which draws a basic map using **ggplot**. A basic thematic map can be drawn using the `fill` argument to fill the areas of the countries and the `centroid` or the `capital` arguments to draw a point at the position of the centroid or the capital of each country. Any **ggplot** functions can be used to customize the graphic:
+\idxfun{plot}{base}\idxfun{scale\_size\_continuous}{ggplot2}\idxfun{theme}{ggplot2}\idxfun{guides}{ggplot2}\idxfun{labs}{ggplot2}\idxfun{guide\_legend}{ggplot2}
 
 ```{r}
 #| eval: false
@@ -552,18 +567,21 @@ sps %>% plot(fill = "growth", centroid = "gdp60", bw = TRUE) +
 ```
 
 The basic Solow model, which was given in @eq-solow_equation is then estimated:
+\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r }
 lm(log(gdp95) ~ log(i) + log(v), sp_solow) %>% gaze
 ```
 
-Remind that the structural model implies that $\beta_s = - \beta_v = \kappa / (1 - \kappa)$. This hypothesis can be tested using a reparametrization of the model:
+Remind that the structural model implies that $\beta_s = - \beta_v = \kappa / (1 - \kappa)$. This hypothesis can be tested using a reparametrization of the model:\index[general]{reparametrization!Solow model}
+\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
 lm(log(gdp95) ~ log(i / v) + log(v), sp_solow) %>% gaze
 ```
 for which the hypothesis is that the coefficient of `log(v)` equals 0. This hypothesis is rejected at the 5% level (but not at the 1% level). Imposing this hypothesis, we get:
+\idxfun{lm}{stats}\idxfun{coef}{stats}\idxfun{unname}{base}
 
 ```{r}
 #| echo: false
@@ -571,6 +589,7 @@ z <- lm(log(gdp95) ~ log(i / v), sp_solow)
 b <- unname(coef(z)[2])
 kappa <- b / (1 + b)
 ```
+\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
@@ -578,6 +597,7 @@ lm(log(gdp95) ~ log(i / v), sp_solow) %>% gaze
 ```
 
 which implies a value of $\kappa$ (the share of the capital in the gdp) equal to $\hat{\beta}_i / (1 + \hat{\beta}_i) = `r round(kappa, 2)`$ which is implausibly high.
+\idxdata[]{sp\_solow}{micsr.data}
 
 ## Spatial correlation {#sec-spatial_correlation}
 
@@ -598,7 +618,10 @@ These two operations of defining the set of neighbors and their weights are perf
 
 ### Contiguity and weights
 
+\index[general]{contiguity matrix|(}
 To get the matrix of contiguity for the counties of Louisiana, we use the `spdep::poly2nb` function:
+\idxdata[(]{agglo\_growth}{micsr.data}
+\idxfun{poly2nb}{spdep}
 
 ```{r }
 #| message: false
@@ -606,6 +629,7 @@ library(spdep)
 nb_louis <- poly2nb(louisiana)
 nb_louis
 ```
+\idxfun{sapply}{base}\idxfun{length}{base}
 
 ```{r}
 #| echo: false
@@ -619,6 +643,7 @@ contiguous counties and 0 otherwise) which would have $`r ncount`^2 = `r ncount^
 cells with only `r nlinks` of them with a value of 1 (about `r round(nlinks / ncount ^ 2 * 100, 1)`%), a `nb`
 object is returned. It is a list of `r ncount` vectors which contain, for each
 observation, the positions of its neighbors. For example:
+\idxfun{head}{utils}
 
 ```{r }
 nb_louis %>% head(3)
@@ -629,10 +654,12 @@ argument which is `TRUE` by default. Queen contiguity means that two
 polygons which have only one common point are neighbors. Setting `queen`
 to `FALSE` implies that rook continuity is used. In this case, only
 counties which have a common border are neighbors. 
+\idxfun{poly2nb}{spdep}
 
 ```{r }
 nb_louis_rook <- poly2nb(louisiana, queen = FALSE)
 ```
+\idxfun{sapply}{base}
 
 ```{r}
 #| echo: false
@@ -643,6 +670,7 @@ Printing `nb_nc_rook`, one can check that the number of contiguity
 links (`r nlinks_rook`) is slightly lower than previously (`r nlinks`). `nb` objects
 can't be plotted as is with **ggplot**. We provide a convenient `st_nb`
 function which perform this task, as it returns a `sf` object (see @fig-links):
+\idxfun{ggplot}{ggplot2}\idxfun{st\_nb}{micsr}\idxfun{geom\_sf}{ggplot2}
 
 ```{r }
 #| label: fig-links
@@ -664,6 +692,7 @@ W_louis <- nb_louis %>% nb2listw
 A `listw` object is returned, which contains two lists: the first one
 (`neighbours`) is the same as the one of the `nb` object. The second
 one contains weights:
+\idxfun{head}{utils}
 
 ```{r }
 W_louis$weights %>% head(3)
@@ -681,18 +710,24 @@ y_m - \bar{y} = \tilde{y}_n - \bar{y}$.
 W_louis %>% listw2mat
 ```
 
+\idxdata[)]{agglo\_growth}{micsr.data}
+
 Instead of defining the neighborhood as common borders, one can consider distance between points, for example the capitals or the centroids of the countries. Remind that `sps` contains two `sf`, `polygon` and `point` and that the active geometry is `polygon`. We first specify `point` as being the active geometry, using the `st_set_geometry` function and we remove all countries for which the data are not available:
+\idxdata[(]{sp\_solow}{micsr.data}
+\idxfun{na.omit}{stats}\idxfun{st\_set\_geometry}{sf}
 
 ```{r }
 sp_solow2 <- sps %>% na.omit %>% st_set_geometry("point")
 ```
 
 Then, we use the `dnearneigh` function to compute the set of neighbors for each country: the first argument is the `sf` and the next two arguments, called `d1` and `d2` are mandatory and should be set to the minimum and the maximum distances that should be used to define the neighbors. Note that this distance should be indicated in kilometers if the CRS is geographical, which is the case here.
+\idxfun{spdep}{dnearneigh}
 
 ```{r}
 d <- dnearneigh(sp_solow2, 0, 1000)
 d
 ```
+\idxfun{sapply}{base}\idxfun{ifelse}{base}\idxfun{length}{base}
 
 ```{r}
 #| echo: false
@@ -701,16 +736,22 @@ ncount <- length(d)
 ```
 
 With a distance of 1000 km, there are `r nlinks` links and an average of `r round(nlinks / ncount, 2)` neighbors per country. Note that 18 countries have no neighbors. We then compute the weights, using `nb2listwdist`. The first two argument are a `nb` and a `sf` objects. The `type` argument indicates how the weights should be computed. Denoting $d_{nm}$ the distance between the two unit $n$ and $m$, with `type = "idw"`, we get $w_{nm} = d_{nm} ^ {- \alpha}$. With `type = "exp"`, the weights are $w_{nm} = \mbox{exp}(- \alpha d_{nm})$. The `alpha` argument controls the value of $\alpha$ which is 1 by default. For example, if `type = "idw"` and `alpha = 2`, the weights are the inverse of the square of the distance. Once the weights have been computed, they can be normalized in different ways, using the `style` argument. It `stype = "raw"` (the default), no normalization is performed. A usual choice is `"W"` where the weights of a unit are normalized so that they sum to 1:
+\idxfun{nb2listwdist}{spdep}
 
 ```{r}
 w <- nb2listwdist(d, sp_solow2, type = "idw", alpha = 1, 
                   style = "W", zero.policy = TRUE)
 ```
 
+\idxdata[)]{sp\_solow}{micsr.data}
+
 Note the use of `zero.policy`: if `TRUE`, the matrix of weights is computed even if, at is the case here, some countries have no neighbors.
+
+\index[general]{contiguity matrix|)}
 
 ### Tests for spatial correlation
 
+\index[general]{spatial correlation!tests|(}
 The spatial correlation hypothesis can be tested either for a specific
 variable or using the residuals of a linear regression. Two
 main tests have been proposed. The first one is Moran's $I$ test: denoting $W$ the weights matrix where the weights sum to one for a given line, the statistic is defined as:
@@ -727,11 +768,16 @@ $y$. If the variance of $\tilde{y}$ and $y$ were equal, it would also
 be the coefficient of correlation between the value of $y$ for units and their neighbors.
 The Moran test is computed using the `spdep::moran.test` function
 which takes as argument a series and a `listw` object:
+\idxdata[(]{agglo\_growth}{micsr.data}
+\idxfun{moran.test}{spdep}\idxfun{gaze}{micsr}
+\index[general]{Moran test|(}
 
 ```{r }
 #| collapse: true
 moran.test(louisiana$pop_gr, W_louis) %>% gaze
 ```
+\idxfun{moran.test}{spdep}\idxfun{unname}{base}
+
 
 ```{r }
 #| include: false
@@ -756,6 +802,7 @@ The value of the statistic is $`r round(stat_mor, 3)`$ in our example.  Under th
 hypothesis of no correlation, the expected value of this statistic is
 $- 1 / (N-1) = `r round(mu_mor, 3)`$ and the standard deviation is $`r round(sd_mor, 3)`$.^[The expression of the variance of the Moran statistic can be found in
 @BIVA:WONG:18\index[author]{Bivand}\index[author]{Wong}] The standardized statistic ($`r round((stat_mor - mu_mor) / sd_mor, 3)`$) is asymptotically normal and the hypothesis of no spatial correlation is rejected.
+\index[general]{Moran test|)}\index[general]{Geary test|(}
 An alternative to Moran's $I$ test is Geary's $C$ test, which is
 defined as:
 
@@ -775,24 +822,33 @@ If the weight matrix were symmetric, as $\sum_n w_{nm} = 1$, we also
 would have $\sum_m w_{mn} = 1$, so that the last term is one and $C =
 \frac{N - 1}{N}(1 - I)$. Therefore, we can expect $C$ to be close to
 $(1 - I)$. Geary's test is implemented in the `spdep::geary.test` function
+\idxfun{geary.test}{spdep}\idxfun{gaze}{micsr}
 
 ```{r }
 #| collapse: true
 geary.test(louisiana$pop_gr, W_louis) %>% gaze
 ```
+\index[general]{Geary test|)}\index[general]{Moran test|(}
+
 These tests are unconditional tests of spatial correlation. The same
 tests can be performed on the residuals of linear models.
+\idxfun{lm.morantest}{spdep}\idxfun{gaze}{micsr}\idxfun{lm}{stats}\idxfun{poly}{stats}
+
 
 ```{r }
 #| collapse: true
 model_louisiana <- lm(pop_gr~poly(log(pop),2,raw =TRUE), louisiana)
 lm.morantest(model_louisiana, W_louis) %>% gaze
 ```
+\idxdata[)]{agglo\_growth}{micsr.data}
+
 The hypothesis of no spatial correlation is still rejected at the 5%
 level, but the p-value is much higher than the one associated with the
 unconditional test. 
 
 @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} computed the Moran test for the residuals of the OLS estimation of the standard Solow's growth model. The set of neighbors is obtained with setting an infinite maximum distance, so that all countries are neighbors to each other. Two matrices of weights are computed: one with $w_{nm} = d_{nm}^{-2}$ (`W1`) and the other with $w_{nm} = \mbox{exp}(-2 d_{nm})$ (`W2`):
+\idxdata[(]{sp\_solow}{micsr.data}
+\idxfun{lm}{stats}\idxfun{dnearneigh}{spdep}\idxfun{nb2listwdist}{spdep}\idxfun{lm.morantest}{spdep}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
@@ -807,6 +863,7 @@ lm.morantest(lm_solow, W2) %>% gaze
 ```
 
 Whatever the weighting matrix, the hypothesis of no spatial correlation is rejected.
+\idxfun{localmoran}{spdep}\idxfun{resid}{stats}\idxfun{as\_tibble}{tibble}\idxfun{pull}{dplyr}\idxfun{as.numeric}{base}\idxfun{cut}{base}\idxfun{st\_set\_geometry}{sf}\idxfun{add\_column}{tibble}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{scale\_fill\_brewer}{ggplot2}
 
 ```{r}
 #| include: false
@@ -816,6 +873,8 @@ z_locmor <- locmor %>% as_tibble %>% pull(Ii) %>% as.numeric
 z_locmor <- z_locmor %>% cut(c(-1, - 0.5, 0, 0.5, 1, 1.5, 2, 2.5, Inf))
 sp_solow2 %>% st_set_geometry("polygon") %>% add_column(z = z_locmor) %>% ggplot + geom_sf(aes(fill = z)) + scale_fill_brewer(palette = "Blues")
 ```
+\idxdata[)]{sp\_solow}{micsr.data}
+\index[general]{Moran test|)}
 
 ### Local spatial correlation
 
@@ -824,6 +883,7 @@ Moran's plot, implemented in the `spdep::moran.plot` function, where
 $y_n - \bar{y}$ is on the $x$ axis and $\tilde{y}_n - \bar{y}$ on the
 $y$ axis. Therefore, both variables have zero mean and the intercept
 of the fitting line is therefore 0, the slope being Moran's $I$ statistic:
+\idxfun{moran.plot}{spdep}
 
 ```{r }
 moran.plot(louisiana$pop_gr, W_louis)
@@ -837,6 +897,9 @@ disposed around the origin and the slope of the regression line should
 be 0. On the contrary, in case of positive spatial correlation, a
 majority of points should be of the *"low-low"* or *"high-high"*
 category and the regression line should have a positive slope. 
+
+\index[general]{Moran test!local|(}
+\index[general]{Geary test!local|(}
 
 @ANSE:95\index[author]{Anselin} proposed local versions of Moran's $I$ and Geary's $C$ statistics. We then
 have for each observation $I_n$ and $G_n$ so that $\sum_n I_n$ and
@@ -855,6 +918,8 @@ I = \frac{\sum_n I_n}{\sum_n (y_n - \bar{y}) ^ 2}
 $$
 
 Local Moran's statistics are obtained using the `spdep::localmoran` function:
+\idxdata[(]{agglo\_growth}{micsr.data}
+\idxfun{localmoran}{spdep}
 
 ```{r }
 locmor <- localmoran(louisiana$pop_gr, W_louis)
@@ -863,6 +928,7 @@ which returns a matrix, with a line for every observations and columns
 containing the local Moran values, their expectation, variance, the standardized
 statistic and the p-value. It's easier to coerce this matrix to a
 tibble in order to extract extreme values of the statistic:^[Note that we also rename for convenience the 5^th$ column which has a non standard name (`Pr(z != E(Ii))`) to `pval`.]
+\idxfun{as\_tibble}{tibble}\idxfun{rename}{dplyr}\idxfun{filter}{dplyr}
 
 ```{r }
 locmor %>% as_tibble %>% rename(pval = 5) %>% filter(pval < 0.01)
@@ -871,6 +937,7 @@ There are therefore 11 out of 64 (17%) observations for which the p-value is low
 than 1%, which confirms the presence of spatial correlation. The local
 Moran statistic can also be represented in a map, in order to identify
 the "hot spots":^[Note that the order of the levels are reversed using `forcats::fct_rev`, so that the high values are represented in dark grey.]
+\idxfun{as\_tibble}{tibble}\idxfun{pull}{dplyr}\idxfun{as.numeric}{base}\idxfun{cut}{base}\idxfun{add\_column}{tibble}\idxfun{mutate}{dplyr}\idxfun{fct\_rev}{forcats}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{scale\_fill\_grey}{ggplot2}
 
 ```{r }
 z_locmor <- locmor %>% as_tibble %>% pull(Ii) %>% as.numeric
@@ -902,6 +969,11 @@ S5 <- (N ^ 2 - N) * S1 - 2 * N * S2 + 6 * S0 ^ 2
 V <- (N * S4 - S3 * S5) / ( (N - 1) * (N - 2) * (N - 3) * S0 ^ 2) - 1 / (N - 1) ^ 2
 ```
 
+\index[general]{Moran test!local|)}
+\index[general]{Geary test!local|)}
+\idxdata[)]{agglo\_growth}{micsr.data}
+\index[general]{spatial correlation!tests|)}
+
 ## Spatial econometrics {#sec-spatial_models}
 
 ### Spatial models and tests
@@ -911,6 +983,7 @@ integrate the spatial features of the sample, using the weighting
 matrix described in the previous section. Two main models can be
 considered. The first one is the **SEM** for spatial error model which
 can be written in matrix form as:
+\index[general]{spatial error model|(}
 
 $$
 y = \alpha \iota + X \beta + \epsilon \; \mbox{with} \; \epsilon = \rho_\epsilon W \epsilon + \nu
@@ -922,7 +995,9 @@ gives unbiased and consistent estimators but, as always with
 non-spherical errors, it is inefficient and the estimated 
 covariance matrix of the coefficients based on the simple formula ($\sigma ^ 2 (\tilde{X}^\top \tilde{X}) ^ {-1}$)
 is biased.
+\index[general]{spatial error model|)}
 
+\index[general]{spatial autoregressive model|(}
 The second model is either called **SAR** (spatial autoregressive
 model) or **SLM** (spatial lag model). It extends the basic gaussian
 linear model by adding as a regressor the mean value of the response
@@ -958,6 +1033,7 @@ $$
 W = \left(\begin{array}{rcl} 0 & 0.5 & 0.5 \\ 1 & 0 & 0 \\ 1 & 0 & 0\end{array}\right)
 $$
 France has two neighbors (Italy and Spain) and Italy and Spain only one (France). The weights are such that they sum to 1 for each line. Consider a variation of the unique covariate in Spain ($\Delta x_3$) and denote $\beta$ the corresponding coefficient. The direct effect on the response for the three countries is obviously $\Delta y_0 ^ \top = (0, 0, \beta \Delta x_3)$. This increase of $y$ in Spain implies an increase of $y$ in the neighboring country, France. Therefore, $\Delta y_1 ^ \top = (0.5 \rho_y \beta \Delta x_3, 0, 0)$. This increase of $y$ in France implies an increase of $y$ in the neighboring countries, Italy and Spain: $\Delta y_2 ^ \top = (0, 0.5 \rho_y ^ 2 \beta \Delta x_3, 0.5 \rho_y ^ 2 \beta \Delta x_3)$. This increase of $y$ in Italy and Spain implies an increase of $y$ in the neighboring country of Italy and Spain, which is France: $\Delta y_3 ^ \top = (0.5\rho_y ^ 3 \beta \Delta x_3, 0, 0)$, etc. To take a numerical example, consider $\beta \Delta x_3 = 1$ and $\rho_y = 0.3$. Then, $\Delta y_0 ^ \top = (0, 0, 1)$, $\Delta y_1 ^ \top = (0.15, 0, 0)$, $\Delta y_2 ^ \top = (0, 0.045, 0.045)$ and $\Delta y_3 ^ \top = (0.0135, 0, 0)$. In total, we have $\sum_{i = 0} ^ 3 \Delta y_i ^ \top = (0.177, 0.045, 1.045)$. These 4 effects and their sum is computed below:
+\idxfun{matrix}{base}\idxfun{diag}{base}\idxfun{cbind}{base}\idxfun{apply}{base}
 
 ```{r}
 W <- matrix(c(0, 1, 1, 0.5, 0, 0, 0.5, 0, 0), nrow = 3)
@@ -973,13 +1049,16 @@ apply(dy_03, 1, sum)
 ```
 
 The total effect of $\Delta x_3$ is obtained using the formula: $\Delta y = (I - \rho_y W) ^ {-1} \Delta x$:
+\idxfun{solve}{base}\idxfun{diag}{base}
 
 ```{r}
 solve(diag(3) - rho * W) %*% bdx
 ```
 
 which is very close to the sum of the direct effect and the first three indirect effects computed previously.
+\index[general]{spatial autoregressive model|)}
 
+\index[general]{spatial error model|(}
 Spatial models are usually estimated by maximum likelihood, by
 assuming a multivariate normal distribution for the iid errors. For
 the **SEM** model, the idiosyncratic errors can be written as a
@@ -1003,6 +1082,8 @@ $$
 \frac{1}{\sigma ^ 2} \nu^\top \nu
 $$
 where $\nu$ is given by @eq-etasem.
+\index[general]{spatial error model|)}
+\index[general]{spatial autoregressive model|(}
 For the **SAR** model, @eq-sar indicates that the Jacobian is the
 same, so that the log-likelihood is:
 
@@ -1017,13 +1098,18 @@ with $\epsilon = y - Z \gamma - \rho_y Wy$.
 <!-- The log likelihood function can be concentrated on $\beta$ and $\sigma -->
 <!-- ^ 2$ so that it can be expressed as a function of one parameter -->
 <!-- ($\lambda$ for the **SAR** model and $\rho$ for the **SEM** model). -->
+\index[general]{spatial autoregressive model|)}
 These two models can be augmented by spatial lags of the covariates, they are in this case called Durbin's models. There is an inserting relationship between the Durbin's SAR model and the SEM model. The former can be written:
+\index[general]{Durbin's model|(}
+\index[general]{spatial autoregressive model!Durbin|(}
+\index[general]{spatial error model!Durbin|(}
 
 $$
 y = \rho_y W y + Z\gamma +   W Z\theta + \epsilon
 $$
 
 with $\epsilon$ iid errors. The **common factor** hypothesis is that $\theta = - \rho_y \gamma$. In this case, we have:
+\index[general]{common factor hypothesis}
 
 $$
 (I - \rho_y W) y =  (I - \rho_y W) Z\gamma + \epsilon
@@ -1036,6 +1122,10 @@ $$
 which is the SEM model, as denoting $\eta = (I -\rho_y W) ^ {-1} \epsilon$ the errors of this model, we have $y = Z\gamma + \eta$, with $\eta = \rho_y W \eta + \epsilon$. 
 
 Once it has been established that there is some spatial dependence, one has to choose the "right" specification. Several tests have been proposed, based on the three tests principle. Lagrange multiplier tests proposed by @ANSE:BERA:FLOR:YOON:96\index[author]{Anselin}\index[author]{Bera}\index[author]{Florax}\index[author]{Yoon}, are popular as they only require the OLS estimation. Different flavors of tests have been proposed, testing $\rho_y = 0$, $\rho_\epsilon = 0$ or $\rho_y = \rho_\epsilon = 0$. The basic version of, for example the first test ($\mbox{H}_{0}: \rho_y = 0$) has, as a maintained hypothesis that $\rho_\epsilon = 0$. A robust version of the test has been proposed which doesn't impose this maintained hypothesis. The common factor hypothesis can easily be tested using a likelihood ratio test. The Wald statistic is less easy to compute, has a set of non-linear hypothesis $\theta = - \rho_y \beta$ is tested.
+
+\index[general]{Durbin's model|)}
+\index[general]{spatial autoregressive model!Durbin|)}
+\index[general]{spatial error model!Durbin|)}
 
 ### Application to the growth model
 
@@ -1068,14 +1158,16 @@ In matrix form, denoting $y = \ln y^*$, $X = (\ln i \ln v)$, $\beta = \left(\beg
 $$
 y = \alpha i + X \beta + WX \theta + \rho_y Wy + \epsilon
 $$
-
+\idxdata[(]{sp\_solow}{micsr.data}
 if $\gamma = 0$, the model reduces to the model of @ROME:86\index[author]{Romer} and the last two terms disappear. Note that in this case $\kappa$ and $\phi$ are not identified, but only their sum. Moreover, if $\phi$ is also 0, we get the Solow model. Wheter $\phi$ equals zero or not, the resulting model is a standard linear model already estimated in @sec-solow_model:
+\idxfun{lm}{stats}
 
 ```{r}
 ols_solow <- lm(log(gdp95) ~ log(i) + log(v), sp_solow2)
 ```
 
 Moreover, imposing the theoretical constraint of the growth model, we must have the sum of the two coefficients of `log(i)` and `log(v)` equal to 0. Therefore, the constrained model can be estimated using the difference of the logarithms of the two covariates as the unique regressor. For convenience, we call the ratio of the two covariates `i` and we store it in a new data frame called `sp_solow3`. The constrained OLS model can then be estimated:
+\idxfun{mutate}{dplyr}\idxfun{lm}{stats}
 
 ```{r}
 sp_solow3 <- sp_solow2 %>% mutate(i = i / v)
@@ -1083,6 +1175,7 @@ ols_solowc <- lm(log(gdp95) ~ log(i), sp_solow3)
 ```
 
 The hypothesis of $\gamma = 0$ can be tested using Lagrange multipliers tests, testing either the alternative that there is a spatial lag or correlated errors. `spdep::lm.LMtests` provides different flavors of these tests. Its two main arguments are a `lm` model and a matrix of spatial weights. The `test` argument can be either `"LMerr"` and "`LMlag`" for the standard tests of uncorrelated errors and absence of spatial lag, `"RLMerr"` and `"RLMlag"` for the robust versions of these two tests and `"SARMA"`, suitable when the alternative hypothesis is the presence of both correlation of the errors and a spatial lag. `test = "all"` enables to perform the 5 tests:
+\idxfun{lm.LMtests}{spdep}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
@@ -1090,7 +1183,7 @@ lm.LMtests(ols_solow, W1, test = "all") %>% gaze
 ```
 
 All the tests reject the hypothesis of uncorrelated errors or/and spatial lag, except the robust test of uncorrelated errors. Therefore, these tests seems to indicate that the correct model is a spatial lag model. We then estimate the three spatial models using the **spatialreg** package [@PEBE:BIVA:23]\index[author]{Pebesma}\index[author]{Bivand} which provides three functions: `lagsarlm` for SAR models, `sacsarlm` for SEM model and `errorsarlm` for SAR-SEM models. The three first arguments are `formula`, `data` and `listw`, which should be a `listw` object containing the weights. The `Durbin` argument enables to estimate the Durbin's versions of the model; this can be done either by setting it to `TRUE` (a spatial lag is then added for all the covariates) or a formula indicating the subset of covariates for which spatial lags have to be added. We estimate also, as for the OLS estimator, the variant of the model that imposes the theoretical restrictions on the coefficients. The results are presented in in @tbl-results_ertu_koch.
-
+\idxfun{lagsarlm}{spatialreg}\idxfun{errorsarlm}{spatialreg}\idxfun{sacsarlm}{spatialreg}\idxfun{update}{stats}
 
 ```{r}
 library(spatialreg)
@@ -1105,9 +1198,8 @@ m2c <- update(m2, . ~ . - log(v), data = sp_solow3)
 m3c <- update(m3, . ~ . - log(v), data = sp_solow3)
 ```
 
-
 We can first test the theoretical restrictions using either a likelihood ratio or a Wald test:
-
+\idxfun{linearHypothesis}{car}\idxfun{lrtest}{lmtest}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
@@ -1128,6 +1220,7 @@ $$
 y = \alpha \iota + X \beta + (I - \gamma W) ^ {-1} \epsilon
 $$
 which is a SEM model without Durbin terms. Therefore, the hypothesis that $\phi = 0$ is in the context of this model the hypothesis of common factors and can easily be tested using a likelihood ratio test:
+\idxfun{lrtest}{lmtest}\idxfun{gaze}{micsr}
 
 ```{r}
 #| collapse: true
@@ -1168,6 +1261,7 @@ s ^ \top = (\kappa, \phi, \gamma) = \left(\frac{\theta}{\theta - \rho}, \frac{\b
 $$
 
 For our model, we get:
+\idxfun{unname}{base}\idxfun{coef}{stats}
 
 ```{r}
 #| collapse: true
@@ -1181,8 +1275,8 @@ s <- c(kappa = kappa, phi = phi, gamma = gamma)
 s
 ```
 
+\index[general]{delta method|(}
 To apply the delta method, we compute the matrix of derivatives of $s$ with respect to $r$:
-
 
 $$
 \Gamma(r) = \frac{\partial s}{\partial r ^ \top}(r)=
@@ -1199,6 +1293,7 @@ and the asymptotic variance of $s$ is then:
 $$
 \hat{V}(\hat{r}) = \Gamma(\hat{r}) \hat{V}(\hat{s})\Gamma(\hat{r}) ^ \top
 $$
+\idxfun{vcov}{stats}\idxfun{matrix}{base}
 ```{r}
 Vr <- vcov(m1c)[c("log(i)", "lag.log(i)", "rho"), 
                 c("log(i)", "lag.log(i)", "rho")]
@@ -1213,6 +1308,7 @@ V <- G %*% Vr %*% t(G)
 ```
 
 We finally compute the table of the structural parameters:
+\idxfun{diag}{base}\idxfun{pnorm}{stats}\idxfun{abs}{base}\idxfun{cbind}{base}
 
 ```{r}
 stdev <- V %>% diag %>% sqrt
@@ -1223,6 +1319,8 @@ struct_par <- cbind(Estimate = s, "Std. Error" = stdev,
 rownames(struct_par) <- names(s)
 struct_par
 ```
+\idxdata[)]{sp\_solow}{micsr.data}
+\index[general]{delta method|)}
 
 The value of $\kappa$ is compatible with the observable share of the profits in the national product. $\phi$ is significant only at the 10% level. Finally, $\gamma$ is highly significant, which is a confirmation of the relevance of the model of @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch}.
 

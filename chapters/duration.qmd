@@ -7,6 +7,7 @@ source("../_commonR.R")
 
 When the response is a duration, specific models are used, which comes
 from the biostatistics (lifetime after an hearth transplant for example) and operations research (lifetime of a light bulb) literature. These data are called **duration** or **transition** data. The latter term indicates that we are interested by the time span of the transition from one state to another, the latter being called **death** and **failure**, respectively in the biostatistics and the operations research fields. For a given time, the observations for which the transition didn't take place are called **at-risk** observations. 
+\index[general]{at-risk observations}
 
 Duration data have two main characteristics, that require the use of
 specific models. The first one is that they are continuous positive variables. 
@@ -26,7 +27,7 @@ our example). Assume that $f(12) = 0.06$. It means that 6% of the spells
 ends between the 12^th^ and the 13^th^ month. If we divide by
 $S(12) = 0.2$, we get $f(12) / S(12) = 0.3$, which means that 30% of the
 spells of at least one year ends during the 13^th^ month. This is called
-the **hazard function** and it plays a central role in duration analysis.
+the **hazard function**\index[general]{hazard function} and it plays a central role in duration analysis.
 More formally, the hazard function is defined by:
 
 $$
@@ -38,7 +39,7 @@ logarithm of the survival function:
 $\frac{\partial \ln S}{\partial t} = \frac{- f(t)}{S(t)} = - \theta(t)$
 Inversely, the log survival function is a primitive of the hazard,
 so that, using the fact that $S(0) = 1$, the **cumulative hazard**
-function $\Lambda(t)$ is: 
+function $\Lambda(t)$ is: \index[general]{cumulative hazard}
 
 $$
 \Lambda(t) = \int_{0} ^ t \theta(s) ds = - \ln S(t)
@@ -58,12 +59,13 @@ times, denoted $t_1, t_2, \ldots t_k, \ldots t_K$. If there are no ties,
 which means that all the events occur at a specific time, then $K=N$.
 Otherwise, $K \leq N$.
 The **discrete-time hazard** function is the probability of transition
-at time $t_j$ given survival to time $t_j$:
+at time $t_j$ given survival to time $t_j$:\index[general]{discrete-time hazard}
 
 $$\theta_j = P(T = t_j \mid T \geq t_j) = \frac{f^d(t_j)}{S^d(t_{j-})}$$
 
 where $S^d(t_{j-})$ is the value of the survival function just before
 $t_j$. The **discrete-time survivor functions** is obtained from the
+\index[general]{discrete-time survivor functions}
 hazard function: $S^d(t) = P(T \geq t) = \prod_{j | t_j \leq t} (1 - \theta_j)$. 
 For example the probability of surviving at least to $t_2$ is: $S^d(t_2) = (1 - \theta_1) (1 - \theta_2)$. The first term is the probability of no transition at $t_1$ and the second one is the probability of no transition at $t_2$ conditional on surviving to just before $t_2$.
 
@@ -78,12 +80,14 @@ library(survival)
 
 ## The Kaplan-Meier non-parametric estimator {#sec-kaplan_maier}
 
+\index[general]{Kaplan-Meier estimator|(}
 The Kaplan-Meier estimator is a non-parametric estimator of the survival
 function. As such, it is very useful as a primarily tool before
 developping more complicated parametric models.
 
 ### Uncensored sample
 
+\index[general]{Kaplan-Meier estimator!uncensored sample|(}
 To demonstrate this estimator, it is convenient to use first uncensored
 data. This is the case of the `oil` [@FAVE:PESA:SHAR:94]\index[author]{Favero}\index[author]{Pesaran}\index[author]{Sharma} data set which
 indicate the number of months between the discovery of an oil field and
@@ -93,6 +97,8 @@ the number of observations **at-risk**, ie the number of spells which
 haven't ended just before $t_k$, denoted $r_k$.
 For the `oil` data set, we have 53 observations and the first ordered
 values of duration are:
+\idxdata[(]{oil}{micsr.data}
+\idxfun{arrange}{dplyr}\idxfun{pull}{dplyr}\idxfun{head}{utils}
 
 ```{r }
 #| message: false
@@ -123,6 +129,7 @@ then automatically arranged in an increasing order), the `n` column then
 contains the number of spells that ends at each period. We then compute
 the cumulative sums of this counts `cumn` and the survival probabilities
 as the cumulative count divided by $N$.
+\idxfun{count}{dplyr}\idxfun{mutate}{dplyr}\idxfun{cumsum}{base}
 
 ```{r }
 surv_tb <- oil %>% count(dur) %>% 
@@ -134,6 +141,7 @@ A more complex calculus (but which will prove to be useful if there are
 censored spells) consists on computing the number of spells at risk, the
 hazard and then the survival function as the cumulative product of 1
 minus the hazard rate.
+\idxfun{count}{dplyr}\idxfun{cumsum}{base}\idxfun{ifelse}{base}\idxfun{lag}{dplyr}\idxfun{cumprod}{base}
 
 ```{r }
 oil %>% 
@@ -147,6 +155,7 @@ oil %>%
 The survival function can also be plotted. As it is a step function,
 using the `geom_step` function is particularly useful, see
 @fig-survcurve.
+\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_step}{ggplot2}
 
 ```{r }
 #| label: fig-survcurve
@@ -160,7 +169,8 @@ Reminding than $\frac{\partial \ln S(t)}{\partial t} = - \lambda(t)$, it
 is useful to use a logarithmic y axis as, the hazard is then the slope
 (in absolute value) of the curve (see @fig-logsurvcurve). In particular,
 the constant hazard hypothesis would induce a roughly linear survival
-curve.
+curve.\index[general]{constant hazard hypothesis}
+\idxfun{coord\_cartesian}{ggplot2}\idxfun{scale\_y\_continuous}{ggplot2}\idxfun{geom\_smooth}{ggplot2}
 
 ```{r }
 #| label: fig-logsurvcurve
@@ -181,6 +191,7 @@ response must be a `Surv` object and the right-hand side of the formula
 is just an intercept. A `Surv` object is obtained using the `Surv`
 function. With uncensored data, its only argument is the duration
 response. We then have:
+\idxfun{survfit}{survival}\idxfun{Surv}{survival}
 
 ```{r }
 sf <- survfit(Surv(dur) ~ 1, data = oil)
@@ -193,18 +204,24 @@ all the spells are uncensored, the median spell duration and its 95%
 confidence interval. The `print.summary` function returns a table with one row
 for each time where some spells end. The object
 returned by `survfit` is not a data frame but the `broom:tidy` method coerces it easily to a tibble:
+\idxfun{tidy}{broom}
 
 ```{r }
 broom::tidy(sf)
 ```
 
+\idxdata[)]{oil}{micsr.data}
+
 There is a `plot` method for `survfit` objects that draw the survival curve and its confidence interval.
+\index[general]{Kaplan-Meier estimator!uncensored sample|)}
 
 ### Censored sample
 
+\index[general]{Kaplan-Meier estimator!censored sample|(}
 When there are censored observations, the computation is modified.
 Consider the `retirement` data set [@AN:CHRI:GUPT:04]\index[author]{An}\index[author]{Christensen}\index[author]{Gupta}. It contains the join
 duration until retirement for both spouses of 243 couples in Denmark.
+\idxdata[(]{retirement}{micrs.data}
 
 ```{r }
 retirement
@@ -217,6 +234,7 @@ one if the observation is right-censored. The corresponding variables
 for women are `durf` and `censf`. We'll concentrate on women. To get one observation for each
 woman, we simply select these two variables, which are time invariant
 and we keep only the distinct rows:
+\idxfun{select}{dplyr}\idxfun{mutate}{dplyr}\idxfun{ifelse}{base}\idxfun{distinct}{dplyr}
 
 ```{r }
 ret <- retirement %>%
@@ -228,6 +246,7 @@ ret <- retirement %>%
 As there is no transition before 7, we set duration to 6 for durations lower than 7.
 We then construct a table containing for each period the number of
 events and the number of censored spells; we first count the occurrence of any duration-censored combinations, we then pivot the tibble in order to have one line for each duration and two columns for the number of events (`"no"`) and the number of censored observations (`"yes"`) for which we give finally more relevant names.
+\idxfun{mutate}{dplyr}\idxfun{ifelse}{base}\idxfun{count}{dplyr}\idxfun{pivot\_wider}{dplyr}\idxfun{rename}{dplyr}
 
 ```{r }
 ret_tbl <- ret %>% 
@@ -240,6 +259,7 @@ ret_tbl <- ret %>%
 For each discrete-time, we define the cumulative number of spells that exit the
 sample `cumn`, either because of transition or censoring. The number of observations **at risk** just before $t_j$ is equal to the total
 sample size minus the lag of `cumn`:
+\idxfun{mutate}{dplyr}\idxfun{cumsum}{base}\idxfun{ifelse}{base}\idxfun{lag}{dplyr}
 
 ```{r }
 ret_tbl <- ret_tbl %>%
@@ -250,6 +270,7 @@ ret_tbl <- ret_tbl %>%
 Finally, we compute the hazard $\hat{\theta}_j$ as the ratio of the number of events at $t_j$ and the
 number of observations at risk just before $t_j$ and the survival $\hat{S}_j$ as the
 cumulative product of $(1 -\hat{\theta}_j)$.
+\idxfun{mutate}{dplyr}\idxfun{cumprod}{base}
 
 ```{r }
 ret_tbl %>%
@@ -270,19 +291,25 @@ obtained using the `Surv` function with two arguments:
 If the `Surv` function is used with two unnamed arguments, it is assumed
 that these two arguments are `time` and `event` in that order.
 We use in our example a boolean obtained from the `cens` variable:
+\idxfun{survfit}{survival}\idxfun{Surv}{survival}\idxfun{tidy}{broom}\idxfun{slice}{dplyr}
+\idxdata[)]{retirement}{micsr.data}
 
 ```{r }
 surv_ret <- survfit(Surv(duration, censored == "no") ~ 1, data = ret)
 broom::tidy(surv_ret) %>% slice(- (1:6))
 ```
+\index[general]{Kaplan-Meier estimator!censored sample|)}
 
 ### Different groups
 
+\index[general]{Kaplan-Meier estimator!different groups|(}
 When the observations belongs to 2 or more groups, the survival curves
 can be estimated for each group. 
 <!-- We now use the `recall` data set, initially used by @KATZ:86 and latter by @SUEY:95. It contains 1045 spells of unemployment from 1980.  -->
 
 We now use the `unemp_teachers` data set, initially used by @KAST:VAND:22\index[author]{Kastoryano}\index[author]{van der Klaauw}. It contains 3064 observations of unemployed dutch teachers. Some of them performed a training, they are identified by a dummy called `training`. We restrict the sample to those who didn't performed a training:
+\idxdata[(]{unemp\_teachers}{micsr.data}
+\idxfun{filter}{dplyr}\idxfun{select}{dplyr}\idxfun{mutate}{dplyr}\idxfun{head}{base}
 
 ```{r}
 unteach <- unemp_teachers %>% filter(! training) %>% 
@@ -326,6 +353,8 @@ head(unteach, 3)
 <!--                              end %in% c("new-job", "recall")) ~ race, recall) -->
 <!-- broom::tidy(survfit_race) %>% print(n = 3) -->
 <!-- ``` -->
+\idxfun{tidy}{broom}\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_line}{ggplot2}
+\idxfun{scale\_y\_continuous}{ggplot2}
 
 ```{r}
 #| include: false
@@ -336,6 +365,7 @@ survfit_race %>% tidy %>%
 ```
 
 We use `survfit`, this time with a factor, more precisely the gender factor to compute separate survival curves for males and females:
+\idxfun{survfit}{survival}\idxfun{Surv}{survival}\idxfun{tidy}{broom}
 
 ```{r}
 survfit_gender <- survfit(Surv(time, spell) ~ gender, unteach)
@@ -353,6 +383,7 @@ The **survminer** package provides the **ggsurvplot** function, based on **ggplo
 <!-- #| fig-height: 8 -->
 <!-- survminer::ggsurvplot(survfit_race, risk.table = TRUE, conf.int = TRUE) -->
 <!-- ``` -->
+\idxfun{ggsurvplot}{survminer}
 
 
 ```{r}
@@ -363,6 +394,7 @@ The **survminer** package provides the **ggsurvplot** function, based on **ggplo
 survminer::ggsurvplot(survfit_gender, risk.table = TRUE, conf.int = TRUE)
 ```
 
+\index[general]{log-rank test}
 The hypothesis of identical survival curves can be tested using a
 log-rank test. Denoting $d_{tg}$ and $r_{tg}$ the number of failures and
 the number of observations at risk for the $t$^th^ duration and the
@@ -391,14 +423,17 @@ This test can be computed using the `survival::surfdiff` function, with the same
 <!-- survdiff(Surv(duration, end %in% c("new-job", "recall")) ~ race, recall) -->
 <!-- ``` -->
 
+\idxfun{survdiff}{survival}\idxfun{Surv}{survival}
 
 ```{r}
-survdiff(Surv(time, spell)~ gender, unteach)
+survdiff(Surv(time, spell) ~ gender, unteach)
 ```
 
 The hypothesis of identical survival for males and females is highly rejected.
 <!-- The hypothesis of identical survival for whites and non-whites is highly rejected. -->
-
+\index[general]{Kaplan-Meier estimator!different groups|)}
+\idxdata[)]{unemp\_teacher}{micsr.data}
+\index[general]{Kaplan-Meier estimator|)}
 
 ## Parametric and semi-parametric estimators {#sec-param_duration}
 
@@ -406,6 +441,9 @@ In this section, we introduce covariates that may explain the length of the dura
 
 ### Constant hazard and the exponential distribution
 
+\index[general]{exponential distribution|(}
+\index[general]{exponential model|(}
+\index[general]{hazard function!constant|(}
 Consider the special case where the hazard is a constant $\theta$. From @eq-cummulative_hazard, the cumulative hazard is then: $\Lambda(t) = \int_0 ^ {t} \theta ds = \theta t = - \ln S(t)$. The survival function is then $S(t) = e^{-\theta t}$ and the opposite of its
 derivative is the density function $f(t) = \theta e ^ {-\theta t}$.
 Therefore, if the hazard is constant, the distribution of $T$ is the
@@ -413,11 +451,12 @@ exponential distribution with parameter $\theta$, which will be denoted:
 $T \sim E (\theta)$.
 
 The **moment generating function** of $T$ for the exponential distribution is:
+\index[general]{moment generating function}
 
 $$M(s) = \mbox{E}\left(e^{sT}\right) = \int_0 ^ {+\infty}e^{st}\theta e^{-\theta t} dt =  \frac{\theta}{\theta - s}$$
 
 for $\theta > s$. The **cumulant generating function** is the logarithm
-of the moment generating function:
+of the moment generating function:\index[general]{cumulant generating function}
 
 $$
 K(s) =\ln M(s) = \ln \theta - \ln(\theta - s)
@@ -432,7 +471,7 @@ Denote $Z=\int_0 ^ T \theta(s) ds$ the cumulative hazard. This is a
 transformation of the time-scale such that
 $dZ = \frac{\partial Z}{\partial T} dT = \theta(T) dT$. With constant
 hazard, $Z$ is simply proportional to $T$, as $dZ = \theta dT$ and the cumulative hazard is then $\theta T$. For example, if the constant hazard is 0.1 and the time is measured in days, a variation of 1 in the initial time scale (one day) corresponds to a variation of 0.1 on the transformed time scale.
-As the hazard is positive, we have:
+As the hazard is positive, we have:\index[general]{constant hazard hypothesis}
 
 $$ \mbox{P}(T \geq t) = \mbox{P}\left(\int_0 ^ T \theta(s) ds \geq
 \int_0 ^ t \theta(s) ds\right) = \mbox{P}(Z \geq z) $$
@@ -443,21 +482,24 @@ hazard, is a unit exponential random variate: $Z \sim E(1)$.
 
 Finally, consider the moment generating function of $\ln T$ with
 $T \sim E(\theta)$:
+\index[general]{moment generating function}
 
 $$M(s)_{\ln T} = \mbox{E}\left( e ^ {s\ln T}\right) = \mbox{E}\left(T ^ s\right) = \int_0^{+\infty}t ^ s \theta e ^ {-\theta t}dt = \frac{\Gamma (1 + s)}{\theta ^ s}$$
 
 with $\Gamma(z) = \int_0^{+\infty}t^{z-1}e^{-t}dt$  the Gamma
-function. The corresponding cumulant generating function is:
+function\index[general]{Gamma function}. The corresponding cumulant generating function is:
+\index[general]{cumulant generating function}
 $K(s)_{\ln T} = \ln \Gamma(1 + s) - s\ln \theta$, from which we obtain
 the expected value $\psi(1) - \ln \theta$ and the variance, $\psi'(1)$,
 where $\psi$ and $\psi'$ are the first and second derivative of
-$\ln \Gamma$. $\psi$ is called the digamma function and $\psi(1)=-\gamma$, $\gamma \approx 0.57721$ being the Euler-Mascheronni constant. $\psi'$ is called the trigamma function and
+$\ln \Gamma$. $\psi$ is called the digamma\index[general]{digamma function} function and $\psi(1)=-\gamma$, $\gamma \approx 0.57721$ being the Euler-Mascheronni constant\index[general]{Euler-Mascheronni constant}. $\psi'$ is called the trigamma\index[general]{trigamma function} function and
 $\psi'(1) = \pi ^ 2 / 6$. As $Z = \theta T \sim E(1)$, the density of $Z$ is $g(Z) = e ^ {-Z}$. consider now $U = \ln Z$. The density of $U$ is:
 
 $$
 f(U) = e ^ {- e ^ U}\left| \frac{dZ}{dU}\right| =  e ^ {- e ^ U} e ^ U
 $$
 which is the extreme value distribution of type 1, for which $F(U) = 1 - e^{-e^U}$, $S(U) = e^{-e^U}$, $\mbox{E}(U) = - \gamma$ and $\mbox{V}(U) = \pi ^ 2 / 6$. As $U = \ln Z = \ln T + \ln \theta$, we can write:
+\index[general]{extreme value distribution of type 1}
 
 $$
 \ln T = - \ln \theta + U
@@ -471,9 +513,15 @@ $$ {#eq-duration_regression}
 
 Then $\mbox{E}(\ln T_n\mid z_n) = -(\gamma +\ln \theta_n)$, $\mbox{E}(W\mid x_n) = 0$ and $\mbox{V}(W\mid x_n) = \pi ^ 2 / 6$. $\theta$ can be parametrized as
 $e ^ {-\alpha + \beta ^ \top x_n}$, so that $\ln T_n =  (\alpha-\gamma) + \beta^\top x_n + W_n$.
+\index[general]{exponential distribution|)}
+\index[general]{exponential model|)}
+\index[general]{hazard function!constant|)}
+
 
 ### Estimation
 
+\index[general]{maximum likelihood estimator!exponential model|(}
+\index[general]{exponential model!maximum likelihood estimator|(}
 Duration models are most of the time estimated by maximum likelihood. For censored observations, the contribution to the likelihood is having survived at the censoring time, which is $S(t_n \mid x_n)$. For uncensored observations, this is the density function: $f(t_n \mid x_n)$. Therefore, denoting $d_n$ a dummy for complete (uncensored) observations, we get:
 
 $$
@@ -484,8 +532,12 @@ The log-likelihood function can also be expressed in terms of the hazard functio
 $$
 \ln L = \sum_{n=1} ^ N \left[d_n \ln \theta(t_n \mid x_n) + \ln S(t_n \mid x_n)\right]
 $$
+\index[general]{maximum likelihood estimator!exponential model|)}
+\index[general]{exponential model!maximum likelihood estimator|)}
 If there are no censored observations and if the distribution of time is exponential, @eq-duration_regression can be estimated by least squares, which will be consistent, although inefficient.
 The `oil` data set doesn't have censored observations. Therefore, OLS estimation is consistent, even if it is less efficient that maximum likelihood if the distribution is really exponential. We estimated a model by maximum likelihood in @sec-ml_est_expon, with `p98` and `varp98` as covariates. We reproduce this estimation using `surveg` and we compare the results with those obtained using `lm`. The `survreg` function has a `dist` argument that we set to `"exponential"`. The response should be generated using the `Surv` function, with the duration as only argument in this example as all the observations are uncensored:
+\idxdata{oil}{micsr.data}
+\idxfun{survreg}{survival}\idxfun{Surv}{survival}\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r}
 survreg(Surv(dur) ~ p98 + varp98, oil, dist = "exponential") %>% summary
@@ -496,6 +548,8 @@ As expected, the two sets of slopes are rather close, but the ML estimator doesn
 $\beta_k$ is the derivative of  $\ln T_n$ with $x_{nk}$, so that $d T_n / T_n = \beta_k dx_{nk}$. Moreover, $d \theta_n / \theta_n = -\beta_k dx_{nk}$.
 
 We then estimate the model for unemployment duration of Dutch teachers using a covariates the age, the gender and (in log), the last hourly wage:
+\idxfun{survreg}{survival}\idxfun{Surv}{survival}\idxfun{coef}{stats}
+\idxdata{unemp\_teacher}{micsr.data}
 
 ```{r}
 un_exp <- survreg(Surv(time, spell) ~ age + gender + log(wage),
@@ -505,9 +559,10 @@ coef(un_exp)
 
 The results indicate that male's unemployment spell duration are `r round(coef(un_exp)["gendermale"] * 100)`% longer than females'. One more year of age increases the lenght of the spell by `r round(coef(un_exp)["age"] * 100, 2)`%. Finally, 1% of more previous wage increases the duration of the spell by `r round(coef(un_exp)["log(wage)"], 2)`%.
 
-
 ### Accelerated failure time model
 
+\index[general]{accelerated failure time model|(}
+\index[general]{accelerated failure time model!exponential model|(}
 The previous model is a special case of a class of models called
 **accelerated failure time** (**AFT** in short), for which the duration can be written
 as: $T_n = Z / \lambda_n$, $\lambda_n = e ^ {\gamma ^ \top z_n}$ and $Z$ is a random
@@ -520,7 +575,10 @@ equivalently $U = \ln Z$ is extreme value of type1. Therefore, the AFT models ar
 $$
 \ln T_n = - \ln \lambda_n + U_n
 $$
-where $\lambda_n$ can be parametrized as $e^{-\gamma ^ \top z_n}$, so that $\ln T_n = \gamma ^ \top z_n + U_n$. Different choices of the distribution of $U_n$ leads to different flavors of AFT models. The basic exponential model is an AFT model with $U$ following an extreme value type-1 distribution. Two natural extensions of this model consist on  introducing a supplementary parameter $\sigma = 1 / \delta$ or considering different distributions for $U$:
+where $\lambda_n$ can be parametrized as $e^{-\gamma ^ \top z_n}$, so that $\ln T_n = \gamma ^ \top z_n + U_n$. Different choices of the distribution of $U_n$ leads to different flavors of AFT models. The basic exponential model is an AFT model with $U$ following an extreme value type-1 distribution. 
+\index[general]{accelerated failure time model!exponential model|)}
+\index[general]{accelerated failure time model!weibul model|(}
+Two natural extensions of this model consist on  introducing a supplementary parameter $\sigma = 1 / \delta$ or considering different distributions for $U$:
 
 $$
 \ln T_n = - \ln \lambda_n + \frac{1}{\delta} U_n = - \ln \lambda_n + \sigma U_n
@@ -533,7 +591,7 @@ f(T) = e ^ {\delta \ln(\lambda T)} e ^ {- e ^ {\delta \ln(\lambda T)}} \frac{dU}
 $$
 
 and the corresponding survival function is: $S(t) = e ^ {-(\lambda t) ^ \delta}$.
-This is a Weibull distribution, with a shape parameter equal to $\delta$
+This is a Weibull distribution,\index[general]{Weibull distribution} with a shape parameter equal to $\delta$
 and a scale parameter equal to $\frac{1}{\lambda}$. The corresponding
 hazard function is: $\theta(t) = \delta \lambda ^ \delta t ^ {\delta - 1}$.
 This **Weibull model** is the most common model used in duration
@@ -552,7 +610,7 @@ The log-likelihood function is then:
 $$
 \ln L = \sum_{n=1} ^ n d_n \left[\ln \delta - \ln t + \delta \epsilon_n\right] - e ^ {\delta\epsilon}
 $$
-
+\index[general]{accelerated failure time model!weibul model|)}
 <!-- A more general model is obtained by specifying $e ^ U$ as a gamma -->
 <!-- variate (and not as a unit exponentional distribution). In this case, -->
 <!-- the density of $Z = e ^ U = (\lambda T) ^ \sigma$ is -->
@@ -580,6 +638,7 @@ $$
 <!-- -   U-shaped if $\sigma < 1$ and $d > 1$, -->
 <!-- -   inverted U-shaped if $\sigma > 1$ and $d < 1$. -->
 
+\index[general]{accelerated failure time model!log-normal model|(}
 With $U \sim N(0, 1)$,
 $\ln T = - \ln \lambda + \sigma U \sim N(-\ln \lambda, \sigma)$ and therefore
 the time duration is log-normal and the hazard function is:
@@ -600,6 +659,8 @@ $$
 $$
 \ln L = \sum_{n=1} ^ n d_n \left[\ln \delta - \ln t + \ln \phi(\delta\epsilon_n) \right] + (1 - d) \ln (1 - \Phi(\delta\epsilon))
 $$
+\index[general]{accelerated failure time model!log-normal model|)}
+\index[general]{accelerated failure time model!log-logistic model|(}
 Finally, consider that the distribution of $U$ is standard logistic, so
 that $f(u) = \frac{e^u}{(1 + e ^ u) ^ 2}$. As
 $\delta \ln T \lambda = U$, $\frac{dU}{dT} = \delta / T$ and the density
@@ -641,8 +702,12 @@ function is decreasing, from $+\infty$ to 0.
 Finally, if $\delta > 1$, the hazard function is U-shaped, with a
 maximum for $T=\left(\frac{\delta - 1}{v}\right) ^ {1 / \delta}$ and
 tends to 0 for $T \rightarrow 0$ and $T \rightarrow + \infty$.
+\index[general]{accelerated failure time model!log-logistic model|)}
+\index[general]{accelerated failure time model|)}
 
 All these models are estimated by updating the exponential model previously estimated.
+\idxfun{update}{stats}
+\idxdata[(]{unemp\_teacher}{micsr.data}
 
 ```{r}
 un_wei <- update(un_exp, dist = "weibull")
@@ -653,6 +718,7 @@ un_llog <- update(un_exp, dist = "loglogistic")
 We first plot the hazard curves for a specific individual: we choose a white married homeowner male aged 31 with 7 years of education, 2 dependents, with unemployment insurance, in a county with a 7% unemployment rate, with a working wife and the reference levels for `industry` and `occupation`. We then compute $\hat{\lambda}$ for the different models:
 
 <!-- x <- c(1, 31, 0, 7, 0, 2, 1, 1, 7, rep(0, 14)) -->
+\idxfun{coef}{stats}
 
 ```{r}
 x <- c(1, 1, 35, log(10))
@@ -672,6 +738,8 @@ c(s_llog, s_lnorm, s_wei)
 
 $\delta$ being larger than one for the log-logistic, we have a U-shaped distribution for the hazard function. For the Weibull model, $\delta < 1$, the hazard curve is then decreasing. 
 We can then write functions for the hazards functions and plot them using `geom_function` (see @fig-hazard_ud).
+\idxfun{ggplot}{ggplot2}\idxfun{dnorm}{stats}\idxfun{pnorm}{stats}\idxfun{geom\_functions}{ggplot2}\idxfun{aes}{ggplot2}
+\idxfun{scale\_x\_continuous}{ggplot2}\idxfun{labs}{ggplot2}
 
 ```{r}
 #| label: fig-hazard_ud
@@ -709,9 +777,11 @@ modelsummary::msummary(list(exponential = un_exp, weibull = un_wei,
                             `log-logistic` = un_llog, `log-normal` = un_lnorm),
                        coef_omit = "(occupation|industry)")
 ```
+\idxdata[)]{unemp\_teacher}{micsr.data}
 
 ### Proportional hazard models
 
+\index[general]{proportional hazard model|(}
 The proportional hazard models (**PH** in short) start with the specification of the hazard function. More specifically, it is assumed that the hazard function can be written as the product of two terms:
 
 $$
@@ -798,6 +868,7 @@ only this observation, so that the contribution of observation $4$ is:
 
 $$\frac{e^{\gamma^\top z_4}}{e^{\gamma^\top z_4}} = 1$$
 
+\index[general]{partial likelihood}
 The **partial likelihood** for the whole sample is the product of these
 four contributions:
 
@@ -859,7 +930,10 @@ is $k\times k!$. For example, with $k=10$, more than $30$ millions of
 probabilities should be computed. Therefore, this formula can only be
 applied when there are few and "thin" ties. Otherwise,
 approximations have been proposed by Breslow and Efron.
+\index[general]{proportional hazard model|)}
 The `survival::coxph` function fits the Cox proportional hazard regression model. We've already estimated the Weibull using the `survival::survreg` function in it's accelerated failure time parametrization. `micsr::weibreg` enables to estimate the Weibull model using either the AFT or the proportional hazard parametrization, using the `model` argument:
+\idxfun{weibreg}{micsr}\idxfun{Surv}{survival}\idxfun{update}{stats}\idxfun{coxph}{survival}
+\idxdata[(]{unemp\_teacher}{micsr.data}
 
 ```{r}
 weib_aft <- weibreg(Surv(time, spell) ~ gender + age +
@@ -868,9 +942,6 @@ weib_ph <- update(weib_aft, model = "ph")
 cox <- coxph(Surv(time, spell) ~ gender + age + log(wage),
              unteach)
 ```
-
-
-
 
 The results are presented in @tbl-weib_ph. As stated previously, starting from the PH coefficient, the AFT is obtained as the opposite divided by $\delta$. For example, for age: $-(`r round(coef(weib_ph)["age"], 3)` / `r round(coef(weib_ph)["shape"], 3)`) = `r - round(coef(weib_ph)["age"] / coef(weib_ph)["shape"], 3)`$. Obviously, the value of the log-likelihood function is the same for the PH and the AFT versions of the Weibull model. 
 
@@ -883,14 +954,16 @@ modelsummary::msummary(list("Weibull (AFT)" = weib_aft,
                             "Cox model" = cox))
 ```
 
+\idxdata[)]{unemp\_teacher}{micsr.data}
 
 ## Heterogeneity {#sec-heter_duration}
 
-Consider a population with two groups characterized by two different constant hazard rates, 0.4 for the first group and 0.1 for the second group.^[This example is from @CAME:TRIV:05, p.611.\index[author]{Cameron}\index[author]{Trivedi}] If there are 100 individuals in both groups, the number of events (observations at risk) for the first group is $0.4 \times 100 = 40$ (60) for the first period, $0.4 \times 60 = 24$ (36) for the second one and $0.4 \times 36 = 21.6$ (12.96) for the third one. For the second group, we get $0.1 \times 100 = 10$ (90) for the first period, $0.1 \times 90 = 9$ (81), $0.1 \times 81 = 8.1$ (72.9) and $0.1 \times 72.9 = 7.29$ (65.61). Summing for the two groups, we get 50 (150), 33 (117), 22.5 (94.5). The hazard is then $50 / 200 = 0.25$ for the first period, $33/150 = 0.22$ for the second one and $22.5 / 117 = 0.1923$ for the third period. The hazard rate for the whole population is therefore decreasing, although it is constant for every individual. This result is easy to understand as, as times going, the proportion of individuals with the low hazard rate in the observations at risk is increasing.
+Consider a population with two groups characterized by two different constant hazard rates,\index[general]{constant hazard hypothesis} 0.4 for the first group and 0.1 for the second group.^[This example is from @CAME:TRIV:05, p.611.\index[author]{Cameron}\index[author]{Trivedi}] If there are 100 individuals in both groups, the number of events (observations at risk) for the first group is $0.4 \times 100 = 40$ (60) for the first period, $0.4 \times 60 = 24$ (36) for the second one and $0.4 \times 36 = 21.6$ (12.96) for the third one. For the second group, we get $0.1 \times 100 = 10$ (90) for the first period, $0.1 \times 90 = 9$ (81), $0.1 \times 81 = 8.1$ (72.9) and $0.1 \times 72.9 = 7.29$ (65.61). Summing for the two groups, we get 50 (150), 33 (117), 22.5 (94.5). The hazard is then $50 / 200 = 0.25$ for the first period, $33/150 = 0.22$ for the second one and $22.5 / 117 = 0.1923$ for the third period. The hazard rate for the whole population is therefore decreasing, although it is constant for every individual. This result is easy to understand as, as times going, the proportion of individuals with the low hazard rate in the observations at risk is increasing.
 It is therefore important to detect the presence of heterogeneity and, in presence of heterogeneity, to fit models that take heterogeneity into account.
 
 ### Detecting heterogeneity
 
+\index[general]{generalized residuals!Weibull model|(}
 If heterogeneity is present, fitting a model that doesn't take it into account results in a wrong specification that can be tested using **generalized residuals**. In the context of duration models, integrated hazard can be considered as generalized residuals, as, if the specification is correct, their distribution is a unit exponential. Using the accelerating failure specification, remind that the integrated hazard is $\epsilon_n = \Lambda(t_n) = - \ln S(t_n) = e ^ {\delta (\ln t - \gamma ^ \top z_n)}$. The distribution of $\epsilon_n$ doesn't depend on $x_n$. Moreover, being a unit exponential distribution, its first 4 uncentered moments are $1, 2, 6, 24$. To get an idea of the relevance of the specification, we can plot minus the log of the empirical survival (which is the number of observations $m$ such that $\epsilon_m > \epsilon_n$ divided by the total number of observations) against the generalized residuals; the points should then be grossly aligned on the 45^o^ line. For censored observations, the duration is not known and the integrated hazard is replaced by its expectation. Denoting $L$ the censoring time, the expectation is:
 
 $$
@@ -898,9 +971,14 @@ $$
 \frac{1}{e^ {-\epsilon(L)}} \int_{\epsilon(L)} ^ {+\infty}\epsilon e ^ {- \epsilon}d\epsilon =
 \epsilon(L) + 1
 $$
+\idxfun{weibreg}{micsr}\idxfun{Surv}{survival}\idxfun{gres}{micsr}\idxfun{nobs}{stats}
+\idxfun{tibble}{tibble}\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}\idxfun{arrange}{dplyr}
+\idxfun{mutate}{dplyr}\idxfun{cumsum}{base}\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}
+\idxfun{geom\_step}{ggplot2}\idxfun{geom\_abline}{ggplot2}
+\idxdata[(]{unemp\_teacher}{micsr.data}
 
 ```{r}
-#| tbl-cap: "Generalized residuals for the Weibull model"
+#| fig-cap: "Generalized residuals for the Weibull model"
 #| label: fig-gres_weibull
 weib <- weibreg(Surv(time, spell) ~ gender + age + log(wage),
                 unteach)
@@ -913,7 +991,9 @@ int_haz %>% ggplot(aes(gres, ech)) + geom_step() +
   geom_abline(intercept = 0, slope = 1, linetype = "dotted")
 ```
 
+\index[general]{generalized residuals!Weibull model|)}
 @fig-gres_weibull plots the generalized residuals. The fit seems excellent for low values of the generalized residuals, and bad for values higher than 4 (about 2 percent of the sample). The empirical moments are:
+\idxfun{sapply}{base}
 
 ```{r}
 #| collapse: true
@@ -921,6 +1001,8 @@ sapply(2:4, function(i) mean(un_gres ^ i))
 ```
 
 Conducting a conditional moment test, we get:
+\idxfun{cmtest}{micsr}\idxfun{gaze}{micsr}
+\index[general]{conditional moment test!Weibull model}
 
 ```{r}
 #| collapse: true
@@ -928,9 +1010,11 @@ cmtest(weib, powers = 2:4, opg = FALSE) %>% gaze
 ```
 
 and the hypothesis of a correct specification is therefore not rejected.
+\idxdata[)]{unemp\_teacher}{micsr.data}
 
 ### The Weibull-Gamma model
 
+\index[general]{Weibull-Gamma model|(}
 To take into account the heterogeneity, we can use mixing distributions, either finite (taking for example 2 categories of individuals like in the introductory example) or infinite. We'll present in this section a model very widely used for its simplicity, the Weibull-Gamma model. Assume that the survival function for individual $n$ is: 
 
 $$
@@ -978,7 +1062,11 @@ $$
 \ln L = \sum_{n=1} ^ n d_n \left[\ln \delta + (\delta - 1)\ln t + \ln \mu_n \right] - (1/\chi + d_n)\ln \left(1+\chi\mu_n t_n ^ \delta\right)
 $$
 
-as $\chi \rightarrow 0$, $\ln \left(1 + \chi \mu_n t_n ^ \delta\right)\rightarrow \chi\mu_n t_n ^ \delta$ so that the Weibull is obtained as the limiting case where the variance of the mixing distribution tends to 0. Remind from @tbl-acc_failure that, for the weibull AFT model, the scale parameter was $\sigma = `r round(un_wei$scale, 2)`$, which corresponds to $\delta = 1 / `r round(un_wei$scale, 2)` = `r round(1/ un_wei$scale, 2)`$ and therefore to a decreasing hazard rate. The `micsr::weibreg` function estimates the Weibull-Gamma model when the `mixing` argument to `TRUE`:
+as $\chi \rightarrow 0$, $\ln \left(1 + \chi \mu_n t_n ^ \delta\right)\rightarrow \chi\mu_n t_n ^ \delta$ so that the Weibull is obtained as the limiting case where the variance of the mixing distribution tends to 0. 
+\index[general]{Weibull-Gamma model|)}
+Remind from @tbl-acc_failure that, for the weibull AFT model, the scale parameter was $\sigma = `r round(un_wei$scale, 2)`$, which corresponds to $\delta = 1 / `r round(un_wei$scale, 2)` = `r round(1/ un_wei$scale, 2)`$ and therefore to a decreasing hazard rate. The `micsr::weibreg` function estimates the Weibull-Gamma model when the `mixing` argument to `TRUE`:
+\idxfun{weibreg}{micsr}\idxfun{gaze}{micsr}\idxfun{update}{base}\idxfun{Surv}{survival}
+\idxdata[(]{unemp\_teacher}{micsr.data}
 
 ```{r}
 #| label: mixing_gamma
@@ -991,6 +1079,7 @@ gweib %>% gaze(coef = c("shape", "var"))
 ```
 
 The supplementary parameter ($\chi$) is called `"var"` and is highly significantly different from 0, so that the hypothesis of homogeneity is highly rejected. Note also that, with the Weibull-Gamma model, the shape parameter is now significantly greater than 1, so that the hazard rate is increasing.
+\idxdata[)]{unemp\_teacher}{micsr.data}
 
 ## Other models {#sec-misc_duration}
 
@@ -1008,26 +1097,32 @@ duration is $t_n$. Three cases should be considered:
     -   $a$ if $\tilde{t}_n ^ a < \tilde{t}_n ^ b$,
     -   $b$ if $\tilde{t}_n ^ a > \tilde{t}_n ^ b$.
 
+\index[general]{competing risk model|(}
 The **competing risk** model is a very simple multi-state model which extend the Cox proportional hazard model to the multi-state case. Consider for example state $a$. For an observation $n$, if the event $a$ is observed, we have an observation of a complete spell. Otherwise, if the event is $b$, this means that $t_n = \tilde{t}_n^b < \tilde{t}_n^a$ and the observation is censored as far as we are interested in state $a$. We can therefore estimate the competing risk model with two independent Cox PH models:
 
 - for the first one, the event is $a$ and censoring occurs either if the observation is censored or if the event is $b$,
 - for the second one, the event is $b$ and censoring occurs either if the observation is censored or if the event is $a$,
 
+\index[general]{competing risk model|)}
 For example, [@BIER:CARV:07]\index[author]{Bierens}\index[author]{Carvalho} consider the duration between prison release and a new crime for former prisoners. The event can take the form of a felony or a misdemeanor and the duration is censored if no new crime has been committed during the period of survey. The survey stops on April 16, 1988 and, as the date of release depends on the individuals, so does the censoring time. The sample contains $16355$  individuals from $11$ states.
 
+\idxdata[(]{recall}{micsr.data}
 Consider the `recall` data set, initially used by @KATZ:86\index[author]{Katz} and latter by @SUEY:95\index[author]{Sueyoshi}. It contains 1045 spells of unemployment in 1980.
+\idxfun{head}{utils}
 
 ```{r}
 recall %>% head(3)
 ```
 
 The analysis of @KATZ:86\index[author]{Katz} showed that an important transition form unemployment was a recall from the previous employer. The `end` covariate indicates the different modalities of transition:
+\idxfun{count}{dplyr}
 
 ```{r}
 recall %>% count(end)
 ```
 
 We consider the `new-job` and `recall` modalities as an indication of a complete spell. The model for unemployment spells is estimated using as covariates the age, the sex, years of education, the number of dependents (`nb`), a dummy for unemployment insurance during the spell (`ui`), marital status, county unemployment rate (`unemp`), wife's employment status, a dummy for home ownership and factors for occupation and industry. The competing risk model can then be estimated using the following two calls to `coxph`:
+\idxfun{coxph}{suvival}\idxfun{Surv}{survival}
 
 ```{r}
 un_recall <- coxph(Surv(duration, end == "recall") ~ age + sex + educ +
@@ -1039,6 +1134,7 @@ un_new <- coxph(Surv(duration, end == "new-job") ~ age + sex + educ +
 ```
 
 where the `event` argument is a dummy equal to `TRUE` when `end` equals `"recall"` for the first regression and `"new-job"` for the second regression. The competing risk model can be estimated more simply with a sample call to `coxph` when the `event` argument is a factor for which the first level indicates censored observations. In the `recall` data set, the first level is `"new-job"`, so that we need to change the order of the levels using `relevel`:
+\idxfun{pull}{dplyr}\idxfun{relevel}{stats}\idxfun{mutate}{dplyr}
 
 ```{r}
 #| collapse: true
@@ -1048,15 +1144,18 @@ recall %>% pull(end) %>% levels
 ```
 
 Moreover, the `id` argument is mandatory. This is the individual identifier and it is really useful only when there are several observations for the same individuals, which is not the case here. We therefore create an `idspell` variable before proceeding to the estimation. To save place, we use a very limited subset of covariates.
+\idxfun{add\_column}{tibble}\idxfun{nrow}{base}\idxfun{coxph}{survival}\idxfun{Surv}{survival}
 
 ```{r}
 recall <- recall %>% 
   add_column(id_spell = 1:nrow(recall), .before = 1)
 coxph(Surv(duration, end) ~ age + sex, data = recall, id = id_spell)
 ```
+\idxdata[)]{recall}{micsr.data}
 
 ### Grouped data
 
+\index[general]{grouped data|(}
 Duration is often recorded not as a continuous variable, but as a set of intervals. For example, unemployment duration may not be measured in days, but in months or years. In this case, the model must be written in terms of discrete time. Denote $t_0, t_1, t_2, ... t_T$ (with $t_0=0$) and $a$ the interval defined by $t_{a-1} \leq t< t_a$. The survival at time $t_a$ is such that 
 $- \ln S(t_a) = \int_0 ^ {t_a} \theta(s) ds$. Therefore, for the $a$^th^ interval, we have:
 
@@ -1079,6 +1178,8 @@ The discrete survival function at the beginning of this interval is:
 $$
 S_{t_{a-1}} = \prod_{s = 1} ^ {a-1} (1 - \theta_s) = \prod_{s = 1} ^ {a-1} (1 - F(\delta_s + \beta ^ \top x_{t_{s-1}}))
 $$
+\index[general]{grouped data!binomial model|(}
+\index[general]{binomial model!duration data|(}
 The probability of a transition in the $a$^th^ interval is the product of the discrete hazard for interval $a$ and the value of the survival function at the beginning of this interval (ie $t_{a-1}$). For observation $n$, the contribution to the likelihood is then:
 
 $$
@@ -1093,7 +1194,11 @@ $$ {#eq-binomial_duration}
 
 This is an unbalanced pooled binomial model, the number of observation for each individual being the index of the interval of its transition. @eq-binomial_duration deals correctly for right-censored observation as, in this case, $y_{na_n} = 0$ and the correct term ($1 - F_{na_n}$) is introduced in the log-likelihood. 
 A specific set of $\delta_s$ parameters can be estimated, which enables to retrieve from the estimation the shape of the hazard function.
+\index[general]{grouped data!binomial model|)}
+\index[general]{binomial model!duration data|)}
 
+\index[general]{grouped data!ordered model|(}
+\index[general]{ordered model!duration data|(}
 An alternative to this binomial model is to start with the proportional hazard formulation: $\theta(t) = \lambda(t) e ^ {-\gamma ^ \top z}$^[Note that we used $-\gamma$ instead of $\gamma$, like for the AFT models, for a reason that we'll be clear latter in this section.] and to compute the integrated hazard: $\int_0 ^ t\theta(s)d s = e ^ {-\gamma ^ \top z_t}\int_0 ^ t \lambda(s)ds = e ^ {\delta_t - \gamma ^ \top z_t}$ where $\gamma_t$ is defined as: $\ln \int_0 ^ t \lambda(s)ds$. As the integrated hazard is the opposite of the logarithm of the survival function, we have: $S(t) = e ^ {- e ^ {\delta_t - \gamma ^ \top z_t}}$. The probability of transition in the $a$^th^ interval is $S(t_{a-1}) - S(t_a) = F(t_a) - F(t_{a - 1})$, with $F(z) = 1  - e ^ {- e ^ z}$ the CDF of the extreme value type 1 distribution. Therefore, the log-likelihood is:
 
 $$
@@ -1107,18 +1212,22 @@ $$
 &+ \left.(1 - d_n) \ln\left[1 - F(\delta_{t_{a_n}} - \gamma ^ \top z_n)\right]\right)
 \end{array}
 $$
-
+\index[general]{grouped data!ordered model|)}
+\index[general]{ordered model!duration data|)}
+\idxfun{ordreg}{micsr}\idxfun{Surv}{survival}\idxfun{coef}{stats}
+\idxdata[(]{recall}{micsr.data}
 `micsr::ordreg` deals with `Surv` objects in order to take into for censored observations.
-
 
 ```{r}
 form_ord <- Surv(duration, end == "recall") ~ age + sex + educ + race + 
   nb + ui + marital + unemp + wifemp + homeowner + occupation + industry
-recall_ord <- micsr::ordreg(form_ord, recall, link = "cloglog")
+recall_ord <- ordreg(form_ord, recall, link = "cloglog")
 basehaz_ord <- coef(recall_ord, subset = "threshold")
 ```
 
 To estimate the binomial model, we first need to construct the pooled sample, ie to get one line for one period for every spell. We first create a data frame with only the identifiers for the individual and the spell and the duration. We then nest the data frame by the two identifiers. This results in a new column called `data` that contains, for each observation a one-line one-column tibble containing the duration of the spell. Using `mutate`, we then create a new column in `data` containing integers from 1 to the given value of `duration` for each observation. We then ungroup and remove the duration column.
+\idxfun{unique}{base}\idxfun{select}{dplyr}\idxfun{nest\_by}{dplyr}\idxfun{unnest}{tidyr}
+\idxfun{ungroup}{dplyr}
 
 ```{r}
 durations <- recall$duration %>% unique
@@ -1133,7 +1242,7 @@ pooled %>% print(n = 3)
 ```
 
 There are some periods without observations of an event or a censoring. Observations for these periods should be removed:
-
+\idxfun{pull}{dplyr}\idxfun{unique}{base}\idxfun{filter}{dplyr}
 
 ```{r}
 durations <- recall %>% pull(duration) %>% unique
@@ -1141,6 +1250,7 @@ pooled <- pooled %>% filter(period %in% durations)
 ```
 
 Finally we join this tibble with the initial tibble and we create the event variable (`end` should be `"recall"` and the period should be equal to the duration).
+\idxfun{left\_join}{dplyr}\idxfun{mutate}{dplyr}
   
 ```{r}
 recall_pooled <- pooled %>% 
@@ -1149,6 +1259,7 @@ recall_pooled <- pooled %>%
 ```
   
 We then estimate different flavors of binomial models, using the same formula than for the ordered model, except that the response is now `event` and that dummies for periods are added:
+\idxfun{update}{base}\idxfun{factor}{base}\idxfun{glm}{stats}\idxfun{binomial}{stats}
 
 ```{r}
 form_binom <- update(form_ord, event ~ . + factor(period))
@@ -1179,13 +1290,10 @@ modelsummary::msummary(list("ordered cloglog" = recall_ord, "binomial cloglog" =
 basehas_binom <- coef(recall_binom)[grep("factor", 
                                          names(coef(recall_probit)))]
 haz_binom <- 1 - exp(-exp(c(0, basehas_binom) - 3.57))
-
-
 #, coef_omit = "(factor|industry|occupation|Intercept)")
 ```
-
-
-
+\index[general]{grouped data|)}
+\idxdata[)]{recall}{micsr.data}
 
 <!-- $$ -->
 <!-- \prod_{s = 0} ^ {a_n-1} (1 - F(\ln \lambda_{os} + \beta ^ \top x_{nt_{s-1}})) F(\ln \lambda_{oa_n} + \beta ^ \top x_{nt_{a-1}}) ^ {d_n} (1 - F(\ln \lambda_{oa_n} + \beta ^ \top x_{nt_{a-1}})) ^ {1 - d_n} -->
@@ -1200,6 +1308,7 @@ haz_binom <- 1 - exp(-exp(c(0, basehas_binom) - 3.57))
 
 ### Interval regression
 
+\index[general]{interval regession model|(}
 Sometimes, the exact value of the response is not known, but only an
 interval that contains the value. For example, income is often
 indicated this way in individual surveys:
@@ -1259,7 +1368,8 @@ we get:
 $$
 e^{-\delta e^{(\ln \mu_n ^ l- \gamma^\top z_n)}} - e^{- \delta e^{(\ln \mu_n ^ u - \gamma^\top z_n)}}
 $$
-
+\index[general]{interval regession model|)}
+\idxdata[(]{kakadu}{micsr.data}
 An interesting case of interval response occurs in ecological
 economics, for which one of the method used to estimate the value of
 non-market resources is contingent valuation. Consider for example
@@ -1282,6 +1392,8 @@ regression model can be estimated using the `survival::survreg`
 function. The response should be a `Surv` object with the `time` and `time2` arguments set to the lower and to the upper bounds and the `type` argument set to
 `"interval2"`. The set of covariates is the one used by [@WERN:99,
 table 4 p. 484]\index[author]{Werner}. The results are presented on table @tbl-intkakadu.
+\idxfun{mutate}{dplyr}\idxfun{survreg}{survival}\idxfun{Surv}{survival}\idxfun{update}{stats}
+\idxfun{msummary}{modelsummary}\idxfun{list}{base}
 
 ```{r }
 #| label: tbl-intkakadu
@@ -1304,7 +1416,7 @@ provided). The argument `type` can be set to its default value `"response"` to g
 fitted value of the response or to `"link"` to obtain the linear
 predictor. For example, the mean and the median values of the
 willingness to pay are, for the two models:
-
+\idxfun{median}{stats}\idxfun{predict}{stats}
 
 ```{r }
 #| collapse: true
@@ -1312,8 +1424,8 @@ c(mean(predict(kak_weil)), median(predict(kak_weil)))
 c(mean(predict(kak_ln)), median(predict(kak_ln)))
 ```
 
-
-
+\idxfun{tibble}{tibble}\idxfun{predict}{stats}\idxfun{pivot\_longer}{tidyr}
+\idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_density}{ggplot2}\idxfun{coord\_cartesian}{ggplot2}
 ```{r }
 #| eval: false
 #| echo: false
@@ -1323,6 +1435,7 @@ tibble(weibul = predict(kak_weil), lognorm = predict(kak_ln)) %>%
     coord_cartesian(xlim = c(0, 5E03))
 ```
 
+\idxdata[)]{kakadu}{micsr.data}
 
 ```{r eval = FALSE, echo = FALSE}
 va <- as.data.frame(model.response(model.frame(kak_weil))) %>% bind_cols(kak_weil$linear.predictors) %>% set_names(c("time1", "time2", "status", "lp"))
@@ -1356,4 +1469,3 @@ kakadu %>% select(lower, upper) %>%
 
 
 ```
-

@@ -53,13 +53,15 @@ special data frame column which contains the indexes. The second argument is cal
 #### Wide format {#sec-wide_format}
 
 `dutch_railways`^[Used by @BENA:BOLD:BRAD:93\index[author]{Ben-Akiva}\index[author]{Bolduc}\index[author]{Bradley} and @MEIJ:ROUW:06\index[author]{Meijer}\index[author]{Rouwendal}.] is an example
-  of a *wide* data set:
+  of a *wide* data set:\idxdata[(]{dutch\_railways}{micsr.data}
+
 
 ```{r }
 #| label: 'Train data'
-head(dutch_railways, 3)
+dutch_railways %>% print(n = 4)
 ``` 
 
+\index[general]{stated preference survey}
 This data set contains data about a stated preference survey in
 Netherlands. Each individual has responded to several (up to 16)
 scenarios. For every scenario, two train trips are proposed to the
@@ -84,6 +86,7 @@ is then passed to `stats::reshape` that coerced the original
 `"."`). The `choice` argument is also mandatory because the response
 has to be transformed in a logical value in the long format.  In "wide" format, there is no alternative index. The choice situation index is not mandatory as there is one line for each choice situation. In this data set, there is a choice situation index called `id` and it is nested in the individual index called `choiceid`. To take
 the panel dimension into account, `idx` is a list of length one (the choice situation) containing a vector of length two with `choiceid` and `id`. The `idnames` is used to give relevant name for the second index, the `NA` in first position indicating that the name of the first index is unchanged.
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'dfidx for Train'
@@ -98,30 +101,31 @@ the covariates will lead to expected positive coefficients.
 
 ```{r }
 #| label: 'head of the transformed Train data set'
-head(Tr, 3)
+Tr %>% print(n = 4)
 ``` 
 
 An `idx` column is added to the data, which contains the three
 relevant indexes: `choiceid` is the choice situation index, `alt` the
 alternative index and `id` is the individual index. This column can be
 extracted using the `idx` function:
+\idxfun{idx}{dfidx}
 
 ```{r }
 #| label: 'index of the transformed Train data set'
 #| results: false
 idx(Tr)
 ``` 
+\idxdata[)]{dutch\_railways}{micsr.data}
 
 #### Long format
 
 `toronto_montreal`,^[Used in particular by @FORI:KOPP:93\index[author]{Forinash}\index[author]{Koppleman},
-  @BHAT:95\index[author]{Bhat}, @KOPP:WEN:98\index[author]{Koppelman}\index[author]{Wen} and @KOPP:WEN:00.] is an example of a data
-  set in long format. It presents the choice of individuals for a
-  transport mode for the Toronto-Montreal corridor:
+  @BHAT:95\index[author]{Bhat}, @KOPP:WEN:98\index[author]{Koppelman}\index[author]{Wen} and @KOPP:WEN:00.] is an example of a data set in long format. It presents the choice of individuals for a transport mode for the Toronto-Montreal corridor:
+\idxdata[(]{toronto\_montreal}{micsr.data}
   
 ```{r }
 #| label: 'loading ModeCanada'
-toronto_montreal
+toronto_montreal %>% print(n = 5)
 ``` 
 
 There are four transport modes (`air`, `train`, `bus` and `car`) and
@@ -155,6 +159,7 @@ completely the two index variables. In this case, the only
 supplementary argument to provide is the `alt.levels` argument which
 is a character vector that contains the name of the alternatives in
 their order of appearance:
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'applying dfidx to Modecanada (1)'
@@ -167,6 +172,7 @@ means than the same set of alternatives is available for all choice
 situations.
 It is also possible to provide the name of
 the variable that contains the alternatives through the argument `idx`:
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'applying dfidx to Modecanada (2)'
@@ -175,6 +181,7 @@ MC <- dfidx(toronto_montreal, subset = noalt == 4, idx = list(NA, "alt"))
 
 The name of the variable that contains the information about the choice situations can also
 be indicated through the argument `idx`:
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'applying dfidx to Modecanada (3)'
@@ -183,6 +190,7 @@ MC <- dfidx(toronto_montreal, subset = noalt == 4, idx = "case",
 ``` 
 
 Both alternative and choice situation variable can also be provided:
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'applying dfidx to Modecanada (4)'
@@ -192,6 +200,7 @@ MC <- dfidx(toronto_montreal, subset = noalt == 4,
 
 More simply, as the two indexes are stored in the first two columns of
 the original data frame, the `idx` argument can be unset:
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'ModeCanada without idx'
@@ -200,13 +209,15 @@ MC <- dfidx(toronto_montreal, subset = noalt == 4)
 
 and the indexes can be kept as stand alone series if the `drop.index`
 argument is set to `FALSE`:
+\idxfun{dfidx}{dfidx}
 
 ```{r }
 #| label: 'applying dfidx to Modecanada (5)'
 MC <- dfidx(toronto_montreal, subset = noalt == 4, 
             idx = c("case", "alt"), drop.index = FALSE)
-head(MC, 3)
+MC %>% print(n = 5)
 ``` 
+\idxdata[)]{toronto\_montreal}{micsr.data}
 
 ### Model description
 
@@ -264,6 +275,9 @@ coefficient. However, if some of these variables are introduced, the
 $\nu$ parameter can only be estimated in a model without intercepts to
 avoid perfect multicolinearity.
 
+\index[general]{multinomial logit model}
+\index[general]{conditional logit model}
+\index[general]{mixed logit model}
 A logit model with only choice situation specific variables is
 sometimes called a *multinomial logit model*, one with only
 alternative specific variables a *conditional logit model* and one
@@ -278,7 +292,8 @@ variables used.
 The **mlogit** package provides objects of class `mFormula` which are built
 upon `Formula` objects provided by the **Formula** package.
 To illustrate the use of `mFormula` objects, we use again the
-`toronto_montreal` data set and consider three sets of covariates that will
+`toronto_montreal` data set\idxdata[(]{toronto\_montreal}{micsr.data}
+ and consider three sets of covariates that will
 be indicated in a three-part formula, which refers to the three
 items at the beginning of this section.
 
@@ -288,6 +303,7 @@ items at the beginning of this section.
 covariates (part 2),
 - `ivt` (in vehicle travel time) is alternative specific and
   alternative specific coefficients  are expected (part 3).
+\idxfun{Formula}{Formula}
 
 ```{r }
 #| label: 'a three parts formula'
@@ -298,18 +314,21 @@ f <- Formula(choice ~ cost | income + urban | ivt)
 Some parts of the formula may be omitted when there is no
 ambiguity. For example, the following sets of `formula`s are
 identical:
+\idxfun{Formula}{Formula}
 
 ```{r }
 #| label: 'ommission of some parts (1)'
 f2 <- Formula(choice ~ cost + ivt | income + urban)
 f2 <- Formula(choice ~ cost + ivt | income + urban | 0)
 ```
+\idxfun{Formula}{Formula}
 
 ```{r }
 #| label: 'ommission of some parts (2)'
 f3 <- Formula(choice ~ 0 | income | 0)
 f3 <- Formula(choice ~ 0 | income)
 ```
+\idxfun{Formula}{Formula}
 
 ```{r }
 #| label: 'ommission of some parts (3)'
@@ -320,6 +339,7 @@ f4 <- Formula(choice ~ cost + ivt | 1 | 0)
 
 By default, an intercept is added to the model, it can be removed by
 using `+ 0` or `- 1` in the second part.
+\idxfun{Formula}{Formula}
 
 ```{r }
 #| label: 'removing the intercept'
@@ -335,6 +355,7 @@ be a `dfidx` object, which results in an unusual order of the arguments in the f
 data first, and then the formula). Moreover, as the model matrix for random utility models
 has specific features, we add a supplementary argument called `pkg` to the `dfidx` function so
 that the returned object has a specific class (and inherits the `dfidx` class):
+\idxfun{dfidx}{dfidx}\idxfun{class}{base}\idxfun{Formula}{Formula}\idxfun{model.frame}{stats}
 
 ```{r }
 #| label: 'model.matrix method for Formula objects'
@@ -347,11 +368,11 @@ class(mf)
 ```
 
 Using `mf` as the argument of `model.matrix` enables the construction of the relevant model matrix for random utility model as a specific `model.matrix` method for `dfidx_mlogit` objects is provided.
+\idxfun{head}{utils}\idxfun{model.matrix}{stats}
 
 ```{r}
 head(model.matrix(mf), 4)
 ```
-
 
 The model matrix contains $J-1$ columns for every choice situation specific
 variables (`income` and the intercept), which means that the
@@ -360,11 +381,13 @@ coefficient associated to the first alternative (`air`) is set to
 coefficient for this variable. It contains $J$ columns for `ivt`,
 because it is an alternative specific variable for which we want
 alternative specific coefficients.
+\idxdata[(]{toronto\_montreal}{micsr.data}
 
 ## Random utility model and the multinomial logit model {#sec-multinom_logit}
 
 ### Random utility model
 
+\index[general]{random utility model|(}
 The utility for alternative $l$  is written as:
 $U_l=V_l+\epsilon_l$ where $V_l$ is a function of some observable
 covariates and unknown parameters to be estimated, and $\epsilon_l$ is a
@@ -382,10 +405,10 @@ $$
 Denoting $F_{-l}$ the cumulative density function of all the $\epsilon$s
 except $\epsilon_l$, this probability is:
 
-\begin{equation*}
-  (\mbox{P}_l \mid \epsilon_l)=
-  F_{-l}(V_l-V_1+\epsilon_l, ..., V_l-V_J+\epsilon_l).
-\end{equation*}
+$$
+(\mbox{P}_l \mid \epsilon_l)=
+F_{-l}(V_l-V_1+\epsilon_l, ..., V_l-V_J+\epsilon_l).
+$$
 
 Note that this probability is conditional on the value of
 $\epsilon_l$.  The unconditional probability (which depends only on
@@ -393,16 +416,18 @@ $\beta$ and on the value of the observed covariates) is
 obtained by integrating out the conditional probability using the
 marginal density of $\epsilon_l$, denoted $f_l$:
 
-\begin{equation*}
-  \mbox{P}_l=\int F_{-l}(V_l-V_1+\epsilon_l, ...,V_l-V_J)+\epsilon_l)f_l(\epsilon_l) d\epsilon_l.
-\end{equation*}
+$$
+\mbox{P}_l=\int F_{-l}(V_l-V_1+\epsilon_l, ...,V_l-V_J)+\epsilon_l)f_l(\epsilon_l) d\epsilon_l.
+$$
 
 The conditional probability is an integral of dimension $J-1$ and the
 computation of the unconditional probability adds on more dimension of
 integration.
+\index[general]{random utility model|)}
 
 ### The distribution of the error terms
 
+\index[general]{uncorrelated errors!random utility model}
 The multinomial logit model [@MCFAD:74]\index[author]{McFadden} is a special case of the
 model developed in the previous section. It is based on three
 hypothesis.
@@ -410,25 +435,26 @@ The first hypothesis is the independence of the errors. In this case,
 the univariate distribution of the errors can be used, which leads to
 the following conditional and unconditional probabilities:
 
-\begin{equation*}
-  (\mbox{P}_l \mid \epsilon_l)=\prod_{j\neq l}F_j(V_l-V_j+\epsilon_l)
+$$
+(\mbox{P}_l \mid \epsilon_l)=\prod_{j\neq l}F_j(V_l-V_j+\epsilon_l)
 \mbox{ and }
-  \mbox{P}_l =\int \prod_{j\neq l}F_j(V_l-V_j+\epsilon_l) \; f_l(\epsilon_l) \;d\epsilon_l,
-\end{equation*}
+\mbox{P}_l =\int \prod_{j\neq l}F_j(V_l-V_j+\epsilon_l) \; f_l(\epsilon_l) \;d\epsilon_l,
+$$
 
 which means that the conditional probability is the product of $J-1$
 univariate cumulative density functions and the evaluation of only a
 one-dimensional integral is required to compute the unconditional
 probability.
+\index[general]{Gumbel distribution}
 The second hypothesis is that each $\epsilon$ follows a Gumbel
 distribution, whose density and probability functions are
 respectively:
 
-\begin{equation}
+$$
 f(z)=\frac{1}{\theta}e^{-\frac{z-\mu}{\theta}} e^{-e^{-\frac{z-\mu}{\theta}}}
 \mbox{ and }
 F(z)=\int_{-\infty}^{z} f(t) dt=e^{-e^{-\frac{z-\mu}{\theta}}},
-\end{equation}
+$$
 
 where $\mu$ is the location parameter and $\theta$ the scale
 parameter.  The first two moments of the Gumbel distribution are
@@ -440,6 +466,7 @@ loss of generality suppose that $\mu_j=0, \; \forall j$. Moreover, the
 overall scale of utility is not identified. Therefore, only $J-1$
 scale parameters may be identified, and a natural choice of
 normalization is to impose that one of the $\theta_j$ is equal to 1.
+\index[general]{homoskedasticity!random utility model}
 The last hypothesis is that the errors are identically distributed. As
 the location parameter is not identified for any error term, this
 hypothesis is essentially an homoskedasticity hypothesis, which means
@@ -449,25 +476,26 @@ can therefore suppose that, without loss of generality, $\theta_j = 1,
 \;\forall j \in 1... J$. The conditional and unconditional
 probabilities then further simplify to:
 
-\begin{equation*}
+$$
   (\mbox{P}_l \mid \epsilon_l)%=\prod_{j\neq l}F(V_l-V_j+\epsilon_l)
   =\prod_{j\neq l}e^{-e^{-(V_l-Vj+\epsilon_l)}}
 \mbox{ and }
   \mbox{P}_l =\int_{-\infty}^{+\infty}\prod_{j\neq l}e^{-e^{-(V_l-Vj+t)}}e^{-t}e^{-e^{-t}}dt.
-\end{equation*}
+$$
 
 The probabilities have then very simple, closed forms, which
 correspond to the logit transformation of the deterministic part of
 the utility.
 
-\begin{equation*}
+$$
   P_l=\frac{e^{V_l}}{\sum_{j=1}^J e^{V_j}}.
-\end{equation*}
+$$
 
 
 
 ### IIA property
 
+\index[general]{independence of irrelevant alternatives hypothesis|(}
 If we consider the probabilities of choice for two alternatives $l$
 and $m$, we have $P_l=e^{V_l}/\sum_j e^{V_j}$ and
 $P_m=e^{V_m}/\sum_j e^{V_j}$.  The ratio of these two
@@ -485,6 +513,7 @@ errors are identical and independent. It is not a problem by itself
 and may even be considered as a useful feature for a well specified
 model. However, this hypothesis may be in practice violated,
 especially if some important variables are omitted.
+\index[general]{independence of irrelevant alternatives hypothesis|)}
 
 ### Interpretation
 
@@ -526,8 +555,6 @@ $$
   to divide the coefficient by 4 in order to have an upper bound of
   the marginal effect.
 
-
-
 Note that the last equation can be rewritten:
 $\frac{\mbox{d} P_{il} / P_{il}}{\mbox{d}x_{ik}} = -\gamma P_{ik}$.
 Therefore, when a characteristic of alternative $k$ changes, the
@@ -564,7 +591,7 @@ the chosen alternative. The expected utility, from the searcher's
 point of view is then: $\mbox{E}(\max_j U_j)$, where the expectation
 is taken over the values of all the error terms. Its expression is
 simply, up to an additive unknown constant, the log of the denominator
-of the logit probabilities, often called the "log-sum":
+of the logit probabilities, often called the "log-sum":\index[general]{log-sum}
 
 $$
 \mbox{E}(U)=\ln \sum_{j=1}^Je^{V_j}+C.
@@ -575,6 +602,7 @@ the expected surplus is simply $\frac{\mbox{E}(U)}{\alpha}$.
 
 ### Application {#sec-appl_mult_logit}
 
+\idxdata[(]{toronto\_montreal}{micsr.data}
 Random utility models are fitted using the `mlogit`
 function. Basically, only two arguments are mandatory,
 `formula` and `data`, if an `dfidx`
@@ -583,16 +611,17 @@ We use the `toronto_montreal` data set, which was already coerced to a
 `dfidx` object (called `MC`) in the previous section. The same model
 can then be estimated using as `data` argument this `dfidx`
 object:
+\idxfun{mlogit}{mlogit}
 
 ```{r }
 #| label: 'multinomial logit with a dfidx'
-
 MC <- dfidx(toronto_montreal, subset = noalt == 4)
 ml.MC1 <- mlogit(choice ~ cost + freq + ovt | income | ivt, MC)
 ```
 
 or a `data.frame`. In this latter case, further arguments that
 will be passed to `dfidx` should be indicated:
+\idxfun{mlogit}{mlogit}
 
 ```{r }
 #| label: 'multinomial logit with an ordinary data.frame'
@@ -617,6 +646,7 @@ We estimate the model on the subset of three alternatives (we exclude
 `car` as the reference alternative. Moreover, we use a total
 transport time variable computed as the sum of the in vehicle and the
 out of vehicle time variables.
+\idxfun{mutate}{dplyr}\idxfun{mlogit}{mlogit}
 
 ```{r }
 #| label: 'estimation on a subset of alternatives'
@@ -647,6 +677,7 @@ to the likelihood ratio test.
 The `fitted` method can be used either to obtain the probability
 of actual choices (`type = "outcome"`) or the probabilities for
 all the alternatives (`type = "probabilities"`).
+\idxfun{fitted}{stats}\idxfun{head}{base}
 
 ```{r }
 #| label: 'fitted method for mlogit'
@@ -658,6 +689,7 @@ Note that the log-likelihood is the sum of the log of the fitted
 outcome probabilities and that, as the model contains intercepts, the
 average fitted probabilities for every alternative equals the market
 shares of the alternatives in the sample.
+\idxfun{fitted}{stats}\idxfun{logLik}{stats}\idxfun{apply}{base}
 
 ```{r }
 #| label: 'computation of the log likelihood and the market shares'
@@ -670,6 +702,7 @@ apply(fitted(ml.MC1, type = "probabilities"), 2, mean)
 Predictions can be made using the `predict` method. If no data is
 provided, predictions are made for the sample mean values of the
 covariates.
+\idxfun{predict}{stats}
 
 ```{r }
 #| label: 'default behaviour of the predict method'
@@ -682,6 +715,8 @@ of train transport time of 20\%. We first create a new
 `data.frame` simply by multiplying train transport time by 0.8
 and then using the `predict` method with this new
 `data.frame`.
+\idxfun{mutate}{dplyr}\idxfun{ifelse}{base}\idxfun{fitted}{stats}\idxfun{predict}{stats}
+\idxfun{rbind}{base}\idxfun{apply}{base}
 
 ```{r }
 #| label: 'predicting with different data'
@@ -694,6 +729,7 @@ rbind(old = apply(Oprob, 2, mean), new = apply(Nprob, 2, mean))
 
 If, for the first individuals in the sample, we compute the ratio of
 the probabilities of the air and the car mode, we obtain:
+\idxfun{head}{base}
 
 ```{r }
 #| label: 'illustration of the IIA property'
@@ -702,7 +738,9 @@ head(Nprob[, "air"] / Nprob[, "car"])
 head(Oprob[, "air"] / Oprob[, "car"])
 ```
 
-which is an illustration of the IIA property. If train time changes,
+which is an illustration of the IIA property.
+\index[general]{independence of irrelevant alternatives hypothesis} 
+If train time changes,
 it changes the probabilities of choosing air and car, but not their
 ratio.
 We next compute the surplus for individuals of the sample induced by
@@ -720,6 +758,7 @@ of `logsum` consists on providing as unique argument (called
 `coef`) a `mlogit` object. In this case, the
 `model.matrix` and the `coef` are extracted from the same
 model:
+\idxfun{logsum}{mlogit}
 
 ```{r }
 #| label: 'computation of the initital logsum'
@@ -736,6 +775,7 @@ and eventually the `formula` argument (a `formula` or an object for
 which the `formula` method can be applied). If no formula is provided
 but if `data` is a `dfidx` object, the formula is extracted from
 it.
+\idxfun{logsum}{mlogit}
 
 ```{r }
 #| label: 'computation of the after change logsum'
@@ -745,6 +785,7 @@ ivafter <- logsum(ml.MC1, data = NMC)
 Surplus variation is then computed as the difference of the log-sums
 divided by the opposite of the cost coefficient which can be
 interpreted as the marginal utility of income:
+\idxfun{coef}{stats}
 
 ```{r }
 #| label: 'computation of consumers surplus'
@@ -763,6 +804,7 @@ argument which is a combination of two `a` (as absolute) and `r` (as
 relative) characters. For example, `type = "ar"` means that what is
 measured is an absolute variation of the probability for a relative
 variation of the covariate.
+\idxfun{effects}{stats}
 
 ```{r }
 #| label: 'marginal effects for an individual specific covariate'
@@ -777,6 +819,7 @@ points of percentage.
 
 For an alternative specific covariate, a matrix of marginal effects is
 displayed.
+\idxfun{effects}{stats}
 
 ```{r }
 #| label: 'marginal effects for an alternative specific covariate'
@@ -793,6 +836,7 @@ these two modes are equal, which is a consequence of the IIA property.
 Finally, in order to compute travel time valuation, we divide the
 coefficients of travel times (in minutes) by the coefficient of
 monetary cost (in \$).
+\idxfun{coef}{stats}\idxfun{names}{base}
 
 ```{r }
 #| label: 'computation of the marginal rate of substitution'
@@ -804,6 +848,7 @@ coef(ml.MC1)[grep("time", names(coef(ml.MC1)))] /
 The value of travel time ranges from 23 for train to 37 Canadian \$
 per hour for plane.
 
+\idxdata[)]{toronto\_montreal}{micsr.data}
 
 ## Logit models relaxing the iid hypothesis {#sec-relaxing_iid}
 
@@ -815,6 +860,8 @@ maintaining the hypothesis of a Gumbel distribution.
 
 ### The heteroskedastic logit model
 
+\index[general]{heteroskedasticity!random utility model|(}
+\index[general]{heteroskedastic logit model|(}
 The heteroskedastic logit model was proposed by @BHAT:95\index[author]{Bhat}.  The
 probability that $U_l>U_j$ is:
 
@@ -825,12 +872,12 @@ $$
 which implies the following conditional and unconditional
 probabilities
 
-\begin{equation*}
+$$
   (P_l \mid \epsilon_l) =\prod_{j\neq
     l}e^{-e^{-\frac{(V_l-V_j+\epsilon_l)}{\theta_j}}},
-\end{equation*}
+$$
 
-\begin{equation*}
+$$
   \begin{array}{rcl}
   P_l&=&\displaystyle\int_{-\infty}^{+\infty} \prod_{j\neq l}
   \left(e^{-e^{-\frac{(V_l-V_j+t)}{\theta_j}}}\right)\frac{1}{\theta_l}e^{-\frac{t}{\theta_l}}e^{-e^{-\frac{t}{\theta_l}}}
@@ -838,16 +885,21 @@ probabilities
  &=& \displaystyle \int_{0}^{+\infty}\left(e^{-\sum_{j \neq
       l}e^{-\frac{V_l-V_j-\theta_l \ln t}{\theta_j}}}\right)e^{-t}dt.
      \end{array}
-\end{equation*}
+$$
 
 There is no closed form for this integral, but it can be efficiently
 computed using a Gauss quadrature method, and more precisely the
 Gauss-Laguerre quadrature method.
+\index[general]{heteroskedasticity!random utility model|(}
+\index[general]{heteroskedastic logit model|(}
+\index[general]{gaussian quadrature}
 
 @BHAT:95\index[author]{Bhat} estimated the heteroskedastic logit model on the
 `toronto_montreal` data set. Using `mlogit`, the heteroskedastic
 logit model is obtained by setting the `heterosc` argument
 to `TRUE`:
+\idxdata[(]{toronto\_montreal}{micsr.data}
+\idxfun{mlogit}{mlogit}\idxfun{gaze}{micsr}
 
 ```{r }
 #| label: 'heteroscedastic model for the ModeCanada data'
@@ -870,7 +922,9 @@ tested using any of the three tests. For the likelihood ratio and the wald test,
 one can use only the fitted heteroskedastic model as argument. In this
 case, it is guessed that the hypothesis that the user wants to test is
 the homoskedasticity hypothesis.
-
+\idxfun{lrtest}{lmtest}\idxfun{waldtest}{lmtest}\idxfun{gaze}{micsr}
+\index[general]{likelihood ratio test!heteroskedastic logit model}
+\index[general]{Wald test!heteroskedastic logit model}
 ```{r }
 #| label: 'homoscedasticity tests: lr and Wald (1)'
 #| collapse: true
@@ -879,6 +933,7 @@ waldtest(hl.MC, heterosc = FALSE) %>% gaze
 ```
 
 or, more simply:
+\idxfun{lrtest}{lmtest}\idxfun{waldtest}{lmtest}
 
 ```{r }
 #| label: 'homoscedasticity tests: lr and Wald (2)'
@@ -889,6 +944,7 @@ waldtest(hl.MC)
 
 The Wald test can also be computed using the `linearHypothesis`
 function from the `car` package:
+\idxfun{linearHypothesis}{car}\idxfun{gaze}{micsr}
 
 ```{r }
 #| label: 'homoscedasticity tests: Wald test'
@@ -896,10 +952,12 @@ function from the `car` package:
 car::linearHypothesis(hl.MC, c('sp.air = 1', 'sp.train = 1')) %>% gaze
 ```
 
+\index[general]{score test!heteroskedastic logit model}
 For the score test, we provide the constrained model as argument,
 which is the standard multinomial logit model and the supplementary
 argument which defines the unconstrained model, which is in this case
 `heterosc = TRUE`.
+\idxfun{scoretest}{mlogit}\idxfun{gaze}{micsr}
 
 ```{r }
 #| label: 'homoscedasticity tests: score test'
@@ -910,10 +968,12 @@ scoretest(ml.MC, heterosc = TRUE) %>% gaze
 The homoskedasticity hypothesis is therefore strongly rejected using the Wald
 test, but only at the 1 and 5\% level for, respectively, the score and
 the likelihood ratio tests.
-
+\idxdata[)]{toronto\_montreal}{micsr.data}
 
 ### The nested logit model
 
+\index[general]{correlated errors!random utility model|(}
+\index[general]{nested logit model|(}
 The nested logit model was first proposed by @MCFAD:78\index[author]{McFadden}. It is a
 generalization of the multinomial logit model that is based on the
 idea that some alternatives may be joined in several groups (called
@@ -997,6 +1057,7 @@ able to choose the best alternative in the nest.  The inclusive values
 link the two models.  It is then straightforward to show that IIA
 applies within nests, but not for two alternatives in different nests.
 
+
 A consistent but inefficient way of estimating the nested logit model
 is to estimate separately its two components. The coefficients of the
 lower model are first estimated, which enables the computation of the
@@ -1004,11 +1065,20 @@ inclusive values $I_l$. The coefficients of the upper model are then
 estimated, using $I_l$ as covariates. Maximizing directly the
 likelihood function of the nested model leads to a more efficient
 estimator.
+\index[general]{upper model}
+\index[general]{lower model}
+\index[general]{nested logit model!two-step estimation|)}
+\index[general]{two-step estimator!nested logit}
 
+\index[general]{correlated errors!random utility model|)}
+\index[general]{nested logit model|)}
+
+
+\idxdata[(]{telephone}{micsr}
 To illustrate the estimation of the nested logit model, we use the `telephone` data set, used by @TRAI:MCFA:BENA:87\index[author]{Train}\index[author]{McFadden}\index[author]{Ben-Akiva} and @WALK:BENA:BOLD:07\index[author]{Walker}\index[author]{Ben-Akiva}\index[author]{Bolduc}.
 
 ```{r}
-head(telephone, 4)
+telephone %>% print(n = 5)
 ```
 
 428 households were surveyed in 1984 about their choice of local telephone service, which typically involves the choice between a flat (a fixed monthly charge for an unlimited calls within a specified geographical area) and a measured (a reduced fixed monthly charge for a limited number of calls plus usage charges for additional calls) service. Households had the choice between 5 services:
@@ -1024,13 +1094,15 @@ calling within an extended area,
 the entire metropolitan area.
 
 The first two services are measured and the last three are flat services. There is therefore a evident nesting structure for this example. We first estimate the multinomial logit model, with the log of cost as the unique covariate:
+\idxfun{mlogit}{mlogit}
 
 ```{r}
-ml_tel <- mlogit(choice ~ log(cost),telephone, 
+ml_tel <- mlogit(choice ~ log(cost), telephone, 
                  idx = c("household", "service"))
 ```
 
 We then update this model in order to introduce nests, using the `nests` argument. It is a list of characters that contains the alternatives for the different nests. It is advisable to use a named list (we use here `"measured"` and `"flat"` as names of the nests):
+\idxfun{mlogit}{mlogit}\idxfun{coef}{stats}
 
 ```{r}
 #| collapse: true
@@ -1042,12 +1114,17 @@ coef(nl_tel)
 ```
 
 Two supplementary coefficients are estimated, `iv:measured` and `iv:flat`. The two values are in the 0-1 interval and close to each other. The `un.nest.el` argument enables to estimate a unique supplementary coefficient for the two nests:
+\idxfun{update}{stats}
 
 ```{r}
 nl_tel_u <- update(nl_tel, un.nest.el = TRUE)
 ```
 
 We then have three nested model and the hypothesis of a unique parameter can be tested using any of the three tests:
+\idxfun{scoretest}{mlogit}\idxfun{lrtest}{lmtest}\idxfun{waldtest}{lmtest}\idxfun{gaze}{micsr}
+\index[general]{score test!nested logit}
+\index[general]{Wald test!nested logit}
+\index[general]{lagrange multiplier test!nested logit}
 
 ```{r}
 #| collapse: true
@@ -1057,6 +1134,8 @@ waldtest(nl_tel, un.nest.el = TRUE) %>% gaze
 ```
 
 The three tests conclude that a unique parameter can be estimated. Then, we can test whether this parameter is 1, in which case the nested logit model reduces to the multinomial logit model:
+\idxfun{scoretest}{mlogit}\idxfun{lrtest}{lmtest}\idxfun{waldtest}{lmtest}\idxfun{gaze}{micsr}
+\idxfun{list}{base}\idxfun{linearHypothesis}{car}
 
 ```{r}
 #| collapse: true
@@ -1069,11 +1148,15 @@ car::linearHypothesis(nl_tel_u, "iv = 1") %>% gaze
 ```
 
 Based on the Wald and the likelihood ratio, the preferred specification is the nested logit model (but note that the p-value for the score test is slightly higher than 5%).
+\idxdata[)]{telephone}{micsr}
 
 ## The random parameters (or mixed) logit model {#sec-mixed_logit}
 
 ### Derivation of the model
 
+\index[general]{mixed model!multinomial logit|(}
+\index[general]{random parameter logit model|(}
+\index[general]{mixed logit model|see{random parameter logit model}}
 A mixed logit model or random parameters logit model is a logit model
 for which the parameters are assumed to vary from one individual to
 another. It is therefore a model that takes the heterogeneity of the
@@ -1176,6 +1259,9 @@ P_{n}=\prod_t \prod_j \frac{\sum_jy_{ntj}e^{\beta_n ^\top x_{ntj}}}{\sum_j e^{\b
 $$
 
 and the log-likelihood is simply $\sum_n \ln P_i$.
+\index[general]{mixed model!multinomial logit|)}
+\index[general]{random parameter logit model|)}
+
 
 ### Application
 
@@ -1226,11 +1312,12 @@ argument. If `TRUE`, all the normal-related random parameters are
 correlated. The `correlation` argument can also be a character vector
 indicating the random parameters that are assumed to be correlated.
 
+\idxdata[(]{dutch\_railways}{micsr.data}
 We use the `dutch_railways` data set, previously coerced to a
 `dfidx` object called `Tr`. We first estimate the
 multinomial model: both alternatives being virtual train trips, it is
 relevant to use only generic coefficients and to remove the intercept:
-
+\idxfun{dfidx}{dfidx}\idxfun{mlogit}{mlogit}\idxfun{gaze}{micsr}
 
 ```{r }
 #| label: 'multinomial logit for the Train data'
@@ -1246,6 +1333,7 @@ positive sign (remind than an increase in the variable `comfort`
 implies using a less comfortable class). The coefficients can't be
 directly interpreted, but dividing them by the price coefficient, we
 get monetary values:
+\idxfun{coef}{stats}
 
 ```{r }
 #| label: 'marginal rates of substitution for Train'
@@ -1257,6 +1345,7 @@ We obtain the value of 26 euros for an hour of traveling, 5 euros for
 a change and 14 euros to travel in a more comfortable class. We then
 estimate a model with three random parameters, `time`, `change` and
 `comfort`. We first estimate the uncorrelated mixed logit model:
+\idxfun{mlogit}{mlogit}\idxfun{names}{base}\idxfun{coef}{stats}
 
 ```{r }
 #| label: 'mixed logit estimation for Train (1)'
@@ -1273,6 +1362,7 @@ Compared to the multinomial logit model, there are now three more
 coefficients which are the standard deviations of the distribution of
 the three random parameters. The correlated model is obtained by
 setting the `correlation` argument to `TRUE`.
+\idxfun{names}{base}\idxfun{coef}{stats}\idxfun{update}{stats}
 
 ```{r }
 #| cache: true
@@ -1282,7 +1372,7 @@ names(coef(Train.mxlc))
 ```
 
 There are now 6 parameters which are the elements of the Choleski
-decomposition of the covariance matrix of the three random parameters.
+decomposition\index[general]{Choleski decomposition} of the covariance matrix of the three random parameters.
 These 6 parameters are therefore the elements of the following matrix:
 
 $$
@@ -1326,6 +1416,7 @@ Random parameters may be extracted using the function `rpar` which
 take as first argument a `mlogit` object and as second argument `par`
 the parameter(s) to be extracted. This function returns a `rpar`
 object and a `summary` method is provided to describe it:
+\idxfun{rpar}{mlogit}
 
 ```{r }
 #| label: 'summary of a random parameter in the preference space'
@@ -1344,6 +1435,7 @@ for example), taken as a non random parameter. The ratio can then be
 interpreted as a monetary value (or willingness to pay). To obtain the
 distribution of the random parameters in the WTP space, one can use
 the `norm` argument of `rpar`:
+\idxfun{rpar}{mlogit}
 
 ```{r }
 #| label: 'summary of a random parameter in the wtp space'
@@ -1357,7 +1449,7 @@ of transport time is about 33 euros. Several methods/functions are
 provided to extract the individual statistics (`mean`, `med` and
 `stdev` respectively for the mean, the median and the standard
 deviation):
-
+\idxfun{rpar}{mlogit}\idxfun{med}{mlogit}\idxfun{stdev}{mlogit}
 
 ```{r }
 #| label: 'statistics of the random parameter in the wtp space'
@@ -1376,8 +1468,9 @@ the correlated random parameters is returned if `type = "cov"` (the
 default) and the correlation matrix (with standard deviations on the
 diagonal) is returned if `type = "cor"`. The object is of class
 `vcov.mlogit` and a `summary` method for this object is provided which
-computes, using the delta method, the standard errors of the
+computes, using the delta method,\index[general]{delta method} the standard errors of the
 parameters of the covariance or the correlation matrix.
+\idxfun{vcov}{stats}
 
 ```{r }
 #| label: 'vcov method for mlogit objects'
@@ -1390,6 +1483,7 @@ summary(vcov(Train.mxlc, what = "rpar", type = "cov"))
 The correlation can be restricted to a subset of random parameters by
 filling the `correlation` argument with a character vector indicating
 the corresponding covariates:
+\idxfun{update}{stats}\idxfun{vcov}{stats}
 
 ```{r }
 #| label: 'mixed logit with a subset of correlated paramaters'
@@ -1404,6 +1498,8 @@ models can be considered, a model with no random effects, a model with
 random but uncorrelated effects and a model with random and correlated
 effects. We first present the three tests of no correlated random
 effects:
+\idxfun{lrtest}{lmtest}\idxfun{waldtest}{lmtest}\idxfun{scoretest}{mlogit}
+\idxfun{linearHypothesis}{car}\idxfun{gaze}{micsr}
 
 ```{r }
 #| label: 'tests of no correlated random effects'
@@ -1423,6 +1519,8 @@ scoretest(Train.ml, rpar = c(time = "n", change = "n", comfort = "n"),
 The hypothesis of no correlated random parameters is strongly
 rejected. We then present the three tests of no correlation, the
 existence of random parameters being maintained.
+\idxfun{lrtest}{lmtest}\idxfun{waldtest}{lmtest}\idxfun{scoretest}{mlogit}
+\idxfun{linearHypothesis}{car}\idxfun{gaze}{micsr}
 
 ```{r }
 #| label: 'tests of no correlation'
@@ -1437,9 +1535,11 @@ scoretest(Train.mxlu, correlation = TRUE) %>% gaze
 
 The hypothesis of no correlation is strongly reject with the Wald and
 the likelihood ratio test, only at the 5\% level for the score test.
+\idxdata[)]{dutch\_railways}{micsr.data}
 
 ##  Multinomial probit {#sec-multinom_probit}
 
+\index[general]{multinomial probit model|(}
 ### The model
 
 The multinomial probit is obtained with the same modeling that we used
@@ -1578,7 +1678,7 @@ parameters is $J\times(J-1)/2-1$.
 ### Simulations
 
 Let $C^l$ be the Choleski decomposition of the covariance matrix of
-the error differences :
+the error differences :\index[general]{Choleski decomposition}
 
 $$
 \Omega^C= {C^l}^{\top}C^l
@@ -1651,7 +1751,6 @@ l_{1(J-1)} & l_{2(J-1)} & l_{3(J-1)} & ... & l_{(J-1)(J-1)} \\
 \right)
 $$
 
-
 $$
 \left(
 \begin{array}{c}
@@ -1715,7 +1814,7 @@ Several points should be noted concerning this algorithm :
 
 - the utility differences should be computed respective to the
   chosen alternative for each individual,
-- the Choleski decomposition used should relies on the same
+- the Choleski decomposition used should relies on the same\index[general]{Choleski decomposition}
   covariance matrix of the errors. One method to attained this goal is
   to start from a given difference, *e.g.* the difference
   respective with the first alternative. The vector of error
@@ -1745,9 +1844,12 @@ Several points should be noted concerning this algorithm :
     \Phi(a)\right)$ is a draw from a normal distribution truncated at
   $a$
 
+\index[general]{multinomial probit model|)}
 ### Application
 
+\idxdata[(]{toronto\_montreal}{micsr.data}
 In @sec-appl_mult_logit, we estimated a multinomial logit for mode choice in the Toronto-Montreal corridor, using `cost` and `freq` as alternative specific covariates with a generic coefficient, `income` as a choice situation specific covariate and `time` as an alternative specific covariate with a specific coefficient. We fit the same model using this time a probit. This is simply done by setting the `probit` argument to `TRUE`.
+\idxfun{mlogit}{mlogit}
 
 ```{r}
 #| cache: true
@@ -1757,6 +1859,7 @@ pbt <- mlogit(formula = choice ~ cost + freq | income | time, data = MC,
 ```
 
 As previously, we want to predict the effect of a reduction of 20% of train's fare:
+\idxfun{fitted}{stats}\idxfun{predict}{stats}\idxfun{rbind}{base}\idxfun{apply}{base}
 
 ```{r}
 Oprob <- fitted(pbt, type = "probabilities")
@@ -1765,10 +1868,11 @@ rbind(old = apply(Oprob, 2, mean), new = apply(Nprob, 2, mean))
 ```
 
 With this model, the IIA property is not operative, as the ratio of probabilities of choosing air and car is no longer the same before and after the change of train' fare.
+\idxfun{head}{base}
 
 ```{r}
 #| collapse: true
 head(Nprob[, "air"] / Nprob[, "car"])
 head(Oprob[, "air"] / Oprob[, "car"])
 ```
-
+\idxdata[)]{toronto\_montreal}{micsr.data}

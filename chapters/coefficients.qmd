@@ -772,6 +772,7 @@ The results validate the Kuznets hypothesis, ie per capital income have first a 
 
 ## Marginal effects
 
+\index[general]{marginal effects|(}
 Until now, we have interpreted the coefficients in a linear model. However, except in the case where the covariate is in level, the coefficients are different from the marginal effects. For example, in a model with:
 
 - the covariate in log: $y_n = \alpha + \beta \ln x + \epsilon_n$, the marginal effect is $d y_n / d x_n = \beta / x_n$,
@@ -848,6 +849,8 @@ The covariate is now `lgnp` and the marginal effect is no longer the effect of a
 
 The computation of the individual marginal effects results in a very large output, that is as such difficult to interpret. It is therefore customary to provide a unique value that summarize the marginal effect of the covariate on the response for the whole sample. The preferred statistic is the **average marginal effects** (**AME** in short). It is simply the arithmetic mean of the individual effects. It can be obtained either using the `avg_slopes` function or applying the `summary` method to the object returned by `slope`:
 \idxfun{slopes}{marginaleffects}\idxfun{avg\_slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}
+\index[general]{marginal effects!average marginal effects}
+
 
 ```{r}
 #| label: kuznets_avg_slopes
@@ -855,9 +858,11 @@ z <- kc %>% slopes %>% summary
 kc %>% avg_slopes %>% as_tibble
 ```
 
+
 Note that the effect of `gnp` on inequality is not significant on average. This is hardly surprising as the effect is positive for about half of the sample and negative for the other half.
 An other popular choice to summarize marginal effects is the **marginal effect at the mean**. It consists on computing the marginal effect for a virtual observation for which all the covariates are set to their average in the sample. We get for our Kuznets curve:
 \idxfun{tibble}{tibble}\idxfun{mean}{base}\idxfun{transmute}{dplyr}
+\index[general]{marginal effects!at the mean}
 
 ```{r}
 #| label: mem_manual
@@ -931,6 +936,7 @@ u %>% avg_slopes %>% as_tibble
 
 Moreover, the **AME** can be computed for the different modalities of a factor, using the `by` argument:
 \idxfun{avg\_slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}\idxfun{select}{dplyr}
+\index[general]{marginal effects!average marginal effects}
 
 ```{r}
 #| label: avg_slopes_by
@@ -947,8 +953,10 @@ The marginal effects can also be computed for hypothetical observations, using t
 datagrid(model = u)
 ```
 
-and can be used to compute the **MAE**:
-\idxfun{slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}\idxfun{datagrid}{marginaleffects}\idxfun{select}{dplyr}
+\index[general]{marginal effects!at the mean}
+and can be used to compute the marginal effects at the mean:
+\idxfun{slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}\idxfun{datagrid}{marginaleffects}
+\idxfun{select}{dplyr}\index[general]{marginal effects!average marginal effects}
 
 ```{r}
 #| label: datagrid_mae
@@ -966,3 +974,4 @@ datagrid(model = u, score = c(20, 50, 100), vyd = c(0, 1))
 Note that for unspecified covariates the mean / mode are introduced for numerical / categorical variables. 
 We've just presented a few features of the **marginaleffects** package. Detailed documentation can be found at [https://marginaleffects.com/](https://marginaleffects.com/).
 \idxdata[)]{wine}{micsr.data}
+\index[general]{marginal effects|)}

@@ -321,7 +321,7 @@ of length $N$ containing the sample mean of $z$ $\bar{z}$ repeated $N$
 times. As premultiplying $z$ by the identity matrix returns $z$,
 premultiplying $z$ by $\tilde{I}$ returns a vector of length $N$
 containing the $N$ values of $z$ in difference from the sample mean.
-Note that $\tilde{I}$ is **idempotent**, which means that $\tilde{I} \times \tilde{I}$. It can be checked by using direct multiplication, but also by reminding that premultiplying a vector by $\tilde{I}$ removes the sample mean from the values of the vector. The transformed vector then have a zero mean, so that applying the same premultiplication one more time will leave it unchanged. Therefore, $\tilde{I}(\tilde{I} z) = \tilde{I}z$. Denoting $\tilde{z} = \tilde{I} z$, we get:
+Note that $\tilde{I}$ is **idempotent**\index[general]{indempotent matrix}, which means that $\tilde{I} \times \tilde{I}$. It can be checked by using direct multiplication, but also by reminding that premultiplying a vector by $\tilde{I}$ removes the sample mean from the values of the vector. The transformed vector then have a zero mean, so that applying the same premultiplication one more time will leave it unchanged. Therefore, $\tilde{I}(\tilde{I} z) = \tilde{I}z$. Denoting $\tilde{z} = \tilde{I} z$, we get:
 
 $$
 \tilde{X}= \tilde{I} X =
@@ -583,6 +583,7 @@ Comparing @eq-multiple_ols_gamma and @eq-mls, we can see than the formula of the
 ## Geometry of least squares
 
 ### Geometry of the multiple regression model
+\index[general]{geometry of least squares!multiple linear regression model|(}
 
 The geometry of the multiple regression model is presented on
 @fig-multregmodel.
@@ -657,9 +658,10 @@ $M_X$ and $P_X$ perform therefore an orthogonal decomposition of $y$ in
 $\hat{y}$ and $\hat{\epsilon}$, which means that
 $\hat{y} + \hat{\epsilon} = y$ and that
 $\hat{y}^\top\hat{\epsilon} = 0$.
+\index[general]{geometry of least squares!multiple linear regression model|)}
 
 ### The Frisch-Waugh theorem
-
+\index[general]{Frisch-Waugh theorem|(}
 Consider the regression of $y$ on a set of regressors $X$, which for some
 reasons is separated in two subsets $X_1$ and $X_2$. Suppose that we are
 only interested in the coefficients $\beta_2$ associated with $X_2$. The
@@ -691,7 +693,6 @@ The **second regression** is the regression of $M_1y$ on $M_1x_2$. $M_1x_2$ is t
 As both $M_1y$ and $M_{12}y$ are orthogonal to $x_1$, so is the vector that join those two vectors. Therefore, this vector is parallel to $M_1x_2$ and it is therefore the fitted value of the second regression ($M_1y$ on $M_1x_2$), $P_{M_1x_2}y$. It is also equal to $\tilde{\beta}_2 M_1x_2$, $\tilde{\beta}_2$ being the estimator of $x_2$ on the second regression. Note also that $\hat{\epsilon}_{12} = M_{12}y$ is the residual of the second regression, which is therefore the same as the residuals of the first regression.
 
 Finally, consider the regression of $\hat{\beta}_2 x_2$ on $x_1$. The residual of this regression is $\hat{\beta}_2M_1x_2$. As it lies on the plane spanned by $x_1$ and $x_2$ and is orthogonal to $x_1$, it is parallel to $P_{M_1x_2}y=\tilde{\beta}_2M_1x_2$. Moreover, the Frisch-Waugh theorem states that both vectors have the same length and are therefore identical, which means that $\tilde{\beta}_2 = \hat{\beta}_2$ and that the two regressions give identical estimators.
-
 
 The Frisch-Waugh is easily demonstrated using some geometric arguments.
 Consider the regression with all the covariates:
@@ -729,6 +730,7 @@ $M_1 X_2$. We finally note (an important result that will be used in @sec-three_
 $$
 \mid\mid \hat{\epsilon}_{12}^2\mid\mid + \mid\mid P_{M_1X_2}y\mid\mid = \mid\mid \hat{\epsilon}_{1}^2\mid\mid
 $$ {\#eq-pyth_ssr}
+\index[general]{Frisch-Waugh theorem|)}
 
 ## Computation with R
 
@@ -827,6 +829,7 @@ solve(crossprod(Z), crossprod(Z, y))
 
 ### Efficient computation: the QR decomposition
 
+\index[general]{QR decomposition|(}
 The efficient method used by `lm` to compute the OLS estimate is the QR decomposition:^[see @DAVI:MACK:93\index[author]{Davidson}\index[author]{McKinnon}, section 1.5, pp. 25-31] the matrix of covariate $Z$ can be written as the product of an orthonormal matrix $Q$ of dimension $N \times (K + 1)$ (therefore $Q^\top Q = I$) and an upper triangular matrix $R$ of dimension $(K+1) \times (K+1)$. Then, the linear model can be written as:
 
 $$
@@ -899,12 +902,14 @@ beta_1 <- (hdelta[2] - R[2, 3] * beta_2) / R[2, 2]
 alpha <- (hdelta[1] - R[1, 2] * beta_1  - R[1, 3] * beta_2) / R[1, 1]
 c(alpha, beta_1, beta_2)
 ```
+\index[general]{QR decomposition|)}
 
 ## Properties of the estimators
 
 In this section, we'll briefly analyze the statistical properties of the OLS estimator with more than one covariate. Most of these properties are similar to the one we have described in @sec-stat_prop_slm. They'll be presented in this section using matrix algebra.
 
 ### The unbiasedness of the OLS estimator
+\index[general]{unbiasedness!multiple linear regression model|(}
 
 The vector of slopes can be written as a linear combination of the vector of response
 and then of vector of the errors:
@@ -951,6 +956,7 @@ The unbiasedness condition is therefore that
 $\mbox{E}(\epsilon \mid X) = 0$, which is a direct generalization of the
 result obtained for the linear regression model, namely $\epsilon$ has a
 constant expected value (that can be set to 0 without any restriction) whatever the value of the covariates. It implies also that the population covariance between the errors and any of the covariates is 0. 
+\index[general]{unbiasedness!multiple linear regression model|)}
 
 ### The variance of the OLS estimator {#sec-variance_ols}
 
@@ -975,6 +981,7 @@ $$
 \top \tilde{X} \mid X)\right] \left(\frac{1}{N}\tilde{X}^\top\tilde{X}\right) ^ {-1}
 $$ {#eq-general_variance}
 
+\index[general]{sandwich!multiple linear regresion|(}
 This is a **sandwich** formula, the **meat**:
 $\frac{1}{N}\mbox{E}\left(X'\bar{I}\epsilon \epsilon ^ \top \bar{I} X \mid X\right)$
 being surrounded by two slices of **bread**:
@@ -1007,6 +1014,8 @@ As for the simple regression model, the formula of the variance simplifies with 
 uncorrelated ($\mbox{E}(\epsilon_n \epsilon_m \mid x) = 0 \; \forall \; m \neq n$).
 In this case, the meat reduces to
 $\sigma_\epsilon ^ 2 \frac{1}{N} \tilde{X} ^ \top \tilde{X}$, ie up to a scalar to the matrix of covariance of the covariates and @eq-general_variance becomes:
+\index[general]{sandwich!multiple linear regresion|)}
+\index[general]{homoskedasticity}\index[general]{uncorrelation}
 
 $$
 V(\hat{\beta})= \sigma_\epsilon^2(\tilde{X}^\top\tilde{X})^{-1}
@@ -1102,6 +1111,7 @@ slw_tot %>% summary %>% coef
 
 ### The OLS estimator is BLUE
 
+\index[general]{best linear unbiased estimator!multiple linear regression model|(}
 The demonstration made in @sec-simple_ols_blue for the simple linear model can easily be extended to
 the multiple regression model. The OLS estimator is:
 $\hat{\gamma} = (Z^\top Z)^{-1}Z^\top y = \gamma + (Z^\top Z)^{-1}Z^\top \epsilon$.
@@ -1137,9 +1147,11 @@ positive and, therefore, the difference between the variance matrix of
 any unbiased linear estimator and the OLS estimator is a
 semi-definite positive matrix, which means that the OLS estimator is
 the most efficient linear unbiased estimator.
+\index[general]{best linear unbiased estimator!multiple linear regression model|)}
 
 ### Asymptotic properties of the OLS estimator
 
+\index[general]{asymptotic properties!multiple linear regression model|(}
 Asymptotic properties of the multiple regression model
 are direct extensions of those we have seen for the simple regression
 model. With $\mbox{E}(\hat{\beta}) = \beta$ and 
@@ -1158,8 +1170,11 @@ or:
 $$
 \hat{\beta}_N \stackrel{a}{\sim} \mathcal{N}\left(\beta, \frac{\sigma_\epsilon ^ 2}{N} \left(\frac{1}{N}\tilde{X}^\top\tilde{X}\right)^ {-1}\right)
 $$
+\index[general]{asymptotic properties!multiple linear regression model|)}
 
 ## Confidence interval and test
+
+\index[general]{confidence interval!multiple linear regression model|(}
 
 In @sec-confint_test_slm, we have seen how to compute a confidence interval for a single parameter and how to perform a test for one hypothesis. The confidence interval was a segment, ie a range of values that contains the true value of the parameter with a given probability and the tests were performed using a normal or a Student distribution. 
 Of course, the same kind of analysis can be performed with a multiple regression. But, in this latter case:
@@ -1429,8 +1444,11 @@ The hypothesis that the two coefficients sum to 0 is not rejected as
 some points of the straight line that figure this hypothesis are in the confidence ellipse.
 Concerning the hypothesis that $\beta_i = 0.5$ and $\beta_v = -0.5$, the two simple hypothesis and the joint hypothesis are rejected at the 95% confidence level: the two estimates are neither in the segments representing the simple confidence interval nor inside the ellipse figuring the joint confidence interval. 
 
+\index[general]{confidence interval!multiple linear regression model|)}
+
 #### Joint hypothesis
 
+\index[general]{test!multiple linear regression model|(}
 To test a joint hypothesis for the values of a couple of parameters $(\beta_{10}, \beta_{20})$, we have seen previously that we can simply check whether the corresponding point is inside or outside the confidence interval ellipse. We can also compute the statistic given in @eq-ellipse_est for $(\beta_1=\beta_{10}, \beta_2=\beta_{20})$ and compares it to the critical value.
 
 The statistic is computed using the elements of the matrix returned by
@@ -1503,12 +1521,16 @@ Fstat
 The statistic (`r round(Fstat, 3)`) is slightly greater than the
 approximative value (`r round(Mt2, 3)`) previously computed, we
 therefore reject once again the null hypothesis. 
+\index[general]{test!multiple linear regression model|)}
+
 
 ### The three test principles {#sec-three_tests}
 
+\index[general]{test!three tests principle!linear regression models|(}
+
 <!-- !!! clarifier les notations Z vs X -->
 In the previous subsection, we started with a general (unconstrained) model, we constructed a confidence ellipse for the two parameters, and we were able to test a set of hypothesis, either by checking whether the values of the parameters corresponding to the hypothesis were inside the confidence ellipse, or by computing the value of the statistic for the tested values of the parameters. Actually, this testing principle, based on the unconstrained model, is just one way of testing hypothesis. The geometry of least squares and the Frisch-Waugh theorem highlight the fact that any set of hypothesis can be tested using the fact that this set of hypothesis gives rise to two models:
-a **constrained model**, which imposes the hypotheses and an **unconstrained model**, which doesn't impose the hypotheses.
+a **constrained model**, which imposes the hypotheses and an **unconstrained model**, which doesn't impose the hypotheses.\index[general]{constrained model}\index[general]{unconstrained model}
 The same test can be performed using the constrained model, the
 unconstrained model or both:
 
@@ -1530,6 +1552,7 @@ the form $y = X_1\beta_1 + X_2\beta_2 + \epsilon$, the hypothesis being
 $\mbox{H}_0: \beta_2 = 0$. In this setting, the three test are easily constructed using the Frisch-Waugh theorem, with $H_0: \beta_2 = 0$.
 
 #### Wald test
+\index[general]{Wald test|(}
 
 The Wald test is based on the unconstrained model, for which a vector of
 slopes $\hat{\beta}_2$ is estimated. Using the Frisch-Waugh theorem, this vector can be obtained as the regression of the residuals of $y$ on $X_1$ ($M_1y$) on the residuals of every column of $X_2$ on $X_1$ ($M_1X_2$). Then, $\hat{\beta}_2 = (X_2^\top M_1 X_2) ^ {-1} X_2^\top M_1 y$, with expected value and variance equal to $\beta_2$ (0 under $H_0$) and $\mbox{V}(\hat{\beta}_2) = \sigma_\epsilon^2 (X_2^\top M_1 X_2) ^ {-1}$
@@ -1562,8 +1585,10 @@ $$
 \frac{y ^ \top P_{M_1X_2} y}
 {\sigma_\epsilon^2}
 $$
+\index[general]{Wald test|)}
 
 #### Lagrange multiplier or score test
+\index[general]{score test|(}
 
 Consider the constrained model, which imposes $\beta_2 = 0$. It is therefore obtained by regressing $y$ on $X_1$ only and the vector of residuals is $\hat{\epsilon}_1 = M_1 y$. The idea of this test is that, if $H_0$ is true, $X_2 ^ \top \hat{\epsilon}_1$
 should be closed to zero, $\hat{\epsilon}_1$ being "almost" orthogonal to
@@ -1585,8 +1610,11 @@ X_2\right) ^ {-1} X_2 ^ \top M_1 y=
 \frac{y ^ \top P_{M_1X_2} y}
 {\sigma_\epsilon^2}
 $$
+\index[general]{score test|)}
 
 #### Likelihood ratio test
+
+\index[general]{likelihood ratio test|(}
 
 The likelihood ratio test is based on the comparison of the
 objective function (the sum of square residuals) for the constrained and
@@ -1598,6 +1626,9 @@ $$
 
 The first term on the left and the term on the right are sum of squares residuals (respectively for the unconstrained and the constrained model). Therefore, the likelihood ratio test is based on:
 $\mbox{SSR}_c - \mbox{SSR}_{nc} = ||P_{M_1X_2}y|| ^ 2 = y ^ \top P_{M_1X_2} y$. Dividing by $\sigma_\epsilon^2$, we get exactly the same statistic as previously.
+
+\index[general]{likelihood ratio test|)}
+\index[general]{test!three test principles!linear regression models|)}
 
 ### Computation of the three tests
 
@@ -1645,7 +1676,7 @@ The two hypothesis can be tested one by one as the test is that:
 - the slope of $e2 = e-v$ equals 0 for the hypothesis that $\kappa = 1/3$,
 - the slope of $v$ equals 0 for the hypothesis that $\beta_i+\beta_e+\beta_v=0$.
 
-Both hypothesis are not rejected, even at the 10% level. To test the join hypothesis, we can first use the approximative formula which is the sum or the mean of the squares of the t statistics (respectively a $\chi^2$ with 2 degrees of freedom and a F with 2 and 71 degrees of freedom):
+Both hypothesis are not rejected, even at the 10% level. To test the join hypothesis, we can first use the approximate formula which is the sum or the mean of the squares of the t statistics (respectively a $\chi^2$ with 2 degrees of freedom and a F with 2 and 71 degrees of freedom):
 \idxfun{pf}{stats}\idxfun{pchisq}{stats}
 
 ```{r}
@@ -1661,6 +1692,8 @@ pf(appr_f, df1 = 2, df2 = 71, lower.tail = FALSE)
 Based on this approximation, the joint hypothesis is clearly not rejected. We now turn to the computation of the statistics, using the three test principles.
 
 #### Wald test {#sec-wald_test_example}
+
+\index[general]{Wald test|(}
 
 Considering the initial unconstrained model, for which the formula is $y \sim i + v + e$, the set of the two hypothesis can be written in matrix form as:
 
@@ -1717,7 +1750,11 @@ t(R %*% coef(mrw2) - q) %*%
 car::linearHypothesis(mrw2, c("i + v + e = 0", "e = 2 * i - 1")) %>% gaze
 ```
 
+\index[general]{Wald test|)}
+
 #### Likelihood ratio test
+
+\index[general]{likelihood ratio test|(}
 
 The computation of the likelihood ratio statistic is very simple once the two models have been estimated. The sum of squares of the two models are extracted using the `deviance` method and we divide the difference of the two sums of squares by $\dot{\sigma}_\epsilon^2$ (the `sigma` method is used to extract the residual standard error) and by 2 to get a F statistic.
 \idxfun{deviance}{stats}\idxfun{sigma}{stats}
@@ -1728,7 +1765,11 @@ The computation of the likelihood ratio statistic is very simple once the two mo
 (deviance(mrw_c) - deviance(mrw2))/ sigma(mrw2) ^ 2 / 2
 ```
 
+\index[general]{likelihood ratio test|)}
+
 #### Score test
+
+\index[general]{score test|(}
 
 For the score test, we consider the reparametrized model and we define $Z_1$ as a matrix containing a column of one and $i + 2  e - 3  v$ and $X_2$ as a matrix containing $e-v$ and $v$.
 \idxfun{model.matrix}{stats}\idxfun{model.frame}{stats}
@@ -1761,9 +1802,11 @@ t(crossprod(X2, ec)) %*%
 
 The statistic is slightly different from the one computed previously, the difference being only due to the fact that the estimation of $\sigma_\epsilon$ is based, for the score test, on the constrained model.
 
+\index[general]{score test|)}
 
 ### Testing that all the slopes are 0
 
+\index[general]{F statistic|(}
 The test that all the slopes are 0 is routinely reported by software performing OLS estimation. It can be computed using any of the three test principles, but the likelihood ratio test is particularly appealing in this context, the constrained model being a model with only an intercept: $y_n = \alpha + \epsilon_n$. In this case, $\hat{\alpha} = \bar{y}$ and $\hat{\epsilon} = (y_n - \bar{y})$. Therefore, the residual sum of squares for the constrained model is $S_{yy} = \sum_n (y_n - \bar{y}) ^ 2$ and is also denoted $\mbox{TSS}$ for total sum of squares. The statistic is then:
 $(\mbox{TSS} - \mbox{RSS})/\sigma_\epsilon ^ 2 \sim \chi ^ 2_K$, 
 which is a $\chi ^ 2$ with $K$ degrees of freedom if the hypothesis that all the slopes are 0 is true. To compute this statistic, $\sigma_\epsilon^2$ has to be estimated. A natural estimator is $\mbox{RSS} / (N - K - 1)$ but, if $H_0$ is true, $\mbox{TSS} / (N - 1)$ is also an unbiased estimator. Moreover, dividing by the sample size ($N$) and not by the number of degrees of freedom leads to biased but consistent estimators. Using the first estimator of $\sigma_\epsilon^2$ and dividing by $K$, we get the $F$ statistic with $K$ and $N-K-1$ degrees of freedom:
@@ -1846,9 +1889,11 @@ mrw_ncb %>% ftest %>% gaze
 
 Actually, a degrees of freedom correction should be performed to get exactly the same results because `mrw_ncb` has $75 - 2 = 73$ degrees of freedom, as the real number of degrees of freedom is $75 - 4  = 71$.
 
+\index[general]{F statistic|)}
 
 ## System estimation and constrained least squares {#sec-system_equation}
 
+\index[general]{system estimation|(}
 Very often in economics, the phenomenon under investigation is not
 well described by a single equation, but by a system of
 equations. Moreover, there may be inter-equations constraints on the
@@ -2069,7 +2114,7 @@ head(Zs, 2)
 ```
 
 `Formula::model.part` enables to retrieve any part of the model. Here, we want to extract the three responses which are the only left side of the formula. Therefore, we set `lrs` and `rhs` respectively to 1 and 0. The result is a data frame with three variables `ct`, `sl` and `sm`. We then use `dplyr::pivot_longer`, to stack the three responses in one column. Note the use of the optional argument `cols_vary` that is set to `"slowest"`, so that the elements are stacked columnwise:
-\idxfun{model.part}{Formula}\idxfun{pivot\_longer}{dplyr}\idxfun{print}{base}
+\idxfun{model.part}{Formula}\idxfun{pivot\_longer}{tidyr}\idxfun{print}{base}
 
 ```{r }
 #| label: stack_responses
@@ -2114,6 +2159,7 @@ ols_unconst %>% coef
 ```
 
 ### Constrained least squares {#sec-constrained_ls}
+\index[general]{constrained least squares|(}
 
 Linear restrictions on the vector of coefficients to be estimated can be
 represented using a restriction matrix $R$ and a numeric vector $q$: $R\gamma = q$^[See @sec-wald_test_example.], where $\gamma ^ \top = (\gamma_1 ^ \top, \ldots, \gamma_L ^ \top)$ is the
@@ -2164,7 +2210,7 @@ $$
 $$
 
 The constrained OLS estimator can be obtained using the formula for
-the inverse of a partitioned matrix:
+the inverse of a partitioned matrix:\index[general]{inverse of a partitioned matrix}
 
 $$
 \left(
@@ -2204,6 +2250,8 @@ $$
 \hat{\gamma}_c=\hat{\gamma}_{nc} - (Z^\top Z)^{-1}R^\top(R(Z^\top
 Z)^{-1}R^\top)^{-1}(R\hat{\gamma}_{nc}-q)
 $$ {#eq-const_lm}
+
+\index[general]{constrained least squares|)}
 
 The difference between the constrained and the unconstrained
 estimators is then a linear combination of the excess of the linear
@@ -2266,6 +2314,6 @@ The output of `systemfit` is large and is not reproduced here. The full strength
 <!-- R %*% vcov(ols_const) %*% t(R) -->
 <!-- ``` -->
 
-
+\index[general]{system estimation|)}
 
 

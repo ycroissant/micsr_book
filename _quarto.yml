@@ -6,33 +6,35 @@ titlepage: true
 titlepage-color: "FFF5EE"
 titlepage-rule-height: 2
 titlepage-logo: "./latex/cemoi.png"
+lot: true
+lof: true
 
 book:
   author: "Yves Croissant"
   date: "17/11/2023"
   chapters:
   - index.qmd
-  - part: OLS.qmd
-    chapters:
-      - ./chapters/simple_regression.qmd
-      - ./chapters/simple_regression_properties.qmd
-      - ./chapters/multiple_regression.qmd
-      - ./chapters/coefficients.qmd
-  - part: beyond_OLS.qmd
-    chapters:
-      - ./chapters/maximum_likelihood.qmd
-      - ./chapters/non_spherical.qmd
-      - ./chapters/endogeneity.qmd
-      - ./chapters/treateff.qmd
-      - ./chapters/spatial.qmd
-  - part: special_responses.qmd
-    chapters:
-      - ./chapters/binomial.qmd
-      - ./chapters/tobit.qmd
-      - ./chapters/count.qmd
-      - ./chapters/duration.qmd
-      - ./chapters/rum.qmd
-  - ./chapters/references.qmd
+  # - part: OLS.qmd
+  #   chapters:
+  #     - ./chapters/simple_regression.qmd
+  #     - ./chapters/simple_regression_properties.qmd
+  #     - ./chapters/multiple_regression.qmd
+  #     - ./chapters/coefficients.qmd
+  # - part: beyond_OLS.qmd
+  #   chapters:
+  #     - ./chapters/maximum_likelihood.qmd
+  #     - ./chapters/non_spherical.qmd
+  #     - ./chapters/endogeneity.qmd
+  #     - ./chapters/treateff.qmd
+  #     - ./chapters/spatial.qmd
+  # - part: special_responses.qmd
+  #   chapters:
+  #     - ./chapters/binomial.qmd
+  #     - ./chapters/tobit.qmd
+  #     - ./chapters/count.qmd
+  #     - ./chapters/duration.qmd
+  #     - ./chapters/rum.qmd
+  # - ./chapters/references.qmd
 bibliography: references.bib
 
 knitr:
@@ -47,16 +49,12 @@ format:
   pdf:
     documentclass: krantz 
     classoption: [krantz2, a4paper]
-#    classoption: [krantz2, a4paper, pdf]
-#    documentclass: scrreprt
-#    template: ./latex/eisvogel.tex
-#    toc-own-page: true
-#    include-in-header: ./latex/macros.tex
     include-in-header: 
       text: |
         \usepackage{makeidx}
         \usepackage{imakeidx}
         \usepackage{ifthen}
+        \makeindex[name=general,title=General]
         \makeindex[name=author,title=Authors,columns=3]
         \makeindex[name=general,title=General index]
         \makeindex[name=data,title=Data Sets]
@@ -65,17 +63,26 @@ format:
         \usepackage{pdflscape}
         \newcommand{\blandscape}{\begin{landscape}}
         \newcommand{\elandscape}{\end{landscape}}
-        \newcommand{\idxfunold}[2]{\index[functions]{#1@\texttt{#2::#1}}}
         \newcommand{\idxfun}[2]{\index[functions]{#1@\texttt{#2::#1}}\index[libraries]{\textbf{#2}!\texttt{#1}}}
-        \newcommand{\idxdatata}[2]{\index[data]{#1@\texttt{#2::#1}}}
         \newcommand{\idxdata}[3][void]{\ifthenelse{\equal{#1}{void}}{\index[data]{#2@\texttt{#3::#2}}}{\index[data]{#2@\texttt{#3::#2}|#1}}}
+        \indexsetup{level=\section*,toclevel=section,noclearpage}
+        \pagenumbering{roman}
+    include-before-body: 
+      text: |
+        \begin{center}
+        ensebme c's mieux
+        \end{center}
+        \cleardoublepage
+        \frontmatter
     include-after-body:
       text: |
-        \printindex[author]
+        \cleardoublepage
+        \addcontentsline{toc}{chapter}{Indexes}
+        \chapter*{Indexes}
         \printindex[general]
+        \printindex[author]
         \printindex[data]
         \printindex[functions]
         \printindex[libraries]
-        
 
 editor: source

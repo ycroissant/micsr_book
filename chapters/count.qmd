@@ -125,7 +125,6 @@ p_majordrg <- glm(majordrg ~ age + income + expinc + avgexp + major, data = majo
 
 p_publications <- glm(articles ~ sex + marital + kids + phd + mentor, data = publications, family = poisson)
 
-
 lrNB1 <- function(x){
     y <- model.response(model.frame(x))
     mu <- fitted(x)
@@ -191,36 +190,36 @@ results %>% as_tibble(rownames = "data") %>%
 \elandscape
 
 About half of these data sets concern demand for health
-care. `doctor_aus`[@CAME:TRIV:86], `doctor_cal` [@GURM:97], `doctor_ger`
-[@SANT:WIND:01] and `doctor_us` [@MULL:98] concern
+care. `doctor_aus`[@CAME:TRIV:86]\idxdata{doctor\_aus}{micsr.count}, `doctor_cal` [@GURM:97]\idxdata{doctor\_cal}{micsr.count}, `doctor_ger`
+[@SANT:WIND:01]\idxdata{doctor\_ger}{micsr.count} and `doctor_us` [@MULL:98]\idxdata{doctor\_us}{micsr.count} concern
 annual doctor visits, respectively in Australia, California, Germany
-and the United States. `health_ins` [@DEB:TRIV:02] focus on the link between health insurance
+and the United States. `health_ins` [@DEB:TRIV:02]\idxdata{health\_ins}{micsr.count} focus on the link between health insurance
 and doctor visits using a randomized experiment in the United States,
-as `health_reform`[@WINK:04] analyzes the effect of an health insurance reform in
-Germany. `elderly` [@DEB:TRIV:97]  focus on the demand for health care by elderly in
-the US and `hospitalization` [@GEIL:MILL:ROTT:ZIMM:97] uses as the response the number of stays at
+as `health_reform`[@WINK:04]\idxdata{health\_reform}{micsr.count} analyzes the effect of an health insurance reform in
+Germany. `elderly` [@DEB:TRIV:97]\idxdata{elderly}{micsr.count}  focus on the demand for health care by elderly in
+the US and `hospitalization` [@GEIL:MILL:ROTT:ZIMM:97]\idxdata{hospitalization}{micsr.count} uses as the response the number of stays at
 the hospital.
 
-`amc12` [@ELLI:SWAN:16] uses the number of students per school who got a very high
+`amc12` [@ELLI:SWAN:16]\idxdata{amc12}{micsr.count} uses the number of students per school who got a very high
 score at the AMC12 test (a test on mathematics). `asymptotic`
-[@KOEN:ZEIL:09] is a
+[@KOEN:ZEIL:09]\idxdata{asymtotic}{micsr.count} is a
 meta analysis of wage equations reported in 156 papers and the
 analysis stress on the hypothesis used to get the consistency of an
 estimator, ie that the number of regressor is fixed as the number of
-observations increases. `bids` [@CAME:JOHA:97] analyzes the number of bids received by
-126 firms that were targets of tender offers. `cartels` [@MILL:09] is a time
+observations increases. `bids` [@CAME:JOHA:97]\idxdata{bids}{micsr.count} analyzes the number of bids received by
+126 firms that were targets of tender offers. `cartels` [@MILL:09]\idxdata{cartels}{micsr.count} is a time
 series of bi-annual observations, the response being the number of
 cartels discoveries and the main covariate the pre and post period
-when new leniency program was introduced. `cigmales` [@MULL:97] measures the
+when new leniency program was introduced. `cigmales` [@MULL:97]\idxdata{cigmales}{micsr.count} measures the
 number of cigarettes daily smoked by males in the United
-States. `majordrg` [@GREE:01] contain data about the number of major derogatory
-reports by cardholders. `publications` analyzes the
+States. `majordrg` [@GREE:01]\idxdata{majordrg}{micsr.count} contain data about the number of major derogatory
+reports by cardholders. `publications` [@LONG:97]\idxdata{publications}{micsr.count} analyzes the
 scientific production (measured by the number of publications) of
 individuals who got a Ph. D. in bio-chemical. `somerville`
-[@SELL:STOL:CHAV:85] reports the
-number of recreational visits to a lake in Texas. `strikes` [@KENN:85] is a time
+[@SELL:STOL:CHAV:85]\idxdata{somerville}{micsr.count} reports the
+number of recreational visits to a lake in Texas. `strikes` [@KENN:85]\idxdata{strikes}{micsr.count} is a time
 series that reports the number of strikes (and also their length) in
-the United States.  `trips` [@TERZ:98] contains the number of trips taken by
+the United States.  `trips` [@TERZ:98]\idxdata{trips}{micsr} contains the number of trips taken by
 members of households the day prior the survey interview.
 \index[author]{Cameron}\index[author]{Trivedi}\index[author]{Winkelman}\index[author]{Kennan}\index[author]{Terza}\index[author]{Mullahy}\index[author]{Deb}
 \index[author]{Santos Silva}\index[author]{Windmeijer}
@@ -232,23 +231,24 @@ variance ($\omega$) is reported in the second column.
 Count data often take small values, and this is the case for almost all
 our data sets. We report in @tbl-empsurvey the 9th decile, which is less
 than 10 for most of our data sets. Noticeable exceptions are
-`asymptotic` (the number of covariates in an econometric equation),
-`cigmales` (the number of cigarettes smoked daily).
+`asymptotic`\idxdata{asymptotic}{micsr.count} (the number of covariates in an econometric equation),
+`cigmales`\idxdata{cigmales}{micsr.count} (the number of cigarettes smoked daily).
 
 While comparing real count data to Poisson distribution, one often
 face two problems:
+\index[general]{overdispersion}\index[general]{excess of zero}
 
 - the first one is **overdispersion**, which means that the variance is
   much greater than the mean,
-- the second one is the problem of **excess zero**, which means that
+- the second one is the problem of **excess of zero**, which means that
   the mean probability of a zero value computed using the Poisson
   distribution is often much less than the observed share of zero in
   the sample.
   
 The third column of @tbl-empsurvey contains the mean variance
 ratio and shows that overdispersion seems to be the rule. The ratio is
-in general much larger than 1, noticeable exceptions being `bids`,
-`cartels` and `majordrg`. This overdispersion is important because we
+in general much larger than 1, noticeable exceptions being `bids`\idxdata{bids}{micsr.count},
+`cartels`\idxdata{cartels}{micsr.count} and `majordrg`\idxdata{majordrg}{micsr.count}. This overdispersion is important because we
 consider that the Poisson parameter is the same for every observation. Adding covariates
 will give specific values of the Poisson parameter for every observations and will therefore reduce
 the (conditional) variance. Anyway, we'll see in subsequent sections
@@ -260,19 +260,21 @@ overdispersion, as zero is an extreme value of the distribution and
 therefore, an excess of zero leads to overdispersion. The excess of
 zero can in part be explained by the fact that 0 is a special value
 that may not be correctly explained by the same process that explain
-strictly positive values. An example is `cigmales`, where 0 means no
+strictly positive values. An example is `cigmales`\idxdata{cigmales}{micsr.count}, where 0 means no
 smoking and smoking vs non-smoking is quite different in nature than
 smoking a few or a lot of cigarettes. The 8th column of @tbl-empsurvey returns the
-ratio between the empirical share of zero and the Poisson probability of 0 and, unsurprisingly, this ratio is huge for `cigmales`. Some models have been proposed that have a special
+ratio between the empirical share of zero and the Poisson probability of 0 and, unsurprisingly, this ratio is huge for `cigmales`\idxdata{cigmales}{micsr.count}. Some models have been proposed that have a special
 treatment for the value of 0 and allow to obtain predicted
 probabilities of 0 greater that the one implied by the Poisson model.
 
 ### Analyzing the number of trips
 
+\idxdata[(]{trips}{micsr}
 Throughout this chapter, we'll use the `trips` data set. It was used by @TERZ:98\index[author]{Terza} and the response is the number of trips taken the day before the
 interview. 
 We first consider the unconditional distribution of the number of
-`trips`, computing the first two moments and the share of 0:
+`trips`\idxdata{trips}{micsr}, computing the first two moments and the share of 0:
+\idxfun{summarise}{dplyr}\idxfun{var}{stats}
 
 ```{r }
 #| collapse: true
@@ -282,6 +284,7 @@ trips %>% summarise(m = mean(trips), v = var(trips),
 This series exhibits important overdispersion, as the variance is
 about 5 times larger than the mean. The ML estimator is the sample
 mean and therefore, the predicted probability of 0 is:
+\idxfun{dpois}{stats}
 
 ```{r }
 #| collapse: true
@@ -308,6 +311,7 @@ over-estimated for values of the response close to the mean (3, 4, 5,
 6) and under-estimated for extreme values. This is particularly the
 case for 0, which indicates that a specific problem of excess of zero
 may be present.
+\idxfun{rootogram}{countreg}\idxfun{coord\_cartesian}{ggplot2}\idxfun{autoplot}{ggplot2}
 
 ```{r }
 #| label: fig-tripsuncond
@@ -317,7 +321,10 @@ countreg::rootogram(trips$trips, fitted = "poisson", plot = FALSE,
   autoplot + coord_cartesian(xlim = c(0, 15))
 ```
 
+\idxdata[)]{trips}{micsr}
+
 ## The Poisson model {#sec-poisson_model}
+\index[general]{Poisson model|(}
 
 ### Derivation of the Poisson model
 
@@ -338,7 +345,7 @@ deviation). The Poisson probability can also be written as:
 $$
 \mbox{P}(Y = y, \mu) = e^{y \ln \mu-\mu- \ln y !}
 $$
-and therefore, the Poisson model belongs to the generalized linear model family (see @sec-glm), with $\theta = \ln \mu$, $b(\theta) = \mu = e^ \theta$, $\phi = 1$ and $c(y, \phi) = - \ln y !$. The mean is $b'(\theta) = e ^ \theta = \mu$ and the variance $\phi b''(\theta) = e ^ \theta  = \mu$. The link defines the relation between the linear predictor $\eta$ and the parameter of the distribution $\mu$: $\eta = g(\mu)$. The canonical link is such that $\theta = \eta$ and it is therefore, for the Poisson model, the log link: $\eta = \ln \mu$. For a given set of covariates, the Poisson parameter for observation $n$ is $\mu_n = g ^ {-1}(\eta_n)$, with $\eta_n = \alpha + \beta ^ \top x_n = \gamma ^ \top z_n$ the linear predictor. Therefore:
+and therefore, the Poisson model belongs to the generalized linear model family (see @sec-glm), with $\theta = \ln \mu$, $b(\theta) = \mu = e^ \theta$, $\phi = 1$ and $c(y, \phi) = - \ln y !$. The mean is $b'(\theta) = e ^ \theta = \mu$ and the variance $\phi b''(\theta) = e ^ \theta  = \mu$. The link defines the relation between the linear predictor $\eta$ and the parameter of the distribution $\mu$: $\eta = g(\mu)$. The canonical link is such that $\theta = \eta$ and it is therefore, for the Poisson model, the log link: $\eta = \ln \mu$. For a given set of covariates, the Poisson parameter for observation $n$ is $\mu_n = g ^ {-1}(\eta_n)$, with $\eta_n = \alpha + \beta ^ \top x_n = \gamma ^ \top z_n$ the linear predictor. Therefore:\index[general]{link!log}
 
 $$
 \mu_n = \mbox{E}(y \mid x_n) = e^{\alpha + \beta^\top x_n} = e^{\gamma ^ \top z_n}
@@ -380,6 +387,8 @@ worker in household (`fulltime`), the distance from home to nearest
 transit node, household income divided by the median income of the
 census tract (`realinc`), a dummy if the survey period is Saturday or
 Sunday (`weeekend`) and a dummy for owning at least a car (`car`). The Poisson model is fitted using the `glm` function and setting the `family` argument to `poisson`. As for the binomial model, the `family` argument can be a character, a function without argument (in this case, the default link is chosen) or a function with a link argument.^[The other possible other links for the Poisson model are `"identity"` and `"sqrt"` but the default `"log"` link is almost always used.] For the sake of comparison, we also estimate a linear model using `lm`:
+\idxdata[(]{trips}{micsr}
+\idxfun{glm}{stats}\idxfun{lm}{stats}\idxfun{poisson}{stats}
 
 ```{r}
 ftrips <- trips ~ workschl + size + dist + smsa + fulltime + distnod + 
@@ -414,6 +423,7 @@ modelsummary::msummary(list("linear model" = lm_trips,
                        gof_omit = 'DF|Deviance|R2|AIC|BIC|F|RMSE',
                        fmt = 2)
 ```
+\idxdata[)]{trips}{micsr}
 
 ### Interpretation of the coefficients
 
@@ -442,11 +452,14 @@ average marginal effect is $\hat{\beta}_k
 in a linear model (which are directly the marginal effects) to the
 Poisson estimators multiplied by the mean of the response. 
 
+\idxdata[(]{trips}{micsr}
+\idxfun{coef}{stats}\idxfun{rbind}{base}
 We now print the coefficients obtained for the Poisson and for the linear model:
 
 ```{r}
 rbind(lm = coef(lm_trips), poisson = coef(pois_trips))
 ```
+\idxdata[)]{trips}{micsr}
 
 An increase of 1 of `realinc` means that household's
 income increases by an amount equal to the local median income. The
@@ -504,10 +517,12 @@ $$
 z_n^\top\right) ^ {-1} = \left(\sum_{n=1} ^ N \hat{\mu}_n z_n
 z_n^\top\right) ^ {-1}
 $$
-
+\index[general]{covariance matrix!Poisson!information based}
 This estimator is consistent only if the distribution of the response is Poisson, 
 and therefore if the conditional variance equals the conditional mean. 
 A more general estimator is based on the sandwich formula:
+\index[general]{covariance matrix!Poisson model!sandwich}
+\index[general]{sandwich!Poisson model}
 
 $$
 \left(\sum_{n=1} ^ N \hat{\mu}_n z_n
@@ -531,9 +546,13 @@ $$
 \hat{\mbox{V}}(\hat{\gamma}) = \hat{\phi}\left(\sum_{n=1} ^ N \hat{\mu}_n z_n z_n^\top\right) ^ {-1}
 $$ {#eq-quasi-poisson}
 
+\index[general]{quasi-Poisson model}
+\index[general]{covariance matrix!Poisson model!quasi-Poisson}
 The "quasi-Poisson" model is obtained by using the log link and @eq-quasi-poisson for the variance. It leads to the same estimator than the Poisson model and a variance that is
 greater (respectively lower) that the one of the Poisson model if
 there is overdispersion (respectively underdispersion). It can be fitted using `glm` by setting the `family` argument to `quasipoisson`:
+\idxdata[(]{trips}{micsr}
+\idxfun{update}{stats}\idxfun{quasipoisson}{stats}
 
 ```{r}
 qpois_trips <- update(pois_trips, family = quasipoisson)
@@ -544,6 +563,7 @@ deviations of the quasi-Poisson model are inflated by a factor which
 is the square root of the estimate of the variance-mean ratio. This
 factor can be estimated using @eq-qpoisvar, which makes use
 of the residuals of the Poisson regression. 
+\idxfun{model.frame}{stats}\idxfun{model.response}{stats}\idxfun{fitted}{stats}\idxfun{resid}{stats}
 
 ```{r }
 y <- pois_trips %>% model.frame %>% model.response
@@ -551,11 +571,13 @@ mu <- pois_trips %>% fitted
 e_resp <- pois_trips %>% resid(type = "response")
 e_pears <- pois_trips %>% resid(type = "pearson")
 ```
+\index[general]{residuals!Poisson!response}\index[general]{residuals!Poisson!Pearson's}
 The response residual is $y_n - \hat{\mu}_n$ and we get the Pearson residual
 by dividing the response residual by the standard deviation, which is $\sqrt{\hat{\mu}_n}$.
 Therefore, the estimation of the variance-mean ratio is simply the sum
 of square of the Pearson residuals divided by the sample size (the
 number of degrees of freedom can be used instead).
+\idxfun{df.residual}{stats}
 
 ```{r }
 #| collapse: true
@@ -565,13 +587,17 @@ c(phi, sqrt(phi))
 The estimated variance-mean ratio is more than 3, so that the standard
 deviations of the quasi-Poisson model are almost 2 times larger than
 those of the Poisson model (1.835). The sandwich estimator can be constructed by extracting from the fitted Poisson model the model matrix ($Z$), the fitted values ($\hat{\mu}_n$) and the response residuals ($y_n - \hat{\mu}_n$):
+\idxfun{fitted}{stats}\idxfun{resid}{stats}\idxfun{model.matrix}{stats}
+\index[general]{covariance matrix!Poisson model!sandwich|(}
+\index[general]{sandwich!Poisson model|(}
 
 ```{r }
 mu <- pois_trips %>% fitted
-e <- pois_trips %>% residuals(type = "response")
+e <- pois_trips %>% resid(type = "response")
 Z <- pois_trips %>% model.matrix
 ```
 We can then compute the "bread" (`B`) and the "meat" (`M`):
+\idxfun{crossprod}{base}
 
 ```{r }
 B <- crossprod(mu * Z, Z)
@@ -579,6 +605,7 @@ M <- crossprod(e ^ 2 * Z, Z)
 ```
 Applying @eq-sandpois, and taking the square root of the
 diagonal elements, we get:
+\idxfun{solve}{base}\idxfun{stder}{micsr}\idxfun{head}{utils}
 
 ```{r }
 #| collapse: true
@@ -589,6 +616,7 @@ The `sandwich` package provides the `vcovHC` function which computes
 different flavors of the sandwich estimator of the variance. The one
 that corresponds to @eq-sandpois is obtained by setting `type`
 to `HC`.
+\idxfun{vcovHC}{sandwich}\idxfun{stder}{micsr}\idxfun{head}{utils}
 
 ```{r }
 #| collapse: true
@@ -596,6 +624,7 @@ sandwich::vcovHC(pois_trips, type = "HC") %>% stder %>% head(4)
 ```
 
 The sandwich standard errors can also be extracted from the Poisson model using `stder` with the `vcov` and `type` arguments (respectively equal to `sandwich::vcovHC` and `"HC"`):
+\idxfun{vcovHC}{sandwich}\idxfun{stder}{micsr}\idxfun{head}{utils}
 
 ```{r}
 #| collapse: true
@@ -604,6 +633,7 @@ stder(pois_trips, vcov = sandwich::vcovHC, type = "HC") %>% head(4)
 
 Taking the ratio of the simple standard deviations of the coefficients
 and the sandwich estimator, we get:
+\idxfun{stder}{micsr}
 
 ```{r }
 stder(sand_vcov) / stder(pois_trips)
@@ -611,9 +641,17 @@ stder(sand_vcov) / stder(pois_trips)
 
 As previously, the robust standard deviations are about twice the
 basic ones in average, but the ratio now depends on the coefficient.
+\idxdata[)]{trips}{micsr}
+
+\index[general]{covariance matrix!Poisson model!sandwich|)}
+\index[general]{sandwich!Poisson model|)}
+
+\index[general]{Poisson model|)}
 
 ### Overdispersion
 
+\index[general]{overdispersion|(}
+\index[general]{negbin|(}
 A more general expression for the variance is the following Negbin
 specification:
 
@@ -624,9 +662,9 @@ $$
 with two special cases:
 
 - $p = 1$ (**NB1**) which implies that the variance is proportional to the
-  expectation, $\sigma_n ^ 2 = (1 + \alpha) \mu_n$,
+  expectation, $\sigma_n ^ 2 = (1 + \alpha) \mu_n$,\index[general]{negbin!NB1}
 - $p = 2$ (**NB2**) which implies that the variance is quadratic in the
-  expectation, $\sigma_n ^ 2 = \mu_n + \alpha \mu_n ^ 2$. 
+  expectation, $\sigma_n ^ 2 = \mu_n + \alpha \mu_n ^ 2$. \index[general]{negbin!NB2}
 
 Tests for overdispersion can easily be implemented using one the three
 test principles: Wald, likelihood ratio and score tests. The first
@@ -640,7 +678,7 @@ $$
 \mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = \sigma_n ^ 2 - \mu_n = 0
 $$
 
-With the NB1 specification, the alternative is:
+With the NB1 specification, the alternative is:\index[general]{negbin!NB1}
 
 $$
 \mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = (1 + \alpha)\mu_n -
@@ -656,7 +694,7 @@ $$ {#eq-aregnb1}
 The hypothesis of equidispersion (ie $\alpha = 0$) can be tested by
 regressing $\frac{ (y_n - \hat{\mu}_n) ^ 2 - y_n}{\hat{\mu}_n}$ on a constant and
 comparing the student statistic to the relevant critical value.
-With the NB2 specification, the alternative is:
+With the NB2 specification, the alternative is:\index[general]{negbin!NB2}
 
 $$
 \mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right) = \mu_n + \alpha\mu_n ^
@@ -669,14 +707,18 @@ $$
 \frac{\mbox{E}\left( (y_n - \mu_n) ^ 2 - y_n\right)}{\mu_n} = \alpha \mu_n
 $$ {#eq-aregnb2}
 
+\index[general]{overdispersion!test}
 The hypothesis of equidispersion (ie $\alpha = 0$) can then be tested by
 regressing $\frac{ (y_n - \hat{\mu}_n) ^ 2 - y_n}{\hat{\mu}_n}$ on $\hat{\mu}_n$ without an intercept and comparing the student statistic to the relevant critical value. Note that the response in these auxiliary regression can be written as: $(y_n - \hat{\mu}_n) ^ 2 / \hat{\mu}  - y_n/\hat{\mu}_n$, which is the difference between the square of the Pearson residual and the ratio of the actual and the fitted value of the response:
+\idxdata[(]{trips}{micsr}
+\idxfun{fitted}{stats}\idxfun{model.response}{stats}\idxfun{model.frame}{stats}
+\idxfun{resid}{stats}\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r }
 #| collapse: true
 hmu <- fitted(pois_trips)
 y <- model.response(model.frame(pois_trips))
-e_pears <- residuals(pois_trips, type = "pearson")
+e_pears <- resid(pois_trips, type = "pearson")
 resp_areg <- e_pears ^ 2 - y / hmu
 lm(resp_areg ~ 1) %>% gaze(coef = 1)
 lm(resp_areg ~ hmu - 1) %>% gaze
@@ -701,6 +743,7 @@ created without being plotted by setting the `plot` argument to
 `ggpubr::ggarrange`. The limits on the vertical axis are set
 to the same values for the two plots so that the frequencies for the
 two figures can be easily compared.
+\idxfun{rootogram}{countreg}\idxfun{autoplot}{countreg}\idxfun{coord\_cartesian}{ggplot2}\idxfun{ggarange}{ggpubr}
 
 ```{r }
 #| label: fig-rootograms
@@ -726,11 +769,14 @@ The over-dispersion phenomena can also be represented by plotting the
 square of the residuals against the fitted values, the straight
 line (NB1 hypothesis) and the parabola (NB2 hypothesis) that fit the
 data. The result is presented in @fig-overpts. 
+\idxfun{tibble}{tibble}\idxfun{resid}{stats}\idxfun{fitted}{stats}\idxfun{aes}{ggplot2}
+\idxfun{ggplot}{ggplot2}\idxfun{geom\_point}{ggplot2}\idxfun{geom\_smooth}{ggplot2}
+\idxfun{coord\_cartesian}{ggplot2}
 
 ```{r }
 #| label: fig-overpts
 #| fig-cap: "Squared residuals and fitted values"
-tb <- tibble(e2 = residuals(pois_trips, type = "response") ^ 2,
+tb <- tibble(e2 = resid(pois_trips, type = "response") ^ 2,
              mu = fitted(pois_trips))
 tb %>% ggplot(aes(mu, e2)) + geom_point() +
     coord_cartesian(xlim = c(0, 15), ylim = c(0, 150)) +
@@ -738,6 +784,8 @@ tb %>% ggplot(aes(mu, e2)) + geom_point() +
                 color = "red") +
     geom_smooth(method = lm, se = FALSE, formula = y ~ x + I(x ^ 2) - 1)
 ```
+\idxdata[)]{trips}{micsr}
+\index[general]{overdispersion|(}
 
 ## Overdispersion and excess of zero {#sec-overdisp_zero}
 
@@ -746,6 +794,7 @@ Poisson model, namely the fact that it doesn't deal correctly with
 overdispersion and the excess of zero.
 
 ### Mixing model
+\index[general]{mixing distribution!Poisson model|(}
 
 For the Poisson model with the log-link, the parameter of the Poisson distribution for individual $n$ is $\mu_n = e^ {\gamma ^ \top z_n}$. The problem of overdispersion occurs when the variance of $y$ is greater than its expectation, although the hypothesis underlying the use of the Poisson model is that they are equal. On solution is to define the Poisson parameter for individual $n$ as : $\lambda_n = \nu_n \mu_n = \nu_n e^ {\gamma ^ \top z_n}$. $\nu_n$ is an unobserved positive term that inflates the variance of $y$. Actually, for the same set of covariates $z$, two individuals $n$ and $m$  will be characterized by two different values of their Poisson parameters if $\nu_n \neq \nu_m$. For a given value of $\nu$, the probability of $y$ is still Poisson:
 
@@ -756,6 +805,7 @@ but, as $\nu_n$ is unobserved, this probability can't be used to estimate the pa
 To get the distribution of $y$ conditional on $x$ only, we need to
 integrate out $\nu_n$, assuming a specific distribution for $\nu$, called the **mixing distribution**. Two
 popular choices are the gamma and the log-normal distributions. The gamma density is:
+\index[general]{mixing distribution!Poisson model!gamma|(}
 
 $$
 g(\nu; \delta, \gamma) = \nu ^ {\delta - 1} e ^ {- \gamma \nu} \gamma ^ \delta / \Gamma(\delta)
@@ -768,7 +818,7 @@ respectively $\delta / \gamma$ and $\delta / \gamma ^ 2$. As $\gamma$ contains a
 $$
 g(\nu; \delta) = \nu ^ {\delta - 1} e ^ {- \delta \nu} \delta ^ \delta / \Gamma(\delta)
 $$
-
+\index[general]{negative binomial distribution}
 The distribution of $y$ conditional on $x_n$ only, called the **negative binomial** distribution, is then:
 
 $$
@@ -809,7 +859,7 @@ $$
 
 Conditional on $x_n$ and $\nu_n$, $\mbox{E}(y_n \mid x_n, \nu_n) = \mbox{V}(y_n \mid x_n, \nu_n) = \nu_n \mu_n$. Conditional on $x_n$ only, $\mbox{E}(y_n | x_n)= \mbox{E}_\nu(\nu \lambda_n) = \mu_n$ (as
 $\mbox{E}(\nu) = 1$). To get the variance, we use the formula of
-variance decomposition:
+variance decomposition:\index[general]{variance decomposition}
 
 $$
 \begin{array}{rcl}
@@ -825,6 +875,7 @@ $$
 $$
 Different parametrizations result in different flavors of the **Negbin model**. Replacing $\delta$ by $\sigma = 1 / \delta$ we get the NB2 model, with a quadratic conditional variance
 function:
+\index[general]{negbin!NB2}
 
 $$
 \mbox{V}(y_n|x_n) = \mu_n + \sigma \mu_n ^ 2 = (1 + \sigma \mu_n)\mu_n
@@ -832,6 +883,7 @@ $$ {#eq-var_negbin2}
 
 Replacing $\delta$ by $\mu_n / \sigma$, we get the NB1 model, with a
 linear conditional variance function:
+\index[general]{negbin!NB1}
 
 $$
 \mbox{V}(y_n\mid x_n) = (1 + \sigma) \mu_n
@@ -841,6 +893,8 @@ Note that as $\delta$ is positive so is $\sigma$ in the versions of the Negbin m
 that the Negbin model exhibits necessarily overdispersion, with the
 special case of equidispersion if $\sigma = 0$. Actually, in this case, $\delta \rightarrow \infty$, so that the variance of $\nu$ tends to 0 and the Poisson model is therefore obtained as
 a limited case. 
+\index[general]{mixing distribution!Poisson model!gamma|)}
+\index[general]{mixing distribution!Poisson model!normal|(}
 
 Another choice for the mixing distribution is the log-normal distribution, with $\ln \nu \sim \mathcal (0, \sigma)$. The first parameter of the distribution is set to 0. For a log-normal distribution, the exponential of this parameter is the median of the log-normal. Therefore, the choice of normalization for the log-normal distribution is to set the median (and not the mean as in the gamma distribution) to 0. The log-normal density is $\frac{1}{\sigma\nu}\phi(\ln \nu / \sigma)$ where $\phi()$ is the standard normal density. The probabilities are then given by:
 
@@ -860,6 +914,7 @@ e^{- e ^ {\gamma ^ \top z_n + \sqrt{2}\sigma t}} e ^ {y(\gamma ^ \top z_n + \sqr
 $$
 
 There is no closed form for this integral, but it can be approximated using Gauss-Hermite quadrature:
+\index[general]{gaussian quadrature}
 
 $$
 \int_{-\infty} ^ {+\infty}f(t) e ^ {-t ^ 2}dt \approx \sum_{r = 1} ^ R \omega_r f(t_r)
@@ -871,8 +926,12 @@ $$
 \mbox{V}(y_n \mid x_n) = e^{\frac{1}{2}\sigma ^ 2}\mu_n + e ^ {\sigma ^ 2}(e ^ {\sigma ^ 2} - 1) \mu_n ^ 2 =
 \left(1 + (e ^ {\sigma ^ 2} - 1)\mbox{E}(y \mid  x_n)\right) \mbox{E}(y_n \mid  x_n)
 $$ {#eq-var_lognorm}
+\index[general]{mixing distribution!Poisson model!normal|)}
+\index[general]{mixing distribution!Poisson model|)}
 
 We then estimate the Poisson model and the 3 mixed models we've just described. The `micsr::poisreg` function enables the estimation of this mixed models. It has a `mixing` argument. If `mixing = "none"` (the default), the basic Poisson model is estimated. Setting `mixing` to `"gamma"` and `"lognorm"` result respectively in the Negbin and the Log-normal-Poisson models. For the Negbin model, the two different flavors are obtained by setting `vlink` either to `"nb1"` (the default) or to `"nb2"` to get respectively the Negbin1 and the Negbin2 models.^[The NB2 model is implemented in `MASS::glm.nb`.] The results are presented in @tbl-mixed_models.
+\idxfun{poisreg}{micsr}\idxfun{update}{stats}
+\idxdata[(]{trips}{micsr}
 
 ```{r}
 pois <- poisreg(trips ~ workschl + size + dist + smsa + fulltime + distnod + 
@@ -893,6 +952,7 @@ Using respectively @eq-var_negbin1, @eq-var_negbin2 and @eq-var_lognorm, we comp
 modelsummary::msummary(list(poisson = pois, Negbin1 = nb1, Negbin2 = nb2, `Log-normal` = ln))
 ```
 
+\idxfun{coef}{stats}
 
 ```{r}
 #| collapse: true
@@ -906,6 +966,8 @@ yb <- mean(trips$trips)
 ```
 
 Therefore, the three mixing models predict about the same level of overdispersion, the conditional variance being about 3.5 times larger than the conditional expectation. This value should be compared to the ratio of the sample variance (`r round(var(trips$trips), 1)`) and the sample mean (`r round(mean(trips$trips), 1)`), which is (`r round(var(trips$trips)/mean(trips$trips), 1)`). @fig-rootograms_mixed presents the rootogram for the Poisson and the Negbin model. We can see that taking into account the overdispersion using a mixing model resolves most of the overdispersion problem.
+\idxfun{glm}{stats}\idxfun{formula}{stats}\idxfun{glm.nb}{MASS}\idxfun{rootogram}{countreg}
+\idxfun{autoplot}{ggplot2}\idxfun{coord\_cartesian}{ggplot2}\idxfun{ggarrange}{ggpubr}
 
 ```{r }
 #| label: fig-rootograms_mixed
@@ -923,6 +985,7 @@ figure <- ggpubr::ggarrange(fig_pois, fig_nb2,
 figure
 ```
 
+\idxdata[)]{trips}{micsr}
 
 ### Hurdle and ZIP models
 
@@ -945,6 +1008,7 @@ length of the survey is two weeks.
 
 #### Hurdle models
 
+\index[general]{hurdle model!count model|(}
 For the first situation, @CRAG:71\index[author]{Cragg} proposed the hurdle model (presented in @sec-tobit2), for which
 the level of consumption of a good is taken into account by two
 different models:
@@ -988,7 +1052,7 @@ This expression illustrates the interest of using the same
 distribution (here the Poisson distribution) for the two parts of the model. In this
 case, if $z_1 = z_2$, ie if the same set of covariates is used in the two models the hurdle model is nested in the simple count model, the null
 hypothesis of the simple model being: $\mbox{H}_0: \gamma_1 = \gamma_2$.
-
+\index[general]{hurdle model!count model|)}\index[general]{zero inflated Poisson|(}
 The **zero-inflated Poisson** (or **ZIP** model), also called *with zeros*
 model, proposed by @LAMB:92\index[author]{Lambert} starts from a count model, for example a Poisson with a set of covariates denoted $z_2$ and corresponding coefficients $\gamma_2$. The probability of 0 ($e^{-\gamma_2^\top
 z_{n2}}$ is inflated using a further parameter $\psi_n$ between 0 and 1:
@@ -1014,7 +1078,10 @@ used:
 $$
 \psi_n = \frac{e^{\gamma_1^\top z_{n1}}}{1 + e^{\gamma_1^\top z_{n1}}}
 $$
+\index[general]{zero inflated Poisson|)}
 Hurdle and ZIP models are implemented in package **countreg**. `countreg::Hurdle` and `countreg::zeroinfl` both have a `formula` and a `dist` argument. The first one is a two-part formula where the first part describes $x_1$ and the second one $x_2$. If a one-part formula is provided, the same set of covariates is used for the two parts of the model. The second one a character indicating the count model family (`"poisson"` and `"negbin"` are the most common choices). `countreg::hurdle` has a `zero.dist` argument which is a character indicating the distribution for the binomial part of the model (`"poisson"`, `"negbin"` or `"binomial"`; in the latter case, the link can be indicated using the `link` argument). The link used for $\psi_n$ is indicated in `countreg::zeroinfl` by the `link` argument. 
+\idxdata[(]{trips}{micsr}
+\idxfun{hurdle}{countreg}\idxfun{update}{stats}
 
 ```{r}
 hdl_pois <- countreg::hurdle(trips ~ workschl + size + dist + smsa + 
@@ -1030,6 +1097,7 @@ zip_nb2 <- update(zip_pois, dist = "negbin")
  
 The rootograms for the Hurdle and the ZIP models are presented in @fig-root_nb2_hurdle_zip.
 Using the AIC criteria, we can now compare all the models estimated in this section. The AIC of the basic model is:
+\idxfun{AIC}{stats}\index[general]{Aikaike information criteria|(}
 
 ```{r}
 #| collapse: true
@@ -1037,6 +1105,7 @@ AIC(pois)
 ```
 
 Adding either overdispersion (using a Negbin model) or an excess of 0 (using either a hurdle or a ZIP model) leads to:
+\idxfun{AIC}{stats}
 
 ```{r}
 #| collapse: true
@@ -1046,6 +1115,8 @@ AIC(zip_pois)
 ```
 
 The performance of the hurdle and the ZIP's Poisson models are similar. The AIC is much larger than the one of the Poisson model, but much less than the one of the Negbin2 model.
+\idxfun{glm.nb}{MASS}\idxfun{formula}{stats}\idxfun{rootogram}{countreg}\idxfun{autoplot}{ggplot2}
+\idxfun{coord\_cartesian}{ggplot2}\idxfun{ggarange}{ggpubr}
 
 ```{r }
 #| label: fig-root_nb2_hurdle_zip
@@ -1065,6 +1136,7 @@ figure
 ```
 
 Finally the Negbin2 hurdle or zip model can be compared either to the Negbin2 Poisson model (from which the treatment of excess of 0 is added) or to the hurdle or zip Poisson model (from which the treatment of over-dispersion is added):
+\idxfun{AIC}{stats}
 
 ```{r}
 #| collapse: true
@@ -1073,6 +1145,7 @@ AIC(zip_nb2)
 ```
 
 The AIC of these two models are quite similar and much lower than the ones of their particular cases (`hdl_pois` and `nb2` for the first one `zip_pois` and `nb2` for the second one). Therefore, the conclusion of this analysis is that either the ZIP or the hurdle Negbin model should be favored. The rootograms for these two models are presented on @fig-root_exc0_nb.
+\idxfun{rootogram}{countreg}\idxfun{autoplot}{ggplot2}\idxfun{coord\_cartesian}{ggplot2}\idxfun{ggarrange}{ggpubr}
 
 ```{r }
 #| fig-cap: "Rootograms for the Negbin Hurdle and ZIP models"
@@ -1087,8 +1160,8 @@ figure <- ggpubr::ggarrange(fig_hdl, fig_zip,
                            ncol = 2, nrow = 1)
 figure
 ```
-
-
+\index[general]{Aikaike information criteria|)}
+\idxdata[)]{trips}{micsr}
 
 <!-- ## Panel data -->
 
@@ -1420,6 +1493,8 @@ figure
 
 ### Instrumental variable estimators for count data
 
+\index[general]{instrumental variable estimator!Poisson model|(}
+\index[general]{exponential linear conditional mean model|(}
 We've seen in the @sec-general_iv section that, denoting $W$ the matrix of instruments, the **IV** estimator is $\hat{\gamma} = (Z^\top P_W Z) ^ {-1} (Z^\top P_W y)$ (@eq-overidentified_iv) and the **GMM** estimator is  $\hat{\gamma} = \left(Z^\top W \hat{S}^{-1} W ^ \top Z\right)^{-1}Z^\top W \hat{S}^{-1} W ^ \top y$ (@eq-two_steps_iv), with
 $\hat{S} = \sum_n \hat{\epsilon}_n ^ 2 w_n w_n^\top$, $\hat{\epsilon}_n$ being the residual of a consistent estimation. 
 
@@ -1446,7 +1521,7 @@ $$
 $$
 
 Denoting $\hat{\epsilon}$ the residuals of this regression, the optimal weighting matrix 
-$\hat{S} = \sum_{n = 1} ^ N \hat{\epsilon}_n ^ 2 w_n w_n ^ \top$  matrix can be constructed and used in a second step to get the more efficient GMM estimator. 
+$\hat{S} = \sum_{n = 1} ^ N \hat{\epsilon}_n ^ 2 w_n w_n ^ \top$  matrix can be constructed and used in a second step to get the more efficient GMM estimator. \index[general]{general method of moments estimator!Poisson model}
 With additive errors, the only difference with the linear case is that
 the minimization process results in a set of non linear equations, so
 that some numerical methods should be used. 
@@ -1463,7 +1538,6 @@ Minimizing the quadratic form of these empirical moments with $(W^\top
 W) ^{-1}$ or $\left(\sum_{n=1} ^ N \hat{\tau}_n ^ 2 w_n
 w_n^\top\right) ^ {- 1}$ leads respectively to the IV and the GMM
 estimators.
-
 When the number of external instruments is greater that the number of
 endogenous variables, the Sargan test enables to test the hypothesis of exogeneity of all the instruments. The
 value of the objective function at convergence times the size of the
@@ -1471,9 +1545,14 @@ sample is, under the null hypothesis that all the instruments are
 exogenous a $\chi^2$ with a number of degrees of freedom equal to
 the difference between the number of instruments and the number of
 covariates.
+\index[general]{Sargan test}
+\index[general]{instrumental variable estimator!Poisson model|)}
+\index[general]{exponential linear conditional mean model|)}
+
 
 #### Cigarette smoking behaviour
 
+\idxdata[(]{cigmales}{micsr}
 @MULL:97\index[author]{Mullahy} estimates a demand function for cigarettes which depends on
 the stock of smoking habits. This variable is quite similar to a
 lagged dependent variable and is likely to be endogenous as the
@@ -1495,6 +1574,7 @@ state's restaurant smoking restrictions had been in place.
 
 The starting point is a basic count model, ie a Poisson model with a
 log link and robust standard errors:
+\idxfun{mutate}{dplyr}\idxfun{glm}{stats}\idxfun{quasipoisson}{stats}
 
 ```{r }
 #| message = FALSE
@@ -1510,6 +1590,7 @@ pois_cig <- glm(cigarettes ~ habit + price + restaurant + income +
 The IV and the GMM estimators are estimated using the `micsr::expreg`
 function. Its main argument is a two-part formula, where the first
 part indicates the covariates and the second part the instruments. The `method` argument can be set to `"iv"` or `"gmm"` to estimate respectively the instrumental variable and the general method of moments estimators and the `error` argument can be equal to `"mult"` (the default) or `"add"` to select respectively multiplicative or additive errors.
+\idxfun{expreg}{micsr}\idxfun{update}{stats}
 
 ```{r }
 iv_cig <- expreg(cigarettes ~ habit + price + restaurant + income + 
@@ -1532,16 +1613,20 @@ modelsummary::msummary(list(ML = pois_cig, IV = iv_cig, GMM = gmm_cig),
 ```
 
 Computing the Sargan test:
+\idxfun{sargan}{micsr}\idxfun{gaze}{micsr}
 
 ```{r }
 # collapse: true
 sargan(gmm_cig) %>% gaze
 ```
+\idxdata[)]{cigmales}{micsr}
 
 we conclude that the exogeneity of the instruments hypothesis is not rejected.
 
 ### Sample selection and endogenous switching for count data
 
+\index[general]{sample selection!Poisson model|(}
+\index[general]{endogenous switching!Poisson model|(}
 In two seminal papers, @HECK:76\index[author]{Heckman} and @HECK:79\index[author]{Heckman} considered the case where
 two variable are jointly determined, a binomial variable and an
 outcome continuous variable. For example, the continuous variable can
@@ -1579,6 +1664,9 @@ with $z_{n1}$), $\gamma_2$ is the corresponding set of unknown parameters and
 $\epsilon_n$ is a random normal deviate with 0 mean and a standard
 deviation equal to $\sigma$. $\epsilon$ and $\nu$ being potentially
 correlated, their joint distribution has to be considered:
+\index[general]{sample selection!Poisson model!maximum likelihood|(}
+\index[general]{endogenous switching!Poisson model!maximum likelihood|(}
+
 
 $$
 \begin{array}{rcl}
@@ -1675,7 +1763,7 @@ P(y_n \mid z_{n1}, z_{n2}) &=& \displaystyle\int_{-\infty} ^ {+\infty} \frac{e ^
 $$
 
 which can be approximated using Gauss-Hermite quadrature. Denoting
-$t_r$ the nodes and $\omega_r$ the weights:
+$t_r$ the nodes and $\omega_r$ the weights:\index[general]{gaussian quadrature}
 
 $$
 \begin{array}{rcl}
@@ -1702,6 +1790,13 @@ P(x_n = 0 \mid z_{n1}) = \int_{-\infty} ^ {+\infty}
 {-\frac{1}{2}\left(\frac{\epsilon}{\sigma}\right) ^ 2} d\epsilon
 $$
 
+\index[general]{sample selection!Poisson model!maximum likelihood|)}
+\index[general]{endogenous switching!Poisson model!maximum likelihood|)}
+
+\index[general]{sample selection!Poisson model!two-step estimator|(}
+\index[general]{endogenous switching!Poisson model!two-step estimator|(}
+\index[general]{two-step estimator!Poisson model|(}
+
 The ML estimator is computing intensive as the integral has no closed
 form. One alternative is to use non-linear least squares, by first
 computing the expectation of $y$. @TERZ:98\index[author]{Terza} showed that this expectation is:
@@ -1714,9 +1809,11 @@ for the endogenous switching case and:
 $$
 \mbox{E}(y_n\mid z_{n1}, z_{n2}, w_n = 1) = \exp\left(\gamma_2 ^\top z_{n2} + \ln \frac{\Phi(\gamma_1 ^\top z_{n1} + \theta)}{\Phi(\gamma_1 ^ \top z_{n1})}\right)
 $$
+\index[general]{non-linear least squares}
 for the sample selection case, where $\theta = \sigma\rho$.
 @GREE:01\index[author]{Greene} noted that, taking a first order Taylor series of $\ln
 \frac{\Phi(\gamma_1 ^\top z_{n1} + \theta)}{\Phi(\gamma_1 ^ \top z_{n1})}$
+\index[general]{Taylor series}
 around $\theta = 0$ gives: $\theta \phi(\gamma_1 ^ \top z_{n1}) /
 \Phi(\gamma_1 ^ \top z_{n1})$, which is the inverse mills ratio that is
 used in the linear case in order to correct the inconsistency due to
@@ -1730,7 +1827,7 @@ y_n - e^{\gamma_2 ^ \top z_{n2} + \ln
 ^ \top z_{n1})}}
 $$
 
-As it is customary for a two-steps estimator, the covariance
+As it is customary for a two-step estimator, the covariance
 matrix of the estimators should take into account the fact that
 $\gamma_1$ has been estimated in the first step. Moreover, only $\theta
 = \rho \sigma$ is estimated. To retrieve an estimator of $\sigma$,
@@ -1739,12 +1836,19 @@ estimated values of $\gamma_1$, $\gamma_2$ and $\theta$ and then to
 maximize it with respect to $\sigma$.^[These once again requires the use of
 Gauss-Hermite quadrature, but the problem is considerably simpler as
 the likelihood is maximized with respect with only one parameter.]
+\index[general]{sample selection!Poisson model!two-step estimator|)}
+\index[general]{endogenous switching!Poisson model!two-step estimator|)}
+\index[general]{two-step estimator!Poisson model|}
+\index[general]{sample selection!Poisson model|)}
+\index[general]{endogenous switching!Poisson model|)}
 
+
+\idxfun{escount}{micsr}
 The `micsr::escount` function estimates the endogenous switching and the
 sample selection model for count data. The first one is obtained by
 setting the `model` argument to `'es'` (the default) and the second
 one to `'ss'`. The estimation method is selected using the `method`
-argument, which can be either `"twosteps"` for the two-steps non-linear
+argument, which can be either `"twosteps"` for the two-step non-linear
 least squares model (the default) or `"ml"` for maximum
 likelihood. The model is described by a two-part formula, on the left and on the right side. On the left side, the outcome and the binomial responses are indicated. On the right side, the first part contains the covariates for the outcome equation and  the second part the covariates of the selection equation. Relevant only for the ML method, the
 `hessian` argument is a boolean: if `TRUE`, the covariance matrix of
@@ -1756,6 +1860,7 @@ Gauss-Hermite quadrature method.
 
 #### Physician advice and alcohol consumption
 
+\idxdata[(]{drinks}{micsr}
 @KENK:TERZ:01\index[author]{Kenkel}\index[author]{Terza} investigate the effect of physician's advice on alcohol
 consumption, the data set is called `drinks`. The outcome variable `drinks` is the number of drinks in
 the past two weeks and the selection variable `advice` is a dummy based
@@ -1777,7 +1882,7 @@ added.
 
 @tbl-drinksres presents the results of a Poisson
 model and of the endogenous switching model, estimated by the
-two-steps non-linear least squares and by the maximum likelihood estimators.^[The
+two-step non-linear least squares and by the maximum likelihood estimators.^[The
 coefficients of `marital`, `empstatus` and `region` are omitted to
 save place.]
 The coefficient of `advice` in the alcohol demand equation is positive
@@ -1786,6 +1891,7 @@ endogenous switching model shows that this positive coefficient is
 due to the positive correlation between the error terms of the two
 equations (the unobserved propensities to drink and to receive an
 advice from a physician are positively correlated).
+\idxfun{glm}{stats}\idxfun{escount}{micsr}\idxfun{update}{stats}
 
 ```{r }
 #| label: drinksest
@@ -1812,3 +1918,4 @@ modelsummary::msummary(list("Poisson" = kt_pois, "2 steps" = kt_2s, "ML" = kt_ml
          coef_omit = "region|marital|empstatus|age")
 ```
 
+\idxdata[)]{drinks}{micsr}

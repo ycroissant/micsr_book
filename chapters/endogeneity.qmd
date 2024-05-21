@@ -31,9 +31,10 @@ sample are set by the researcher. Unfortunately, most of the data used in microe
 
 ## Sources of endogeneity {#sec-source_endog}
 
-In economics, the problem of endogenous covariates happens mainly in three circumstances: error in variable, omitted variables and simultaneity.
+In economics, the problem of endogenous covariates happens mainly in three circumstances: errors in variables, omitted variables and simultaneity.
 
-### Error in variable
+### errors in variables
+\index[general]{errors in variables|(}
 
 Data used in economics, especially micro-data are prone to errors
 of measurement. This problem can affect either the response or some of
@@ -91,13 +92,16 @@ Therefore, the OLS estimator is biased and the term in bracket is the one minus 
 $\mid\hat{\beta}\mid < \beta$. This kind of bias is called an
 **attenuation bias** (the absolute value of the estimator is lower
 than the true value), which can be either a lower or an upper bias
-depending on the sign of $\beta$.
+depending on the sign of $\beta$.\index[general]{attenuation bias}\index[general]{bias!errors in variables}
 This bias clearly doesn't attenuate in large samples. As $N$ grows, the
 empirical variances/covariances converge to the population ones, and
 the estimator therefore converges to: $\mbox{plim} \;\hat{\beta} = \beta \left(1 - \sigma_\nu ^ 2 / \sigma_x ^ 2\right)$. For example, if the measurement error accounts for 20% of the total
 variance of $x$, $\hat{\beta}$ converges to 80% of the true parameter.
+\index[general]{errors in variables|)}
 
 ### Ommited variable bias
+\index[general]{ommited variable bias|(}
+\index[general]{bias!ommited variable|(}
 
 Suppose that the true model is: $y_n = \alpha + \beta_x x_n + \beta_z
 z_n + \epsilon_n$, where the conditional expectation of $\epsilon$
@@ -222,8 +226,13 @@ lm(log(wage) ~ educ + poly(experience, 2) + ability, sibling_educ) %>%
 
 The effect of one more year of education is now an increase of 8.7% of the wage (compared to 10% previously).
 \idxdata[)]{sibling\_educ}{micsr.data}
+\index[general]{ommited variable bias|)}
+\index[general]{bias!ommited variable|)}
 
-### Simultaneity
+### Simultaneity bias
+\index[general]{simultaneity bias|(}
+\index[general]{bias!simultaneity|(}
+\index[general]{system estimation!simultaneity bias|(}
 
 Often in economics, the phenomena of interest is not described by a
 single equation, but by a system of equations. Consider for example a
@@ -408,10 +417,17 @@ we no have $\frac{\delta_1}{\pi_1} = \frac{\delta_2}{\pi_2} =
 \beta_s$; there are two ratios of the reduced parameters that give the
 value of the slope of the supply curve, but it is very implausible that these two values are equal. On the contrary, there is no way to
 retrieve the slope of the demand curve from the reduced form
-parameters. Therefore, this **indirect least square** approach is of
+parameters. Therefore, this **indirect least squares** \index[general]{indirect least squares}
+approach is of
 limited interest. In the general case, as we have seen, some
 coefficients like $\beta_s$ in our example may be **over-identified**
-and some other like $\beta_d$ are **under-identified**.
+and some other like $\beta_d$ are **under-identified**.\index[general]{identification}
+
+\index[general]{simultaneity bias|)}
+\index[general]{system estimation!simultaneity bias|)}
+\index[general]{bias!simultaneity|)}
+
+\index[general]{instrumental variable estimator|(}
 
 ## The simple instrumental variable estimator {#sec-simple_iv}
 
@@ -428,6 +444,7 @@ instruments equals the number of endogenous covariates, ie the **just-identified
 
 ### Computation of the simple instrumental variable estimator
 
+\index[general]{instrumental variable estimator!just identified|(}
 Consider a simple linear regression: $y_n = \alpha + \beta  x_n + \epsilon_n$, with $\mbox{E}(\epsilon \mid x) \neq 0$. From @eq-normal_equation, the first order conditions for the minimization of the sum of square residuals can be written as:
 
 $$
@@ -442,7 +459,7 @@ x) = 0$, ie that the covariance between the residuals and the
 covariate is exactly 0 in the sample. This of course leads to a biased
 and inconsistent estimator if $\mbox{E}(\epsilon \mid x)\neq 0$. Now
 suppose that a variable $w$ exists, which is correlated with the
-covariate, but not with the error of the model. Such a variable has 
+covariate, but not with the error of the model (this latter hypothesis is called the **exclusion restriction**\index[general]{exclusion restriction}. Such a variable has 
 no direct effect on the response, but only an indirect effect due to
 its correlation with the covariate. Stated differently, this variable
 provides an exogenous source of variation of the covariate. As by
@@ -511,6 +528,9 @@ case, the loss of precision implied by the use of the IV estimator
 is low. On the contrary, if the correlation between $x$ and $w$ is
 low, the IV estimator will be very imprecisely estimated.
 
+\index[general]{two-stage least squares estimator|(}
+\index[general]{instrumental variable estimator!two-stage least squares|(}
+
 The IV estimator can also be obtained by first regressing $x$ on
 $w$ and then by regressing $y$ on the fitted values of the previous
 regression. Consider the linear model that relates the instrument to the covariate: $x_n = \gamma + \delta w_n + \nu_n$. We estimate this model by OLS and then we can express the fitted values ($\hat{x}$) as a function of $\hat{\delta}$: $\hat{x}_n - \bar{x} = \hat{\delta}(w_n - \bar{w})$.
@@ -538,6 +558,9 @@ by a linear transformation of $w$ which is as close as possible to
 $x$ and this is simply the fitted values of the regression of $x$ on
 $w$.
 
+\index[general]{two-stage least squares estimator|)}
+\index[general]{instrumental variable estimator!two-stage least squares|)}
+
 The extension of the case when there are $K > 1$ covariates and $K$
 instruments is straightforward. The two sets of variables $x$ and $w$
 can overlap because, if some of the covariates are exogenous, they
@@ -556,6 +579,8 @@ $$
 
 ### Small sample properties of the **IV** estimator {#sec-ssprop_iv}
 
+\index[general]{small sample properties!instrumental variable estimator|(}
+\index[general]{bias!instrumental variable estimator|(}
 Although it is consistent, the instrumental variable estimator isn't
 unbiased. Actually, it doesn't even have an expected value in the just
 identified case. This result can be easily shown starting with the
@@ -780,6 +805,9 @@ range (see @fig-dist_iv_zoom).
 dsties + coord_cartesian(xlim = c(-4, -3), ylim = c(0, 0.015))
 ```
 
+\index[general]{small sample properties!instrumental variable estimator|(}
+\index[general]{bias!instrumental variable estimator|(}
+
 ### An example
 
 \idxdata[(]{tracks\_side}{micsr.data}
@@ -909,7 +937,12 @@ $`r round(coef(lm_yw)[2], 2)` / `r round(coef(lm_xw)[2], 2)` =
 the IV estimator.
 \idxdata[)]{tracks\_side}{micsr.data}
 
+\index[general]{instrumental variable estimator!just identified|)}
+
 ### Wald estimator {#sec-wald_estimator}
+
+\index[general]{instrumental variable estimator!Wald estimator|(}
+\index[general]{Wald estimator|(}
 
 The Wald estimator is the special case of the instrumental variable
 estimator where the instrument $w$ is a binary variable and therefore
@@ -1062,7 +1095,7 @@ wald %>% print(n = 2)
 ```
 
 The income differentials are depicted in @fig-veterans; note the use of `geom_ribbon` to draw a confidence interval for the mean income difference.
-\idxfun{filter}{dplyr}\idxfun{aes}{ggplot2}\idxfun{geom\_ribbon}{ggplot2}\idxfun{geom\_hline}{ggplot2}\idxfun{geom\_smooth}{dplyr}\idxfun{facet\_grid}{ggplot2}
+\idxfun{filter}{dplyr}\idxfun{aes}{ggplot2}\idxfun{geom\_ribbon}{ggplot2}\idxfun{geom\_hline}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{facet\_grid}{ggplot2}
 
 ```{r }
 #| label: fig-veterans
@@ -1079,9 +1112,13 @@ wald %>%
 ```
 
 The income differential between veterans and non-veterans is substantial and persistent (about one thousand US $ of 1984) and is most of the time significant at the 5% level (except for men born in 1951).\idxdata[)]{vietnam}{micsr.data}
+\index[general]{instrumental variable estimator!Wald estimator|)}
+\index[general]{Wald estimator|)}
+
 
 ## The general IV estimator {#sec-general_iv}
 
+\index[general]{instrumental variable estimator!general|(}
 Consider now the general case. Among the covariates, some of them are
 endogenous and other not and should be included in the instrument
 list. Moreover, there may be more instruments than endogenous covariates.
@@ -1161,6 +1198,9 @@ $$
 \left(\frac{1}{N}Z^\top P_W Z\right) ^ {-1} =
 \sigma_\epsilon ^ 2\left(Z^\top P_W Z\right) ^ {-1}
 $$
+\index[general]{general method of moments estimator|(}
+\index[general]{instrumental variable estimator!general method of moments estimator|(}
+\index[general]{instrumental variable estimator!two stage|(}
 
 If the errors are heteroskedastic (or correlated), @eq-var_homosc is a
 biased estimator of the variance of the moments, as
@@ -1195,6 +1235,11 @@ $$
 
 To estimate this covariance matrix, on can use an estimation of $S$
 based on the residuals of the regression of the second step.
+
+\index[general]{general method of moments estimator|)}
+\index[general]{instrumental variable estimator!general method of moments estimator|)}
+\index[general]{instrumental variable estimator!two stage|)}
+\index[general]{instrumental variable estimator!general|)}
 
 ### An example: long term effects of slave trades
 
@@ -1346,7 +1391,7 @@ We then compute the cross-products of the instruments and the covariates
 \idxfun{crossprod}{base}\idxfun{resid}{stats}\idxfun{solve}{base}\idxfun{t}{base}\idxfun{drop}{base}\idxfun{cbind}{base}\idxfun{stder}{micsr}
 
 ```{r }
-#| label: two_stages_iv
+#| label: two_stage_iv
 #| collapse: true
 ZPW <- crossprod(Z, W)
 S <- crossprod(abs(resid(slaves_second)) * W)
@@ -1376,7 +1421,12 @@ ivreg::ivreg(log(gdp) ~ log(slavesarea) |
 The output of the `ivreg` function will be presented in @sec-test_sltr.
 \idxdata[)]{slave\_trade}{countries}
 
-## Three stages least squares {#sec-three_sls}
+\index[general]{instrumental variable estimator|)}
+
+## Three stage least squares {#sec-three_sls}
+\index[general]{three stage least squares|(}
+\index[general]{instrumental variable estimator!three stage least squares|(}
+\index[general]{system estimation!three stage least squares|(}
 
 Consider now the case where the model is defined by a system of
 equations, some of the covariates entering these equations being
@@ -1434,7 +1484,8 @@ $$
 = \Sigma \otimes I
 $$
 
-where $\otimes$ is the Kronecker product and $\Sigma$ is a symmetric
+where $\otimes$ is the Kronecker product\index[general]{Kronecker product}
+and $\Sigma$ is a symmetric
 matrix of dimensions $L$ for which the diagonal elements are the
 variance of the errors for a given equation and the off-diagonal
 elements the covariances between the pairs of errors of two different equations. 
@@ -1548,6 +1599,10 @@ computed the following way:
 1. Regress the transformed response on the fitted values of the
    previous regression.
 
+\index[general]{three stage least squares|)}
+\index[general]{instrumental variable estimator!three stage least squares|)}
+\index[general]{system estimation!three stage least squares|)}
+
 ### An example: the watermelon market
 
 \idxdata[(]{watermelon}{micsr.data}
@@ -1616,7 +1671,7 @@ eq_inst <- ~ w + n + yn + lp + pf + d1 + d2 + lpc + lpv
 ```
 We then extract the three matrices of covariates, the matrix of
 instruments and the matrix of responses:
-\idxfun{model.matrix}{stats}\idxfun{nrow}{stats}\idxfun{select}{dplyr}\idxfun{as.matrix}{base}
+\idxfun{model.matrix}{stats}\idxfun{nrow}{base}\idxfun{select}{dplyr}\idxfun{as.matrix}{base}
 
 ```{r }
 #| label: model_matrices_watermelon
@@ -1727,7 +1782,9 @@ are highly significant. The estimated price and income elasticities
 are $1 / `r round(d_q, 2)` = `r round(1 / d_q, 2)`$ and $- `r round(d_y, 2)` / `r round(d_q, 2)` = `r round(- d_y / d_q, 2)`$.
 \idxdata[)]{watermelon}{micsr.data}
 
-## Fixed effects models {#sec-fixed_effects}
+## Fixed effects model {#sec-fixed_effects}
+\index[general]{fixed effects model|(}
+\index[general]{panel data!fixed effects model|(}
 
 In @sec-error_component, we developed the error component model for panel or pseudo-panel data sets. Remind that when we have several observations ($t$) for the same entities ($n$), the simple linear model can be written:
 
@@ -1744,7 +1801,6 @@ response that removes the individual effect. This is called the **fixed
 effect** estimator. 
 
 ### Computation of the fixed effect estimator
-
 
 The linear model: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$ can be written in matrix form as:
 
@@ -1834,7 +1890,10 @@ $$
 y = X \beta + D \eta + \nu
 $$
 Note that this model doesn't contain an intercept: as $\eta$ are considered as parameters to be estimated, with an intercept $\alpha$, only $N$ parameters like $\alpha + \eta_n$ can be estimated and therefore, $\alpha$ can safely be set to 0.
-$D = j_T \otimes I_N$ is a $NT\times N$ matrix where each column contains a dummy variable for one individual. The **least squares dummy variable** estimator (**LSDV** in short) consists on estimating by least squares $\beta$ and $\eta$. Instead of estimating the $N$ $\eta$ parameters, it is simpler and more efficient to use the Frisch-Waugh theorem: first $X$ and $y$ are regressed on $D$, then the residuals of the first regression of $y$ are regressed on those of $X$.
+$D = j_T \otimes I_N$ is a $NT\times N$ matrix where each column contains a dummy variable for one individual. The **least squares dummy variable** estimator (**LSDV** in short) 
+\index[general]{panel data!least squares dummy variable}
+\index[general]{least squares dummy variable estimator}
+consists on estimating by least squares $\beta$ and $\eta$. Instead of estimating the $N$ $\eta$ parameters, it is simpler and more efficient to use the Frisch-Waugh theorem: first $X$ and $y$ are regressed on $D$, then the residuals of the first regression of $y$ are regressed on those of $X$.
 
 The OLS estimate of a variable $z$ on $D$ is: $\hat{\delta} = (D ^ \top D) ^ {-1} D^\top z$. But $D^\top D =  T I$, so that $(D ^ \top D) ^ {-1} = I / T$. Moreover:
 
@@ -1855,7 +1914,8 @@ y_{nt} - \bar{y}_{n.} = \beta ^ \top (x_{nt} - \bar{x}_{n.}) + (\nu_{nt} - \bar{
 $$
 
 Therefore, if $x$ is correlated with $\eta$, but not with $\nu$, the OLS estimator of this model is consistent because the error doesn't contain $\eta$ anymore and is therefore uncorrelated with $x$. This model is called the **fixed effects** model and also the **within** model in the panel data literature. With a single regressor, the estimator of the unique slope is:
-
+\index[general]{panel data!within estimator}
+\index[general]{within estimator}
 $$
 \hat{\beta} = \frac{\sum_{n=1} ^ N \sum_{t = 1} ^ T (y_{nt} - \bar{y}_{n.})(x_{nt} - \bar{x}_{n.})}
 {\sum_{n=1} ^ N \sum_{t = 1} ^ T (x_{nt} - \bar{x}_{n.}) ^ 2}
@@ -1878,6 +1938,8 @@ y_{n1} - y_{n2} = \beta(x_{n1} -x_{n2}) + \nu_{n1} - \nu_{n2}
 $$
 
 The least square estimator of the slope is the following **first-difference** estimator:
+\index[general]{first-difference estimator}
+\index[general]{panel data!first-difference estimator}
 
 $$
 \hat{\beta} = \frac{\sum_n(y_{n1} - y_{n2})(x_{n1} - x_{n2})}{\sum_n(x_{n1} - x_{n2})}
@@ -1891,6 +1953,9 @@ But $z_{n1} - \bar{z}_{n.} = z_{n1} - \frac{1}{2}(z_{n1} + z_{n2}) = \frac{1}{2}
 
 - the within estimator is more efficient, as it uses all the observations; on the contrary, while performing the first difference, the first observation for every individual is lost,
 - the error of the within estimator is $\nu_{nt} - \bar{\nu}_{n.}$ and therefore contains the whole series of $\nu_n$; on the contrary, the error of the first-difference is $\nu_{nt} - \nu_{n(t-1)}$ and therefore contains the values of $\nu_n$ only for the current and the for previous period.
+
+\index[general]{fixed effects model|)}
+\index[general]{panel data!fixed effects model|)}
 
 ### Application: Mincer earning function using a sample of twins
 
@@ -2022,6 +2087,7 @@ qw %>% fixef(type = "dmean") %>% summary %>% head(3)
 ## Specification tests {#sec-tests_endog}
 
 ### Hausman test
+\index[general]{Hausman test|(} 
 
 Models estimated in this chapter, either using the IV or the fixed effects
 estimator, treat the endogeneity of some covariates, either by using
@@ -2073,6 +2139,7 @@ test should be performed on the subset of common parameters. For tests
 involving OLS and IV estimator, the test can also be performed
 only on the subset of parameters associated with covariates that are
 suspected to be endogenous.
+\index[general]{Hausman test|)} 
 
 ### Weak instruments
 
@@ -2096,8 +2163,12 @@ the fit for the regression of the endogenous covariates on the set of the exogen
 A rule of thumb often used is that the F statistic should be at least
 equal to 10 to unsure that the maximal bias of the IV estimator is no
 more than 10% that of OLS. A less strict rule is $F > 5$.
+\index[general]{weak instruments test}
+\index[general]{F statistic!weak instruments}
+
 
 ### Sargan test
+\index[general]{Sargan test}
 
 The IV can be obtained as a moment estimator, using moment
 conditions $m = W ^ \top \epsilon / N$. If the instruments are relevant,
@@ -2110,6 +2181,7 @@ implies that $m$ is close enough to a vector of 0 or that $S$ is
 sufficiently small.
 
 ### Individual effects
+\index[general]{F statistic!individual effects}
 
 In the fixed effect model, the absence of individual effects can be
 tested using a standard $F$ test that all the estimated individual
