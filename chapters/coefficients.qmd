@@ -7,16 +7,16 @@ prtcoef <- function(x, id, digits = 3) unname(round(coef(x)[id], digits))
 
 # Interpretation of the Coefficients {#sec-interpretation_chapter}
 
-In the simplest case, a regression with a real numerical response and a real numeric covariate: $y_n = \alpha + \beta x_n + \epsilon_n$, the interpretation of $\beta$ is simply the constant marginal effect of $x_n$ on $y_n$ or, mathematically, the derivative of $y$ with $x$. However, linear models are much richer than this simple one, as some covariates may be:
+In the simplest model, a regression with a real numerical response and a real numeric covariate: $y_n = \alpha + \beta x_n + \epsilon_n$, the interpretation of $\beta$ is simply the constant marginal effect of $x_n$ on $y_n$ or, mathematically, the derivative of $y$ with $x$. However, linear models are much richer than this simple one, as some covariates may be:
 
-- integer and not real (number of children for example),
-- dummy variables (0 for a male and 1 for a female for example),
-- categorical variables (marital status, with modalities married, single, divorced, widower for example),
+- integer and not real (eg the number of children),
+- dummy variables (eg 0 for a male and 1 for a female),
+- categorical variables (eg marital status, with modalities married, single, divorced, widower),
 - introduced in the regression after a transformation, for example by taking the logarithm or the square root (this can be also true for the response),
 - introduced as a polynomial, ie for example, not only $x$ is introduced, but also its square,
 - jointly introduced with an interaction, ie not only $x_1$ and $x_2$ are introduced, but also their product. 
 
-In all these cases, $\beta$ is no longer the derivative of $y$ with $x$ and special care is required in the interpretation of the estimated slopes. Throughout this chapter, we'll use the data set of @COST:MITT:MCCL:09\index[author]{Costanigro}\index[author]{Mittelhammer}\index[author]{McCluskey} (called `wine`) who estimated a hedonic price function for wines.
+In all these cases, $\beta$ is no longer the derivative of $y$ with $x$ and special care is required in the interpretation of the estimated coefficients. Throughout this chapter, we'll use the data set of @COST:MITT:MCCL:09\index[author]{Costanigro}\index[author]{Mittelhammer}\index[author]{McCluskey} (called `wine`) who estimate a hedonic price function for wines.
 \idxdata[(]{wine}{micsr.data}
 
 ```{r }
@@ -40,7 +40,9 @@ We divide the score by 100 so that the maximum attainable score is 1:
 wine <- wine %>% mutate(score = score / 100)
 ```
 
-## Numerical covariate
+@sec-numerical_covariate deals with numerical covariates and @sec-categorical_covariates with categorical covariates. @sec-several_covariates introduces interactions between several covariates. Finally, @sec-marginal_effects presents useful tools to compute marginal effects.
+
+## Numerical covariate {#sec-numerical_covariate}
 
 We first consider the production as the unique covariate. High quality wines are often produced in small areas, with a low yield, we therefore expect a negative relationship between price and production. We consider two measures of production and price:
 
@@ -81,7 +83,7 @@ $\epsilon_n$. The intercept indicates the expected value of a bottle of wine whe
 tibble(y = wine2$y, heps = resid(nn_yx), hy = fitted(nn_yx))
 ```
 
-or more simply using the `broom::augment` function, which add to the model frame of a fitted object different columns, including the residuals and the fitted values:
+or more simply using the `broom::augment` function, which adds to the model frame of a fitted object different columns, including the residuals (`.resid`) and the fitted values (`.fitted`):
 \idxfun{augment}{broom}
 
 ```{r}
@@ -115,7 +117,7 @@ $$
 y_n = \alpha + \beta_x (w_n / 0.009) + \epsilon_n = \alpha + (\beta_x / 0.009) w_n + \epsilon_n =
 \alpha + \beta_w w_n + \epsilon_n
 $$
-Compared to the reference model, the three elements of the model are still measured in $2000 and it is particularly the case for $\beta_w w_n$. As the production is now measured in m^3^, it as been multiplied by 0.009 and therefore, the slope is divided by the same amount. The intercept, the predictions and the residuals still have the same unit of measurement ($2000) and therefore the same values.
+Compared to the reference model, the three elements of the model are still measured in $2000 and it is particularly the case for $\beta_w w_n$. As the production is now measured in m^3^, it has been multiplied by 0.009 and therefore, the slope is divided by the same amount. The intercept, the predictions and the residuals still have the same unit of measurement ($2000) and therefore the same values.
 \idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r }
@@ -325,7 +327,7 @@ rbind(ll_yx = coef(ll_yx), ll_yw = coef(ll_yw),
       ll_qx = coef(ll_qx), ll_qw = coef(ll_qw))
 ```
 
-### Integer covariate
+### Integer covariate {#sec-integer_covariate}
 
 Consider the same model: $y_n = \alpha + \beta_x x_n + \epsilon_n$, but $x_n$ is now an integer. In the `wine` data set, `age` is the age of the wine in years, from 1 to 6. 
 \idxfun{lm}{stats}\idxfun{coef}{stats}
@@ -348,7 +350,7 @@ $$\left(\alpha + \beta_x (x_n + 1)\right) - \left(\alpha + \beta_x x_n\right) = 
 
 Therefore, $\beta_x$ is not only the derivative, but it is also the variation of $y$ caused by an increase of one unit of $x$. In our example, when the age of the wine increases by one year, its expected price increases by `r prtcoef(cov_count, 2, 1)`.
 
-## Categorical covariate
+## Categorical covariate {#sec-categorical_covariates}
 
 A categorical variable is a variable that defines a set of modalities, each observations belonging to one modality and only one. The preferred way to deal with categorical variables with **R** is to use a variable type that is called **factor**, the modalities being called **levels**. Factors have at least two levels. A categorical variable with two levels is a **dichotomic** variable and the factor can be replaced by a dummy variable (a numerical variable for which the only two values are 0 and 1). For example, sex can be stored as a factor with levels male and female, or as a dummy variable with for example 1 for females and 0 for males. When the number of levels is greater than 2, the variable is **polytomic** and it is advisable to store the variable as a factor. Base **R** proposed several functions to deal with factors, but we'll use the **forcats** packages which is part of the **tidyverse**.
 
@@ -365,8 +367,8 @@ wine <- wine %>% mutate(vyd = ifelse(vineyard == "yes", 1L, 0L))
 
 #### Response in level
 
-We start with computing the average price for the two categories:
-\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}\idxfun{mean}{base}
+We first compute the average price for the two categories:
+\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}
 
 ```{r }
 #| label: average_price_modalities
@@ -391,7 +393,7 @@ lm(price ~ vyd, wine) %>% coef
 lm(price ~ vineyard, wine) %>% coef
 ```
 
-The intercept is the average price for wines with no vineyard indication and $\beta_x$ is the price increase caused by vineyard indication. Note also that $\alpha + \beta_x$ is the average price for wines with a vineyard indication. Identical results are obtained using either `vyd` and `vineyard`. The difference is that in the first case, `vyd` is directly used in the regression. In the second case, the factor `vineyard` is replaced, in the regression by a dummy variable called `vineyardyes` equal to 1 when `vineyard` equals `"yes"`. 
+The intercept is the average price for wines with no vineyard indication and $\beta_x$ is the price increase caused by vineyard indication. Note also that $\alpha + \beta_x$ is the average price for wines with a vineyard indication. Identical results are obtained using either `vyd` and `vineyard`. The difference is that in the first case, `vyd` is directly used in the regression. In the second case, the factor `vineyard` is replaced in the regression by a dummy variable called `vineyardyes` equal to 1 when `vineyard` equals `"yes"`. 
 
 Removing the intercept, we get:
 \idxfun{lm}{stats}\idxfun{coef}{stats}
@@ -464,7 +466,7 @@ wine %>% pull(reg) %>% levels
 #### Response in level
 
 We first compute the average price for these three modalities:
-\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}\idxfun{mean}{base}
+\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}
 
 ```{r}
 #| level: count_modalities_polytomic
@@ -479,10 +481,10 @@ Consider a linear model, without and with an intercept:
 ```{r }
 #| level: polytomic_with_without_intercept
 #| collapse: true
-lin_2 <- lm(price ~ reg - 1, wine)
-lin_3 <- lm(price ~ reg, wine)
+lin_1 <- lm(price ~ reg - 1, wine)
+lin_2 <- lm(price ~ reg, wine)
+lin_1 %>% coef
 lin_2 %>% coef
-lin_3 %>% coef
 ```
 
 Without an intercept, three dummy variables are created and introduced in the regression. With an intercept, only two dummy variables are introduced. We have noted previously that the three levels are `napavalley`, `sonoma` and `Other`. The name of the dummy variables are obtained by merging the name of the variable `reg` and the name of the level. Note that when an intercept is introduced, the dummy variable corresponding to the first level (here `napavalley`) is omitted. 
@@ -517,7 +519,7 @@ unname(coef(lin_2b)[1] + coef(lin_2b)[3])
 #### Response in log
 
 We first compute the average of the *log* prices for the three regions:
-\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}\idxfun{mean}{base}
+\idxfun{group\_by}{dplyr}\idxfun{summarise}{dplyr}
 
 ```{r }
 #| label: average_log_prices
@@ -561,7 +563,7 @@ where $\tau_{s}$ is the relative price difference between Sonoma and "other regi
 `r round(exp(coef(log_2)[2]), 2) -1` 
 (or `r 100 * round(exp(coef(log_2)[2]), 2) - 100`%). The approximation in this example is quite bad, because the value of $\hat{\beta}^s$ is high.
 
-## Several covariates
+## Several covariates {#sec-several_covariates}
 
 Most of the time, the model of interest includes several numerical and/or categorical covariates. A first step is to introduce these covariates separately, so that their linear effect is analyzed. But it is also sometimes interesting to introduce the product of two covariates in the regression. This enables to analyze the interaction effect of two covariates, ie the fact that the effect of $x_1$ on $y$ depends on the value of $x_2$.
 
@@ -670,8 +672,8 @@ z %>% coef
 ```
 
 This model is now of the form: $y_n = \alpha + \beta_1 x_{n1} + \beta_2 x_{n2} + \beta_{12} x_{n1}x_{n2}\epsilon_n$ and the marginal effect for $x_1$ is now $\beta_1 + \beta_{12} x_{n2}$. This model has as special case the additive model ($\beta_{12} = 0$) and this hypothesis can be tested, which was not the case for the model with only the interaction between the two covariates. The marginal effect of one more m^3^ of production is (denoting $x_2$ the score): $`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` x_2$ and is therefore a decreasing function of the score. Note that the coefficient of `prodcubm` ($`r prtcoef(z, 2, 3)`$) can be misleading. It indicates that, for a wine with a score equal to 0, the price increase with the production. But actually, such low scores are not observed, the lowest in the sample being `r round(min(wine$score), 2)` and for this value, the marginal effect of production is 
-$`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` \times `r round(min(wine$score), 2)` = `r round(prtcoef(z, 2, 9) + prtcoef(z, 4, 9) * min(wine$score), 2)`$. The marginal effect of production has the expected negative sign for $x_2 > `r prtcoef(z, 2, 3)` / `r abs(prtcoef(z, 4, 3))` = `r -round(prtcoef(z, 2, 9) / prtcoef(z, 4, 9), 3)`$, which is the case for 9560 wines out of 9580 in the sample. Therefore, the model predicts a negative marginal effect of the production on the price of a bottle for almost the sample, and this negative effect increases with the score obtained by the wine. We can easily test the hypothesis that the additive model is relevant using the value of the Student statistic for the interaction term:
-\idxfun{summary}{base}\idxfun{coef}{stats}
+$`r prtcoef(z, 2, 3)` - `r abs(prtcoef(z, 4, 3))` \times `r round(min(wine$score), 2)` = `r round(prtcoef(z, 2, 9) + prtcoef(z, 4, 9) * min(wine$score), 2)`$. The marginal effect of production has the expected negative sign for $x_2 > `r prtcoef(z, 2, 3)` / `r abs(prtcoef(z, 4, 3))` = `r -round(prtcoef(z, 2, 9) / prtcoef(z, 4, 9), 3)`$, which is the case for 9560 wines out of 9580 in the sample. Therefore, the model predicts a negative marginal effect of the production on the price of a bottle for almost the whole sample, and this negative effect increases with the score obtained by the wine. We can easily test the hypothesis that the additive model is relevant using the value of the Student statistic for the interaction term:
+\idxfun{coef}{stats}
 
 
 ```{r}
@@ -681,7 +683,7 @@ coef(summary(z))[4, ]
 ```
 
 which indicates that the interaction term is highly significant. For a model with the production and the age as covariates, we have:
-\idxfun{lm}{stats}\idxfun{coef}{stats}\idxfun{summary}{base}
+\idxfun{lm}{stats}\idxfun{coef}{stats}
 
 ```{r}
 #| label: wald_test_mult_effect_age
@@ -695,12 +697,12 @@ and this time, the interaction term is not significant and the additive model sh
 
 ### Polynomials
 
-Until now, we have introduced the numerical covariates either in level or in log. In both case, a unique coefficient $\hat{\beta}$ is estimated and the marginal effect of the covariate on the response is necessarily monotonic, which is not in practice always a relevant feature. For example, in a very famous article, @KUZN:55 \index[author]{Kuznets}analyzed the relation between economic development and inequalities and his analyze has been formalized by @ROBI:76\index[author]{Robinson}. A dual economy is considered, with a rural and urban sector. In the rural sector, income is low and exhibits little variations as, in the urban sector, income is high and exhibits high variation. Denoting $\mu_r$ and $\mu_u$ the mean log-income in the rural and the urban sector and $\sigma_r ^ 2$ and $\sigma_u ^ 2$ the variance of log-income, it is therefore assumed that $\mu_r < \mu_u$ and $\sigma_r ^ 2 < \sigma_u ^ 2$. $x$ is the share of the urban sector and, during the process of development, $x$ increases. The mean log-income for the whole economy is:
+Until now, we have introduced the numerical covariates either in level or in log. In both case, a unique coefficient $\hat{\beta}$ is estimated and the marginal effect of the covariate on the response is necessarily monotonic, which is not in practice always a relevant feature. For example, in a very famous article, @KUZN:55 \index[author]{Kuznets}analyzed the relation between economic development and inequalities and his analyze has been formalized by @ROBI:76\index[author]{Robinson}. A dual economy is considered, with a rural and a urban sector. In the rural sector, income is low and exhibits little variations as, in the urban sector, income is high and exhibits high variation. Denoting $\mu_r$ and $\mu_u$ the mean log-income in the rural and the urban sector and $\sigma_r ^ 2$ and $\sigma_u ^ 2$ the variance of log-income, it is therefore assumed that $\mu_r < \mu_u$ and $\sigma_r ^ 2 < \sigma_u ^ 2$. $x$ is the share of the urban sector and, during the process of development, $x$ increases. The mean log-income for the whole economy is:
 $$
 \mu = (1 - x) \mu_r + x \mu_u = \mu_r + x (\mu_u - \mu_r)
 $$ {\#eq-mean_logincome}
 
-As $\mu_u > \mu_r$, mean log-income increases during the process of development. To get the variance of log-income for the whole economy, which is a measure of inequality, we apply the rule of the variance:
+As $\mu_u > \mu_r$, mean log-income increases during the process of development. To get the variance of log-income for the whole economy, which is a measure of inequality, we apply the variance decomposition formula
 <!-- !!! rule of the variance ? -->
 $$
 \sigma^2 = (1 - x) \sigma_r ^ 2 + x \sigma_u ^ 2 + (1-x)(\mu_r - \mu) ^ 2 + x(\mu_u - \mu) ^ 2
@@ -711,7 +713,7 @@ Replacing $\mu$ by its expression in @eq-mean_logincome and denoting $\Delta_\mu
 $$
 \sigma^2 = \sigma_r ^ 2 +  (\Delta_{\sigma^2} + \Delta_\mu^2) x - \Delta_\mu ^ 2 x ^ 2
 $$
-Therefore, the overall variance of log-income is the equation of a parabola with a positive first order term and a negative second order term. Graphically, the relation between the share of the modern sector and the overall variance of log-income is inverted U-shaped. From @eq-mean_logincome, the mean of log income is positively correlated with the share of the urban sector. The relation between the variance and the mean of log-income is therefore also inverted U-shaped, and is called in the economic literature the **Kuznets curve**. We use the `kuznets` data set used by @ANAN:KANB:93:\index[author]{Anand}\index[author]{Kambur}
+Therefore, the overall variance of log-income is the equation of a parabola with a positive first order term and a negative second order term. Graphically, the relation between the share of the modern sector and the overall variance of log-income is inverted U-shaped. From @eq-mean_logincome, the mean of log income is positively correlated with the share of the urban sector. The relation between the variance and the mean of log-income is therefore also inverted U-shaped, and is called in the economic literature the **Kuznets curve**. We use the `kuznets` data set, used by @ANAN:KANB:93:\index[author]{Anand}\index[author]{Kambur}
 \idxdata[(]{kuznets}{micsr.data}
 
 ```{r}
@@ -758,7 +760,7 @@ crossprod(lgnp3)
 apply(lgnp3, 2, mean)
 ```
 
-By default, orthogonal polynomials are computed, ie polynomials for which all the inner products of the different terms are 0. Moreover, all the terms have a zero mean and a unit variance. "Raw" polynomials can be computed by setting the `raw` argument to `TRUE`. Using raw or orthogonal polynomials of course gives different coefficients, but the same fitted values and residuals. The `poly` function can be used inside a formula, so that the Kuznets model can be estimated using:
+By default, orthogonal polynomials are computed, ie polynomials for which all the inner products of the different terms are 0. Moreover, all the terms have a zero mean and a unit variance. "Raw" polynomials can be computed by setting the `raw` argument to `TRUE`. Using raw or orthogonal polynomials gives of course different coefficients, but the same fitted values and residuals. The `poly` function can be used inside a formula, so that the Kuznets model can be estimated using:
 \idxfun{lm}{stats}\idxfun{poly}{stats}\idxfun{coef}{stats}\idxfun{unname}{base}
 
 ```{r}
@@ -770,7 +772,21 @@ kc %>% coef %>% unname
 
 The results validate the Kuznets hypothesis, ie per capital income have first a positive, and then a negative effect on inequality. Denoting $\beta_1$ and $\beta_2$ the coefficients of log-income and its square, the summit of the curve is given by $\ln \mbox{gnp} = -\beta_1 / (2 \beta_2) = `r round(-coef(kc)[2] / coef(kc)[3] / 2, 2)`$, that corresponds to a per capita gnp equal to `r round(exp(-coef(kc)[2] / coef(kc)[3] / 2))`, which is very close to the median per capita income in the sample.
 
-## Marginal effects
+Using orthogonal polynomials, the covariance matrix of the estimators is now diagonal, but we get the same residuals and the same fitted values as previously:
+
+```{r}
+#| collapse: true
+kcp <- lm(varlog ~ poly(lgnp, 2), kuznets)
+resid(kc) %>% head
+resid(kcp) %>% head
+```
+
+```{r}
+vcov(kcp)
+```
+
+
+## Marginal effects {#sec-marginal_effects}
 
 \index[general]{marginal effects|(}
 Until now, we have interpreted the coefficients in a linear model. However, except in the case where the covariate is in level, the coefficients are different from the marginal effects. For example, in a model with:
@@ -778,7 +794,7 @@ Until now, we have interpreted the coefficients in a linear model. However, exce
 - the covariate in log: $y_n = \alpha + \beta \ln x + \epsilon_n$, the marginal effect is $d y_n / d x_n = \beta / x_n$,
 - the covariate introduced as a second degree polynomial: $y_n = \alpha + \beta_1 x + \beta_2 x ^ 2$, the marginal effect is $d y_n / dx_n = \beta_1 + 2 \beta_2 x$.
 
-Therefore the marginal effect of $x$ on $y$ depends on the value of $x$ and is therefore different from one observation to another. Moreover, the standard deviation of the marginal effect will also depends on the value of $x$. 
+Therefore the marginal effect of $x$ on $y$ depends on the value of $x$ and is therefore different from one observation to another. Moreover, the standard error of the marginal effect will also depends on the value of $x$. 
 There are several **R** packages which enables the automatic computation of marginal effects. We'll present in this section the **marginaleffects** package [see @AREL:23]\index[author]{Arel-Bundock} which provides a very rich set of analytical and graphical tools to compute and analyze marginal effects.
 
 ### Computation of the marginal effects with one covariate
@@ -804,7 +820,7 @@ kc <- lm(varlog ~ poly(log(gnp), 2, raw = TRUE), kuznets)
 kc %>% coef %>% unname
 ```
 
-Applying the preceding formulas, we compute the marginal effect and its standard deviation for each observation:
+Applying the preceding formulas, we compute the marginal effect and its standard error for each observation:
 \idxfun{coef}{stats}\idxfun{vcov}{stats}\idxfun{head}{utils}
 
 ```{r}
@@ -818,7 +834,7 @@ mekc <- kuznets %>%
 mekc %>% head(3)
 ```
 
-The **marginaleffects** package provides the `slopes` function to compute the marginal effects and their standard deviation for all the observations in the sample. It as a `variables` argument that is a character vector containing the variables for which the marginal effect has to be computed. It is unnecessary here as we have only one covariate:^[Note the use of `as_tibble`: objects returned by `slopes` are data frames with further attributes and don't print nicely in a book.]
+The **marginaleffects** package provides the `slopes` function to compute the marginal effects and their standard error for all the observations in the sample. It as a `variables` argument that is a character vector containing the variables for which the marginal effect has to be computed. It is unnecessary here as we have only one covariate:^[Note the use of `as_tibble`: objects returned by `slopes` are data frames with further attributes and don't print nicely in a book.]
 \idxfun{slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}
 
 ```{r}
@@ -847,7 +863,7 @@ kc2 %>% slopes %>% as_tibble
 
 The covariate is now `lgnp` and the marginal effect is no longer the effect of an increase of 1$ of per capita on inequality, but the effect of a doubling of income.
 
-The computation of the individual marginal effects results in a very large output, that is as such difficult to interpret. It is therefore customary to provide a unique value that summarize the marginal effect of the covariate on the response for the whole sample. The preferred statistic is the **average marginal effects** (**AME** in short). It is simply the arithmetic mean of the individual effects. It can be obtained either using the `avg_slopes` function or applying the `summary` method to the object returned by `slope`:
+The computation of the individual marginal effects results in a very large output, that is as such difficult to interpret. It is therefore customary to provide a unique value that summarizes the marginal effect of the covariate on the response for the whole sample. The preferred statistic is the **average marginal effects** (**AME** in short). It is simply the arithmetic mean of the individual effects. It can be obtained either using the `avg_slopes` function or applying the `summary` method to the object returned by `slope`:
 \idxfun{slopes}{marginaleffects}\idxfun{avg\_slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}
 \index[general]{marginal effects!average marginal effects}
 
@@ -861,7 +877,7 @@ kc %>% avg_slopes %>% as_tibble
 
 Note that the effect of `gnp` on inequality is not significant on average. This is hardly surprising as the effect is positive for about half of the sample and negative for the other half.
 An other popular choice to summarize marginal effects is the **marginal effect at the mean**. It consists on computing the marginal effect for a virtual observation for which all the covariates are set to their average in the sample. We get for our Kuznets curve:
-\idxfun{tibble}{tibble}\idxfun{mean}{base}\idxfun{transmute}{dplyr}
+\idxfun{tibble}{tibble}\idxfun{transmute}{dplyr}
 \index[general]{marginal effects!at the mean}
 
 ```{r}
@@ -882,7 +898,7 @@ The effect is now negative and almost significant at the 5% level. This can be e
 ### General computation of marginal effects
 
 Consider now a model with several covariates, some being numerical, other categorical and with interactions. Using the `wine` data set, we fit the following model:
-\idxfun{mutate}{dplyr}\idxfun{lm}{stats}\idxfun{summary}{base}\idxfun{coef}{stats}
+\idxfun{mutate}{dplyr}\idxfun{lm}{stats}\idxfun{coef}{stats}
 \idxdata[(]{wine}{micsr.data}
 
 
@@ -915,7 +931,7 @@ u_slps %>% filter(rowid == 2) %>% as_tibble %>% select(1:6)
 ```
 
 <!-- !!! expliquer tidy -->
-The term of marginal effects is actually relevant only for numerical variables. The `contrast` column indicates the kind of effect that is compute. It is `dY/dX` (a derivative) for the two numerical covariates `lprobcubm` and `score`. For factors, the term is a contrast, ie the difference between one level (`sonoma` and `nappavaley` for `reg`) and the reference level (`Other`). This is also the case for the dummy variable `vid`, for which the effect is the difference of prediction for `vid` equal to 1 and 0^[Actually in a linear model, this difference is equal to the derivative.].
+The term of marginal effects is actually relevant only for numerical variables. The `contrast` column indicates the kind of effect that is computed. It is `dY/dX` (a derivative) for the two numerical covariates `lprobcubm` and `score`. For factors, the term is a contrast, ie the difference between one level (`sonoma` and `nappavaley` for `reg`) and the reference level (`Other`). This is also the case for the dummy variable `vid`, for which the effect is the difference of prediction for `vid` equal to 1 and 0.^[Actually in a linear model, this difference is equal to the derivative, see @sec-integer_covariate.]
 The `variables` argument can be used to compute the marginal effects only for a subset of covariate:
 \idxfun{slopes}{marginaleffects}\idxfun{as\_tibble}{tibble}\idxfun{filter}{dplyr}\idxfun{select}{dplyr}
 

@@ -23,7 +23,7 @@ In real settings, we have a sample that contains:
 - a subsample of individuals who received the treatment ($D=1$) called the **treatment group** (denoted $T$),
 - a subsample of individuals who didn't receive the treatment ($D=0$) called the **control group** (denoted $C$).
 
-and an alternative estimator is obtained using the difference between the mean values of the outcome in the treatment and the control group:
+and an alternative estimator is obtained using the difference between the mean values of the outcome in the treatment and in the control group:
 
 $$
 \frac{\sum_{n \in T} y_n}{N_{T}} - \frac{\sum_{n \in C} y_n}{N_{C}}
@@ -54,7 +54,7 @@ survey was conducted in the 31 villages. The two outcomes of interest
 are the enrollment status of children between the ages of 6 and 11 and the score obtained to a short test covering math and language skills.
   
 The first step of the analysis consists on checking that the
-observable characteristics are similar in the treatment and the
+observable characteristics are similar in the treatment and in the
 control group. For numeric variable, this can be performed using a t
 test of equal means. Assume that $x$ is drawn from a normal distribution, with potentially a different mean for the treatment and for the control group, but the same variance $\sigma_x ^ 2$. Then, $\bar{x}_T = \sum_{n\in T} x_n / N_T$ and $\bar{x}_C = \sum_{n\in C} x_n / N_C$ are normal variables with means equal to $\mu_T$ and $\mu_C$ and a variance equal respectively to $\sigma_x ^ 2 / N_T$ and $\sigma_x ^ 2 / N_C$. Moreover, the difference of the means is also a normal variable with mean $\mu_T - \mu_C$ and a variance equal to the sum of the two variances, the covariance being null for a random sample. Therefore:
 
@@ -64,9 +64,9 @@ $$ {#eq-two_smpl_normal}
 Replacing the unknown $\sigma_x ^ 2$ by the unbiased estimate: 
 
 $$
-\hat{\sigma}_x ^ 2 = \frac{\sum_{n\in T} (x_n - \bar{x}_n) ^ 2 + \sum_{n\in C} (x_n - \bar{x}_n) ^ 2}{N_T + N_C - 2}
+\hat{\sigma}_x ^ 2 = \frac{\sum_{n\in T} (x_n - \bar{x}_T) ^ 2 + \sum_{n\in C} (x_n - \bar{x}_C) ^ 2}{N_T + N_C - 2}
 $$
-and with the hypothesis of equal mean ($H_0: \mu_T = \mu_C$), $\frac{\bar{x}_T - \bar{x}_C}{\hat{\sigma}_x \sqrt{1/N_T + 1/N_C}}$  is a Student t with $N_T + N_C - 2$ degrees of freedom. The Student t-test assume that the variance of $x$ is the same in both groups. The Welch's t-test, or unequal variance t-test extends the simple t test to the case were the variance of $x$ is different in the two groups.
+and, with the hypothesis of equal mean ($H_0: \mu_T = \mu_C$), $\frac{\bar{x}_T - \bar{x}_C}{\hat{\sigma}_x \sqrt{1/N_T + 1/N_C}}$  is a Student t with $N_T + N_C - 2$ degrees of freedom. The Student t-test assume that the variance of $x$ is the same in both groups. The Welch's t-test, or unequal variance t-test extends the simple t-test to the case were the variance of $x$ is different in the two groups.
 \index[general]{t-test|(}\index{general}{Welch's t-test}\index{general}{t-test!Welch}
 
 `stats::t.test` computes the two flavors
@@ -111,7 +111,7 @@ Denote $o$ and $e$ the observed and the hypothesized frequencies, $i$ the index 
 sample:
 
 $$
-N \sum_i \frac{(o_i - e_i) ^ 2}{e_i}
+\sum_i \frac{(o_i - e_i) ^ 2}{e_i}
 $$ {#eq-pearson_chi2}
 
 the statistic is, under the hypothesis of independence, a $\chi
@@ -214,7 +214,7 @@ t.test(test ~ group, afghan_girls, subset = sex == "girl") %>% gaze
 ```
 
 The effect is strong (about 0.75, which means three quarter of a
-standard deviation of the score as this variable is standardize) and
+standard deviation of the score as this variable is standardized) and
 highly significant. As some covariates are unbalanced, this estimator
 may be biased. Therefore, it is recommended to measure the effect as
 the coefficient of `group` in a multiple regression with all the
@@ -322,9 +322,7 @@ covers more than half of the cost of private secondary school and may
 induce parents to enroll their children in private schools, which are
 known to provide much better service than public schools. In this case,
 $w$ is a dummy for children that receive the voucher and $d$ is
-enrollment in private school. Several outcomes $y$ are used, as the
-number of finished years of education, the number of repetitions and a
-dummy for finished 8th grade. 
+a dummy for enrollment in private school. 
 
 ```{r }
 #| label: print_paces
@@ -332,7 +330,7 @@ paces %>% print(n = 2)
 ```
 
 The treatment variable is `privsch` and the instrument is
-`voucher`. Several outcome are considered by the authors, we'll use
+`voucher`. Several outcome are considered by the authors, we'll consider
 only the number of years of finished education `educyrs`. The OLS
 estimate of the treatment is just the difference between the mean of
 the outcome for the two sub-sample defined by the treatment variable:
@@ -381,7 +379,7 @@ the "pilot" survey and `housvisit` is one if the survey was conducted
 in person and not by phone), `smpl` is a factor indicating the three
 subsamples (Bogota in 1995, Bogota in 1997 and Djamunid in 1993),
 `phone` is a dummy for owning a phone, `age` and `sex` are the age and the sex of the
-and `strata` is a strata of residence. We
+pupil and `strata` is a strata of residence. We
 then compute the OLS and IV estimator:
 \idxfun{lm}{stats}\idxfun{ivreg}{ivreg}\idxfun{gaze}{micsr}
 
@@ -412,7 +410,7 @@ and more precisely, on the fact that the value of
 this variable, for an individual is below or over a given
 threshold. Individuals just below and just over the threshold
 therefore constitute two groups of individuals who are very similar,
-except that the first receives the treatment and the second doesn't. This is called a **regression discontinuity** (**RD** in short) design.
+except that the first group receives the treatment and the second group doesn't. This is called a **regression discontinuity** (**RD** in short) design.
 
 ### Sharp and Fuzzy 
 \index[general]{regression discontinuity!fuzzy}
@@ -457,7 +455,7 @@ probation %>% mutate(eligible = as.numeric(distcut < 0)) %>%
 Although the discontinuity is sharp, the probability of being on
 probation is not exactly equal to one for eligible students and equal
 to 0 for ineligible students because of administrative errors in data
-reporting.^[see @LIND:SAND:OREO:10@LIND:SAND:OREO:10\index[author]{Lindo}\index[author]{Sanders}\index[author]{Oreopoulos}, footnote 20 page 104.] We remove these misleading observations:
+reporting.^[see @LIND:SAND:OREO:10\index[author]{Lindo}\index[author]{Sanders}\index[author]{Oreopoulos}, footnote 20 page 104.] We remove these misleading observations:
 
 ```{r }
 #| label: probation_rm_errors
@@ -475,7 +473,7 @@ probation <- probation %>%
 the BDH (Bono Desarollo Humano) program in Ecuador which consists on a 
 cash transfer for the poorest families. The eligibility is based on a
 wealth index called Selben, households in the four first deciles being eligible. The data
-were collected in 2011 and are available as the `bdh` data set. The
+were collected in 2011 and is available as `bdh`. The
 key variables are the `selben` index (the threshold has been removed so
 that eligible households are those for which `selben` is negative),
 `treated` which is a dummy for households which receive the grant and `attendmonth` which is the monthly frequency of visits to the church.
@@ -526,11 +524,9 @@ indicate the cutoff and `width` the width of the bins. The internal variable `n`
 to visualize the number of observations in every bin. Note the use of `after_stat`: `geom_binmeans` uses as stat `bins`, ie, it creates bins and counts the number of observations in each bin. This count (called `n`) is used in `geom_smooth` after the stat has been computed. 
 For `geom_smooth` we use `probation` for the `linetype` aesthetic, so that
 two different smoothing lines are plotted on both sides of the
-cutoff. Finally, by setting the `color` aesthetic to `gender`, we get
-different dots and regression lines for males and females.
+cutoff. 
 The effect of the treatment is then the difference of intercepts for
-the two regression lines. It is about 0.25 points of gpa in our example and
-is similar for males and females.
+the two regression lines. It is about 0.25 points of gpa in our example.
 
 <!-- In the context of a fuzzy discontinuity, the same plot can be used -->
 <!-- with the treatment variable, to see the strength of the forcing variable -->
@@ -700,7 +696,7 @@ ivreg::ivreg(attendmonth ~ selben * treated | selben * eligible,
              data = bdh) %>% gaze(coef = "treated")
 ```
 
-The effect of receiving the grant increases by 1.72 monthly church attendance and the effect is significant. The `rdrobust` function can be used in a fuzzy discontinuity context using the `fuzzy` argument to indicate the treatment variable. A matrix of 
+The effect of receiving the grant increases monthly church attendance by 1.72 and the effect is significant. The `rdrobust` function can be used in a fuzzy discontinuity context using the `fuzzy` argument to indicate the treatment variable. A matrix of 
 supplementary covariates can be added using the `covs` argument.
 \idxfun{rdrobust}{rdrobust}\idxfun{with}{base}\idxfun{gaze}{micsr}
 
@@ -738,7 +734,7 @@ dens_test %>% gaze
 
 The p-value being equal to $0.45$, the absence of manipulation is not
 rejected. The `rddensity:rdplotdensity` function plots the
-density on the left and the right of the cutoff, with a confidence
+density on the left and on the right of the cutoff, with a confidence
 interval; if the two confidence intervals overlaps, the hypothesis of no
 manipulation is not rejected. This is the case with the `probation`
 data set, as shown on @fig-maniptest.
@@ -922,7 +918,7 @@ response being a dummy for treated individuals. Then, each treated
 individual is matched with the observation in the control group which
 has the closest propensity score. Finally, the estimation of the treatment effect is performed on the subset of the sample composed by all the observations of the treatment group and those of the control group that match these observations.
 
-The matching estimator was first proposed by @ROSE:RUBI:83\index[author]{Rosenbaum}\index[author]{Rubin} and the interest in matching methods in econometrics really started with @DEHE:WAHB:99\index[author]{Dehejia}\index[author]{Wahba} and @DEHE:WAHB:02\index[author]{Dehejia Wahba}\index[author]{Wahba}. These two articles revisited the results of @LALO:86\index[author]{Lalonde} who showed that the estimation of treatment effect with observational data can be 
+The matching estimator was first proposed by @ROSE:RUBI:83\index[author]{Rosenbaum}\index[author]{Rubin} and the interest in matching methods in econometrics really started with the articles of Dehejia and Wahba [-@DEHE:WAHB:99; -@DEHE:WAHB:02]\index[author]{Dehejia Wahba}\index[author]{Wahba}. These two articles revisited the results of @LALO:86\index[author]{Lalonde} who showed that the estimation of treatment effect with observational data can be 
 seriously biased. Using
 Lalonde's data, they showed that matching methods can be used to
 estimate consistently treatment effects on observational data. They
@@ -938,7 +934,7 @@ also proposed an algorithm, implemented in Stata by @BECK:ICHI:02\index[author]{
 - if the test fails for one strata, split it in two (for example, the
   0.2-0.4 strata is decomposed in two stratas 0.2-0.3 and 0.3-0.4)
   until the equal mean hypothesis is not rejected for every strata,
-- then compute the same test for every covariate,
+- then compute the same test for each covariate,
 - if the test fails for some covariates, estimate a more flexible
   propensity score model, adding squares and interactions between
   covariates.
@@ -946,7 +942,7 @@ also proposed an algorithm, implemented in Stata by @BECK:ICHI:02\index[author]{
 Once the stratas are computed, a natural estimator of the treatment
 effect is:
 $\sum_k (\bar{y}_k^t - \bar{y}_k ^ c) f_k$,
-where $\bar{y}_k ^ t$ and $\bar{y}_k ^ c$ are the mean values of the outcome in the treatment and in the control group  and $f_k = t_k / N_T$ is the frequency for strata $k$ for the treatment group (with $t_k$ is the number of treated individuals in strata $k$ and $N_T$ the total number of treated individuals). The
+where $\bar{y}_k ^ t$ and $\bar{y}_k ^ c$ are the mean values of the outcome in the treatment and in the control group  and $f_k = t_k / N_T$ is the frequency of strata $k$ for the treatment group (with $t_k$ the number of treated individuals in strata $k$ and $N_T$ the total number of treated individuals). The
 variance of the estimated treatment effect can be computed with or without the
 hypothesis of equal variance between stratas, between groups or
 both. 
@@ -954,7 +950,7 @@ both.
 \idxdata[(]{twa}{micsr.data}
 As an example, we replicate the results of @ICHI:MEAL:NANN:08\index[author]{Ichino}\index[author]{Mealli}\index[author]{Nannicini} who studied
 the effect of temporary work agency (TWA) jobs on the probability of
-finding a stable job. The data set, called `twa` contains $2030$ observations ($511$
+finding a stable job. The data set, called `twa`, contains $2030$ observations ($511$
 treated and $1519$ untreated) for two regions, Tuscany and
 Sicily. We restrict the sample to Tuscany:
 \idxfun{filter}{dplyr}
@@ -991,8 +987,8 @@ treatment effect is therefore 14.7%.
 The `micsr::pscore` function implements the algorithm
 previously described. The first two arguments are `formula` and
 `data`. The formula should have two variables on the left-hand side,
-the first one indicating the group and the second one
-the outcome. The group variable can be either a dummy or a factor with
+the first one indicating the outcome and the second one
+the group. The group variable can be either a dummy or a factor with
 two levels, the second one indicating the treated individuals. 
 To estimate the propensity score, we use the same formula as
 @ICHI:MEAL:NANN:08\index[author]{Ichino}\index[author]{Mealli}\index[author]{Nannicini} and in particular, we use a square term for the
@@ -1006,7 +1002,7 @@ tuscany <- tuscany %>%
     mutate(dist2 = dist ^ 2,
            livselfemp = I((city == "livorno") * (occup == "selfemp")),
            perm = ifelse(outcome == "perm", 1, 0))
-ftusc <- group | perm ~ city + sex + marital + age +
+ftusc <- perm + group ~ city + sex + marital + age +
     loc + children + educ + pvoto + training +
     empstat + occup + sector + wage + hour + feduc + femp + fbluecol +
     dist + dist2 + livselfemp
@@ -1022,7 +1018,7 @@ tests are mutually independent, the probability that one of the tests
 rejects the balancing property although it holds is 37%.
 `pscore` returns a `pscore` object which contains three tibbles. 
 
-- `strata` contains information about the strata (the frequencies, the
+- `strata` contains information about the stratas (the frequencies, the
 average propensity scores and the probability value of the hypothesis
 of no difference of the propensity scores in the two groups,
 - `cov_balance` has a line for every covariate and contains the strata
@@ -1030,11 +1026,11 @@ for which the probability value is the smallest,
 - `model` contains the original data sets with some supplementary
   columns:
   - `pscore` contains the propensity score for every observation,
-  - `gp_` is a factor with levels `"control"` and `"treated"`,
-  - `cs_` is a boolean indicating whether the propensity score for an
+  - `.gp` is a factor with levels `"control"` and `"treated"`,
+  - `.cs` is a boolean indicating whether the propensity score for an
     observation lies in the interval of scores for the treated,
-  - `resp_` contains the response,
-  - `cls_` indicates the strata for the observation.
+  - `.resp` contains the response,
+  - `.cls` indicates the strata for the observation.
 
 A `summary` method is provided and the `print` method for `summary.pscore` objects has a `step` argument that allows to print the result of each step of the estimator. To get the information about the stratas, we use:
 
@@ -1054,7 +1050,7 @@ the control group out of 628 are used. With `step = "covariates"`, we get a (lon
 ps %>% summary %>% print(step = "covariates")
 ```
 
-Finally, `step = "atet"` gives the values of the estimated ATET (average treatment effect on the treated) and different estimates of its standard deviation:
+Finally, `step = "atet"` gives the values of the estimated ATET (average treatment effect of the treated) and different estimates of its standard deviation:
 
 ```{r}
 #| label: tuscanny_atet
@@ -1092,7 +1088,7 @@ tusc_tr %>% slice(1:2) %>%
     count(id_tr)
 ```
 
-and they are matched to respectively 319 and 297 observations in the control group. With **rolling** joins, one can
+and they are matched to respectively 309 and 331 observations in the control group. With **rolling** joins, one can
 select only one observation, the closest one, using the `closest` function:
 \idxfun{left\_join}{dplyr}\idxfun{closest}{dplyr}\idxfun{rename}{dplyr}
 
@@ -1171,7 +1167,7 @@ lower than a given value. This is called **caliper matching**.
 For example, to restrict the sample to treated observations for which the
 propensity score difference with its matched control observation is
 lower than 1%, we would use:
-\idxfun{filter}{dplyr}\idxfun{abs}{base}
+\idxfun{filter}{dplyr}
 
 ```{r }
 #| label: capiler
@@ -1205,7 +1201,7 @@ c(treatment = means$perm[2], control = means$perm[1], atet = atet)
 
 \index[general]{average treatment effect of the treated}
 \index[general]{treatment effect!average treatment effect of the treated}
-The ATET (`r round(atet, 4)`) is close to the one obtained previously using the algorithm based on stratas (`r round(unname(summary(ps)$atet[1]))`).
+The ATET (`r round(atet, 4)`) is close to the one obtained previously using the algorithm based on stratas (`r round(unname(summary(ps)$atet[1]), 4)`).
 
 Several packages have implemented the matching techniques previously
 described and some more advanced methods. We'll describe here the
@@ -1234,7 +1230,7 @@ A `weight` column is added to the data frame that contains weights to
 be used in subsequent treatment. There are 427 observations, the 281
 treated observations and 146 observations of the control group. The
 weights for the treated observations is 1. For an observation of the
-control group that match only one treated observation, the weight is
+control group that matches only one treated observation, the weight is
 $146 / 281 = 0.52$ and, for example, for an observation of the control
 group that matches 4 treated observations, the weight is :$146 / 281 \times
 4 = 2.08$.
@@ -1276,8 +1272,8 @@ one for the balanced one.
 ```{r }
 #| label: fig-love
 #| fig-cap: "Love plot for the `twa` data set"
-#| fig-width: 14
-#| fig-height: 10
+#| fig-width: 10
+#| fig-height: 8
 mtch %>% summary %>% plot
 ```
 
@@ -1312,7 +1308,8 @@ control methods are the analysis of the effect of:
 - a tobacco control program in California,
   [@ABAD:DIAM:HAIN:10]\index[author]{Abadie}\index[author]{Diamond}\index[author]{Hainmueller},
 - the reunification of Germany [@ABAD:DIAM:HAIN:15]\index[author]{Abadie}\index[author]{Diamond}\index[author]{Hainmueller},
-- mafia in southern Italy [@PINO:15]\index[author]{Pinotti} and [@BECK:KLOS:17]\index[author]{Becker}\index[author]{Klosner},
+- mafia in southern Italy [@PINO:15; @BECK:KLOS:17]
+\index[author]{Becker}\index[author]{Klosner}\index[author]{Pinotti},
 - the Legal Arizona Workers Act [@BOHN:LOFS:RAPH:14]\index[author]{Bohn}\index[author]{Lofstrom}\index[author]{Raphael}.
 
 Consider a set of $N+1$ units, the first one being the treated
@@ -1372,7 +1369,7 @@ x_{nk}/ \hat{\sigma}_k\right) ^ 2
 $$ 
 which is the sum of squares of the differences of the values of the standardized covariates for the treated observation and its synthetic control.
 More generally, for a given value of $v$, we can define $w(v)$ as the
-solution of the minimization problem of @eq-seminorm:
+solution of the minimization of the function given by @eq-seminorm:
 
 $$
 \sum_{t = 1} ^ {T_0} \left(y_{1t} - \sum_{n = 2} ^ {N + 1} w_n(v)
@@ -1516,7 +1513,7 @@ grab_unit_weights(bc) %>% filter(weight > 1E-05)
 
 As stated previously the synthetic control of the Basque Country
 consists on 85% of Catalunya and 15% of Madrid. It is a common feature
-of this method that the number of unit in the donor pool that are
+of this method that the number of units in the donor pool that are
 really used is small.
 To get the covariates weights:
 \idxfun{grab\_predictor\_weights}{tidysynth}\idxfun{arrange}{dplyr}\idxfun{desc}{dplyr}
@@ -1621,7 +1618,7 @@ contrary, if the treatment is efficient, the treated unit and its
 synthetic control should be very different after the treatment, so
 that $m_n^{\mbox{post}}$ should be high. Therefore, the ratio $r_n =
 m_n^{\mbox{post}} / m_n^{\mbox{pre}}$ should be high if the treatment
-is efficient and if synthetic control method is relevant. Moreover, it
+is efficient and if the synthetic control method is relevant. Moreover, it
 should be much higher than the ones obtained for untreated units. The
 significance of the treatment can be established using the
 distribution of $r$ for all the units (the treated one and the

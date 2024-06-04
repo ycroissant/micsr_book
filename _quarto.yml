@@ -1,41 +1,38 @@
 project:
   type: book
   
-title: "Micro-econometrics with R"
-titlepage: true
-titlepage-color: "FFF5EE"
-titlepage-rule-height: 2
-titlepage-logo: "./latex/cemoi.png"
+title: "Microeconometrics with R"
 lot: true
 lof: true
 
 book:
   author: "Yves Croissant"
-  date: "17/11/2023"
+  date: "2024/06/04"
   chapters:
   - index.qmd
-  # - part: OLS.qmd
-  #   chapters:
-  #     - ./chapters/simple_regression.qmd
-  #     - ./chapters/simple_regression_properties.qmd
-  #     - ./chapters/multiple_regression.qmd
-  #     - ./chapters/coefficients.qmd
-  # - part: beyond_OLS.qmd
-  #   chapters:
-  #     - ./chapters/maximum_likelihood.qmd
-  #     - ./chapters/non_spherical.qmd
-  #     - ./chapters/endogeneity.qmd
-  #     - ./chapters/treateff.qmd
-  #     - ./chapters/spatial.qmd
-  # - part: special_responses.qmd
-  #   chapters:
-  #     - ./chapters/binomial.qmd
-  #     - ./chapters/tobit.qmd
-  #     - ./chapters/count.qmd
-  #     - ./chapters/duration.qmd
-  #     - ./chapters/rum.qmd
-  # - ./chapters/references.qmd
+  - part: OLS.qmd
+    chapters:
+      - ./chapters/simple_regression.qmd
+      - ./chapters/simple_regression_properties.qmd
+      - ./chapters/multiple_regression.qmd
+      - ./chapters/coefficients.qmd
+  - part: beyond_OLS.qmd
+    chapters:
+      - ./chapters/maximum_likelihood.qmd
+      - ./chapters/non_spherical.qmd
+      - ./chapters/endogeneity.qmd
+      - ./chapters/treateff.qmd
+      - ./chapters/spatial.qmd
+  - part: special_responses.qmd
+    chapters:
+      - ./chapters/binomial.qmd
+      - ./chapters/tobit.qmd
+      - ./chapters/count.qmd
+      - ./chapters/duration.qmd
+      - ./chapters/rum.qmd
+  - references.qmd
 bibliography: references.bib
+link-bibliography: true
 
 knitr:
   opts_chunk:
@@ -54,6 +51,7 @@ format:
         \usepackage{makeidx}
         \usepackage{imakeidx}
         \usepackage{ifthen}
+        \usepackage{setspace}
         \makeindex[name=general,title=General]
         \makeindex[name=author,title=Authors,columns=3]
         \makeindex[name=general,title=General index]
@@ -61,6 +59,13 @@ format:
         \makeindex[name=functions,title=Functions]
         \makeindex[name=libraries,title=Libraries]
         \usepackage{pdflscape}
+        \newcommand\bookepigraph[4]{
+        \vspace{1em}\hfill{}\begin{minipage}{#1}{\begin{spacing}{0.9}
+        \small\noindent\textit{#2}\end{spacing}
+        \vspace{1em}
+        \hfill{}{#3}\\
+        \begin{flushright}{#4}\end{flushright}}
+        \end{minipage}}
         \newcommand{\blandscape}{\begin{landscape}}
         \newcommand{\elandscape}{\end{landscape}}
         \newcommand{\idxfun}[2]{\index[functions]{#1@\texttt{#2::#1}}\index[libraries]{\textbf{#2}!\texttt{#1}}}
@@ -69,9 +74,12 @@ format:
         \pagenumbering{roman}
     include-before-body: 
       text: |
-        \begin{center}
-        ensebme c's mieux
-        \end{center}
+        \vspace{5cm}
+        \bookepigraph{5cm}
+        {The most important date in a man's life is that of his father's death.}
+        {Georges Simenon}
+        {Le Fils, 1957}
+        \footnote{Cited by Pierre Assouline, Simenon : biographie, Paris : Julliard, 1992}
         \cleardoublepage
         \frontmatter
     include-after-body:
@@ -83,6 +91,7 @@ format:
         \printindex[author]
         \printindex[data]
         \printindex[functions]
+        \clearpage
         \printindex[libraries]
 
 editor: source

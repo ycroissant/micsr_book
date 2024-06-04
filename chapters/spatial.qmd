@@ -10,9 +10,9 @@ st_nb <- function(x, queen = TRUE){
 
 # Spatial econometrics {#sec-spatial_econometrics}
 
-Spatial econometrics is a very dynamic field in modern econometrics. Geolocated data are now frequently available, even when the data doesn't concern geographic entities like countries, regions or towns, but households or firms. From their geographic coordinates, one is able to define for every observation a set of neighbors and the interactions between neighbors can then be taken into account. There are two very different types of geographical data: vectors and rasters. A vector is a point or a set of points that define a line. A raster is a grid that contains the value of one variable (for example a numeric indicating the elevation or a factor indicating land use). Relatively recently, two **R** packages has emerged that provide plenty of function that enables to deal easily with vectors and rasters. These are respectively **sf** (for **simple feature**) and **terra**.^[**sf** and **terra** respectively supersede the **sp** and the **raster** packages.] In this chapter, we'll consider only vectors.
+Spatial econometrics is a very dynamic field in modern econometrics. Geolocated data are now frequently available, even when the data doesn't concern geographic entities like countries, regions or towns, but households or firms. From their geographic coordinates, one is able to define for every observation a set of neighbors and the interactions between neighbors can then be taken into account. There are two very different types of geographical data: vectors and rasters. A vector is a point or a set of points that defines a line. A raster is a grid that contains the value of one variable (for example a numeric indicating the elevation or a factor indicating land use). Relatively recently, two **R** packages has emerged that provide plenty of function that enables to deal easily with vectors and rasters. These are respectively **sf** (for **simple feature**) and **terra**.^[**sf** [@PEBE:BIVA:23]\index[author]{Pebesma}\index[author]{Bivand} and **terra** [@HIJM:23] respectively supersede the **sp** and the **raster** packages.] In this chapter, we'll consider only vectors.
 
-The first two sections are devoted to simple features, @sec-simple_features presents the structure of simple features objects and @sec-sf_computation, using the example of a spatial RD design, illustrates how to deal with spatial features in a statistical analyzes. @sec-spatial_correlation deals with the detection and the measurement of spatial correlation. Finally, @sec-spatial_models presents some popular spatial models, namely the SAM and the SEM models.
+The first two sections are devoted to simple features, @sec-simple_features presents the structure of simple features objects and @sec-sf_computation, using the example of a spatial RD design, illustrates how to deal with simple features in a statistical analyzes. @sec-spatial_correlation deals with the detection and the measurement of spatial correlation. Finally, @sec-spatial_models presents some popular spatial models, namely the spatial error and the spatial autoregressive models.
 
 ## Simple features {#sec-simple_features}
 
@@ -24,7 +24,7 @@ library and the result is a `sf` object.
 ### Structure of a simple feature {#sec-struct_sf}
 
 To understand what a simple feature is, it is best to
-construct a simple one "by hand". The geographical representation of
+construct a small one "by hand". The geographical representation of
 an observation is a `sfg` for simple feature geometry. It can be a
 point, a set of points that forms a line or a polygon if the line ends
 where it started.
@@ -109,7 +109,7 @@ and is "sticky", which means that if some columns are selected, the geometry col
 cities %>% select(pop)
 ```
 
-returns `pop` **and** `cities_coords`, even if the latter was not selected.
+returns `pop` **and** `cities_coords`, even if the latter colon was not selected.
 We can then plot our three cities, along with a map of France, which
 is obtained using the `geodata::gadm` function.^[This function is an
 interface to the <http://www.gadm.org> site which provides the
@@ -153,7 +153,7 @@ france %>% object.size %>% format("MB", digits = 2)
 ```
 
 **sf** provides a `plot` method to get quickly a map of the data. Note that a thematic map is plotted for all the series of the `sf` and it is therefore recommended to select first a unique series. If one is only interested in the vectors, they can be extracted before plotting using `st_geometry`:
-\idxfun{st\_geometry}{sf}\idxfun{plot}{base}
+\idxfun{st\_geometry}{sf}
 
 ```{r}
 #| results: hide
@@ -279,7 +279,7 @@ border_states
 
 We then compute the Texas border. It is defined by the common points
 of the borders of Texas and its border states. This is obtained using the
-`st_intersection` function which return 4 lines (one for each border
+`st_intersection` function which returns 4 lines (one for each border
 state) and the border is then obtain by merging these 4 lines using
 the `st_union` function. The result is presented on @fig-border.
 \idxfun{filter}{dplyr}\idxfun{st\_geometry}{sf}\idxfun{st\_intersection}{sf}\idxfun{st\_union}{sf}
@@ -417,7 +417,7 @@ louisiana <- us_counties %>%
 
 We first plot a thematic map (@fig-map_louisiana), with colors for counties related to the
 growth of the population (`pop_gr`). It is recommended to create first a
-categorical variable using `base::cut`, because it is easier to visualize a discrete palette of colors than a continuous one. We use `scale_fill_brewer` to use one of the palettes provided by the **RColorBrewer** package, which provides sequential, diverging and qualitative palettes. The first two are suitable to represent the values of numeric variables. Sequential palettes use a color, light for low values of the variable and dark for high values. Divergent palettes use two colors, with light colors for middle range values and dark colors for low and high values. All the available palettes can be displayed using `RColorBrewer::display.brewer.all()`. We use here the `Orange` sequential palette.
+categorical variable using `base::cut`, because it is easier to visualize a discrete palette of colors than a continuous one. We use `scale_fill_brewer` to use one of the palettes provided by the **RColorBrewer** package, which provides sequential, diverging and qualitative palettes. The first two are suitable to represent the values of numeric variables. Sequential palettes use a color, light for low values of the variable and dark for high values. Divergent palettes use two colors, with light colors for middle range values and dark colors for low and high values. All the available palettes can be displayed using `RColorBrewer::display.brewer.all()`. We use here the `Oranges` sequential palette.
 \idxfun{mutate}{dplyr}\idxfun{cut}{base}\idxfun{ggplot}{ggplot2}\idxfun{geom\_sf}{ggplot2}\idxfun{scale\_fill\_brewer}{ggplot2}
 
 ```{r}
@@ -440,8 +440,7 @@ louisiana %>%
 
 The inverted U shaped hypothesis between the log of the initial
 population and the growth rate can be tested by regressing the growth
-rate on the log population and its square if the later coefficient is
-negative.
+rate on the log population and its square. The later coefficient should then be negative.
 \idxfun{lm}{stats}\idxfun{poly}{stats}\idxfun{gaze}{micsr}
 
 ```{r }
@@ -459,11 +458,10 @@ pops <- exp(lpops)
 ```
 
 The coefficient of the square term is negative and significant and we get a maximum
-growth for the fitted model as a value of `log(pop)` equal to $-`r round(b1, 4)`
-/ `r round(b2, 4)` / 2 = `r round(lpops, 4)`$, ie a population of about `r round(pops / 1E03)`  thousands
+growth for the fitted model for a value of `log(pop)` equal to $-`r round(b1, 4)`
+/ (`r round(b2, 4)` \times 2) = `r round(lpops, 4)`$, ie a population of about `r round(pops / 1E03)`  thousands
 inhabitants. 
-This result is illustrated in @fig-iushaped_louisiana with a scatterplot with the
-growth of the population and the logarithm of its initial value, and a fitting line with a second degree polynomial:
+This result is illustrated in @fig-iushaped_louisiana,  a scatterplot representing the relationship between the logarithm of the initial population and its growth rate and a fitting line with a second degree polynomial:
 \idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_point}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{poly}{stats}\idxfun{scale\_x\_continuous}{ggplot2}
 
 ```{r }
@@ -481,7 +479,7 @@ louisiana %>% ggplot(aes(pop, pop_gr)) +
 ### Solow model {#sec-solow_model}
 
 The second example is from @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} who estimated a growth model for
-the countries of the world taking spatial correlation into account:
+the countries of the world taking spatial correlation into account. The `sp_solow` data set is provided by the **countries** package:
 \idxdata[(]{sp\_solow}{micsr.data}
 \idxfun{data}{utils}
 
@@ -491,8 +489,7 @@ sp_solow
 ```
 
 There are 91 countries in the `sp_solow` data set, the series being the gdp in 1960 and 1995, the saving rate (`saving`) and the growth of the labor force (`labgwth`).
-As in @sec-data_solow_mrw, we denote `i` the saving rate and `v` the sum of the growth rate of the labor force and 0.05.^[0.05 being the sum of the rate of depreciation and the rate of technical progress, assumed to be the same for all countries.] We also compute the annual growth rate, the difference of the logs of the GDP for
-  1995 and 1960 divided by 35 (`growth`).
+As in @sec-data_solow_mrw, we denote `i` the saving rate and `v` the sum of the growth rate of the labor force and 0.05.^[0.05 being the sum of the rate of depreciation and the rate of technical progress, assumed to be the same for all countries.] We also compute the annual growth rate (`growth`) as the difference of the logs of the GDP for 1995 and 1960 divided by 35.
 \idxfun{rename}{dplyr}\idxfun{mutate}{dplyr}
 
 ```{r }
@@ -519,7 +516,7 @@ countries() %>% check_join(sp_solow, by = "code")
 
 The two problems are that the D.R. Congo (`iso3` code `COD`) used to be
 called Zaire (`iso3` code `ZAR`) and that Hong Kong, which is a part
-of China for the **countries** package, but was considered as a sovereign country in @ERTU:KOCH:07's\index[author]{Ertur}\index[author]{Koch} study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
+of China for the **countries** package, was considered as a sovereign country in @ERTU:KOCH:07's\index[author]{Ertur}\index[author]{Koch} study. We then correct the code for the D.R. of Congo, we add Hong Kong using the `include` argument and we remove `Antarctica` with the exclude argument:
 \idxfun{mutate}{dplyr}\idxfun{ifelse}{base}\idxfun{countries}{countries}\idxfun{select}{dplyr}\idxfun{left\_join}{dplyr}
 
 ```{r eval = TRUE}
@@ -537,8 +534,8 @@ borders of the countries (`polygon`) and points for the capitals
 `polygon`. 
 We then draw on @fig-growth_gdp a world map with the color of the countries related to
 the annual growth during the 1960-95 period and a point with a size
-related to the initial (1960) gdp. `countries` provides a `plot` method which draws a basic map using **ggplot**. A basic thematic map can be drawn using the `fill` argument to fill the areas of the countries and the `centroid` or the `capital` arguments to draw a point at the position of the centroid or the capital of each country. Any **ggplot** functions can be used to customize the graphic:
-\idxfun{plot}{base}\idxfun{scale\_size\_continuous}{ggplot2}\idxfun{theme}{ggplot2}\idxfun{guides}{ggplot2}\idxfun{labs}{ggplot2}\idxfun{guide\_legend}{ggplot2}
+related to the initial (1960) gdp. `countries` provides a `plot` method which draws a basic map using **ggplo2t**. A basic thematic map can be drawn using the `fill` argument to fill the areas of the countries and the `centroid` or the `capital` arguments to draw a point at the position of the centroid or the capital of each country. Any **ggplot2** functions can be used to customize the graphic:
+\idxfun{scale\_size\_continuous}{ggplot2}\idxfun{theme}{ggplot2}\idxfun{guides}{ggplot2}\idxfun{labs}{ggplot2}\idxfun{guide\_legend}{ggplot2}
 
 ```{r}
 #| eval: false
@@ -606,7 +603,7 @@ between observations. The notion of distance is broad, but we'll
 consider in this section only geographical distance. For each
 observation, one can in this case define a set of neighbors. If the
 geographical representation of an observation is a polygon (which
-is the relevant choice for countries or region), two observations can
+is the relevant choice for countries or regions), two observations can
 for example said to be neighbors if they have a common border. If the
 geographical representation of an observation is a point (for
 example for a city), two observations are neighbors if the distance
@@ -641,7 +638,7 @@ The print method indicates the number of contiguity links
 (`r nlinks`). Instead of storing this links in a full matrix (with 1 for
 contiguous counties and 0 otherwise) which would have $`r ncount`^2 = `r ncount^2`$
 cells with only `r nlinks` of them with a value of 1 (about `r round(nlinks / ncount ^ 2 * 100, 1)`%), a `nb`
-object is returned. It is a list of `r ncount` vectors which contain, for each
+object is returned. It is a list of `r ncount` vectors which contains, for each
 observation, the positions of its neighbors. For example:
 \idxfun{head}{utils}
 
@@ -668,8 +665,8 @@ nlinks_rook <- sapply(nb_louis_rook, length) %>% sum
 
 Printing `nb_nc_rook`, one can check that the number of contiguity
 links (`r nlinks_rook`) is slightly lower than previously (`r nlinks`). `nb` objects
-can't be plotted as is with **ggplot**. We provide a convenient `st_nb`
-function which perform this task, as it returns a `sf` object (see @fig-links):
+can't be plotted as is with **ggplot2**. We provide a convenient `st_nb`
+function which performs this task, as it returns a `sf` object (see @fig-links):
 \idxfun{ggplot}{ggplot2}\idxfun{st\_nb}{micsr}\idxfun{geom\_sf}{ggplot2}
 
 ```{r }
@@ -699,7 +696,7 @@ W_louis$weights %>% head(3)
 ```
 
 We can see that weights of neighbors for a given observation are all
-equal and sum to one (0.2 for the first two observations which have 5 neighbors and $1/6$ for the third one which has 6 neighbors). Therefore, premultiplying a vector $(y - \bar{y})$ by $W$
+equal (1/5 for the first two observations which have 5 neighbors and $1/6$ for the third one which has 6 neighbors) and sum to one. Therefore, premultiplying a vector $(y - \bar{y})$ by $W$
 results in a vector with typical value $\sum_m w_{nm}
 y_m - \bar{y} = \tilde{y}_n - \bar{y}$.
 `nb` and a `listw` objects can be coerced to matrices using the
@@ -712,7 +709,7 @@ W_louis %>% listw2mat
 
 \idxdata[)]{agglo\_growth}{micsr.data}
 
-Instead of defining the neighborhood as common borders, one can consider distance between points, for example the capitals or the centroids of the countries. Remind that `sps` contains two `sf`, `polygon` and `point` and that the active geometry is `polygon`. We first specify `point` as being the active geometry, using the `st_set_geometry` function and we remove all countries for which the data are not available:
+Instead of defining the neighborhood as common borders, one can consider distance between points, for example the capitals or the centroids of the countries using the `sp_solow` data set. Remind that `sps` contains two `sf`, `polygon` and `point` and that the active geometry is `polygon`. We first specify `point` as being the active geometry, using the `st_set_geometry` function and we remove all countries for which the data are not available:
 \idxdata[(]{sp\_solow}{micsr.data}
 \idxfun{na.omit}{stats}\idxfun{st\_set\_geometry}{sf}
 
@@ -765,7 +762,7 @@ which is simply the ratio of the covariance between $y$ and
 $\tilde{y}$ and the variance of $y$. It therefore can be obtained as
 the coefficient of $y$ in a linear regression of $\tilde{y}$ on
 $y$. If the variance of $\tilde{y}$ and $y$ were equal, it would also
-be the coefficient of correlation between the value of $y$ for units and their neighbors.
+be the coefficient of correlation between the value of $y$ for a unit and its neighbors.
 The Moran test is computed using the `spdep::moran.test` function
 which takes as argument a series and a `listw` object:
 \idxdata[(]{agglo\_growth}{micsr.data}
@@ -777,7 +774,6 @@ which takes as argument a series and a `listw` object:
 moran.test(louisiana$pop_gr, W_louis) %>% gaze
 ```
 \idxfun{moran.test}{spdep}\idxfun{unname}{base}
-
 
 ```{r }
 #| include: false
@@ -798,10 +794,10 @@ mrn <- moran.test(louisiana$pop_gr, W_louis) %>% .[["estimate"]] %>% unname %>% 
 (N - 1) / N / 2 * (1 - 2 * mrn + sum( (Y - mean(Y)) ^ 2 * apply(Wmat, 2, sum)) / sum( (Y - mean(Y)) ^ 2))
 ```
 
-The value of the statistic is $`r round(stat_mor, 3)`$ in our example.  Under the
+The value of the statistic is $`r round(stat_mor, 3)`$. Under the
 hypothesis of no correlation, the expected value of this statistic is
 $- 1 / (N-1) = `r round(mu_mor, 3)`$ and the standard deviation is $`r round(sd_mor, 3)`$.^[The expression of the variance of the Moran statistic can be found in
-@BIVA:WONG:18\index[author]{Bivand}\index[author]{Wong}] The standardized statistic ($`r round((stat_mor - mu_mor) / sd_mor, 3)`$) is asymptotically normal and the hypothesis of no spatial correlation is rejected.
+@BIVA:WONG:18\index[author]{Bivand}\index[author]{Wong}.] The standardized statistic ($`r round((stat_mor - mu_mor) / sd_mor, 3)`$) is asymptotically normal and the hypothesis of no spatial correlation is rejected.
 \index[general]{Moran test|)}\index[general]{Geary test|(}
 An alternative to Moran's $I$ test is Geary's $C$ test, which is
 defined as:
@@ -927,7 +923,7 @@ locmor <- localmoran(louisiana$pop_gr, W_louis)
 which returns a matrix, with a line for every observations and columns
 containing the local Moran values, their expectation, variance, the standardized
 statistic and the p-value. It's easier to coerce this matrix to a
-tibble in order to extract extreme values of the statistic:^[Note that we also rename for convenience the 5^th$ column which has a non standard name (`Pr(z != E(Ii))`) to `pval`.]
+tibble in order to extract extreme values of the statistic:^[Note that we also rename for convenience the 5^th^ column which has a non standard name (`Pr(z != E(Ii))`) to `pval`.]
 \idxfun{as\_tibble}{tibble}\idxfun{rename}{dplyr}\idxfun{filter}{dplyr}
 
 ```{r }
@@ -981,7 +977,7 @@ V <- (N * S4 - S3 * S5) / ( (N - 1) * (N - 2) * (N - 3) * S0 ^ 2) - 1 / (N - 1) 
 We consider here linear gaussian models that are extended in order to
 integrate the spatial features of the sample, using the weighting
 matrix described in the previous section. Two main models can be
-considered. The first one is the **SEM** for spatial error model which
+considered. The first one is the **spatial error model** (**SEM** in short) which
 can be written in matrix form as:
 \index[general]{spatial error model|(}
 
@@ -990,7 +986,7 @@ y = \alpha \iota + X \beta + \epsilon \; \mbox{with} \; \epsilon = \rho_\epsilon
 $$ {#eq-sem}
 
 Therefore, the error for observation $n$ is linearly related to the
-errors of its neighbors $\tilde{\epsilon}_n$. **OLS** estimation
+errors of its neighbors $\tilde{\epsilon}_n$. OLS estimation
 gives unbiased and consistent estimators but, as always with
 non-spherical errors, it is inefficient and the estimated 
 covariance matrix of the coefficients based on the simple formula ($\sigma ^ 2 (\tilde{X}^\top \tilde{X}) ^ {-1}$)
@@ -998,14 +994,13 @@ is biased.
 \index[general]{spatial error model|)}
 
 \index[general]{spatial autoregressive model|(}
-The second model is either called **SAR** (spatial autoregressive
-model) or **SLM** (spatial lag model). It extends the basic gaussian
+The second model is called the **spatial autoregressive model** (**SAR** in short).^[This model is also known as the spatial lag model.]. It extends the basic gaussian
 linear model by adding as a regressor the mean value of the response
 for the neighbor units. For one observation, the model writes $y_n =\alpha + \beta ^ \top x_n + \rho_y \tilde{y}_n + \epsilon_n$ or, in matrix
 form:
 
 $$
-y = \alpha i + X \beta + \rho_y W y + \epsilon = Z \gamma + \rho_y W y + \epsilon
+y = \alpha j + X \beta + \rho_y W y + \epsilon = Z \gamma + \rho_y W y + \epsilon
 $$
 The reduced form of the model is:
 
@@ -1061,7 +1056,7 @@ which is very close to the sum of the direct effect and the first three indirect
 \index[general]{spatial error model|(}
 Spatial models are usually estimated by maximum likelihood, by
 assuming a multivariate normal distribution for the iid errors. For
-the **SEM** model, the idiosyncratic errors can be written as a
+the SEM model, the idiosyncratic errors can be written as a
 function of the response:
 
 $$
@@ -1121,7 +1116,7 @@ y =  Z\gamma + (I - \rho_y W) ^{-1} \epsilon
 $$
 which is the SEM model, as denoting $\eta = (I -\rho_y W) ^ {-1} \epsilon$ the errors of this model, we have $y = Z\gamma + \eta$, with $\eta = \rho_y W \eta + \epsilon$. 
 
-Once it has been established that there is some spatial dependence, one has to choose the "right" specification. Several tests have been proposed, based on the three tests principle. Lagrange multiplier tests proposed by @ANSE:BERA:FLOR:YOON:96\index[author]{Anselin}\index[author]{Bera}\index[author]{Florax}\index[author]{Yoon}, are popular as they only require the OLS estimation. Different flavors of tests have been proposed, testing $\rho_y = 0$, $\rho_\epsilon = 0$ or $\rho_y = \rho_\epsilon = 0$. The basic version of, for example the first test ($\mbox{H}_{0}: \rho_y = 0$) has, as a maintained hypothesis that $\rho_\epsilon = 0$. A robust version of the test has been proposed which doesn't impose this maintained hypothesis. The common factor hypothesis can easily be tested using a likelihood ratio test. The Wald statistic is less easy to compute, has a set of non-linear hypothesis $\theta = - \rho_y \beta$ is tested.
+Once it has been established that there is some spatial dependence, one has to choose the "right" specification. Several tests have been proposed, based on the three tests principle. Lagrange multiplier tests proposed by @ANSE:BERA:FLOR:YOON:96\index[author]{Anselin}\index[author]{Bera}\index[author]{Florax}\index[author]{Yoon}, are popular as they only require the OLS estimation. Different flavors of tests have been proposed, testing $\rho_y = 0$, $\rho_\epsilon = 0$ or $\rho_y = \rho_\epsilon = 0$. The basic version of, for example the first test ($\mbox{H}_{0}: \rho_y = 0$) has, as a maintained hypothesis that $\rho_\epsilon = 0$. A robust version of the test has been proposed which doesn't impose this maintained hypothesis. The common factor hypothesis can easily be tested using a likelihood ratio test. The Wald statistic is less easy to compute, has a set of non-linear hypothesis $\theta = - \rho_y \beta$ should be tested.
 
 \index[general]{Durbin's model|)}
 \index[general]{spatial autoregressive model!Durbin|)}
@@ -1214,10 +1209,10 @@ lrtest(m1, m1c) %>% gaze
 ```
 
 As seen previously, the theoretical restrictions are rejected at the 5% level using a Wald test for the Solow model. This is not the case for the spatial lag model. Note also that the Wald and the likelihood ratio tests give very similar results.
-An interesting feature of the model of @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} is that their specification enables the identification of all the structural parameters of the model, $\kappa$, $\phi$ and $\gamma$. If $\phi = 0$, $\theta = \gamma \beta$ and $\rho_y = \gamma$, so that: $y = \alpha + (I - \gamma W)X\beta + \gamma y + \epsilon$, the reduced form of the model is, in matrix form:
+An interesting feature of the model of @ERTU:KOCH:07\index[author]{Ertur}\index[author]{Koch} is that their specification enables the identification of all the structural parameters of the model, $\kappa$, $\phi$ and $\gamma$. If $\phi = 0$, $\theta = \gamma \beta$ and $\rho_y = \gamma$, so that: $y = \alpha j+ (I - \gamma W)X\beta + \gamma y + \epsilon$, the reduced form of the model is, in matrix form:
 
 $$
-y = \alpha \iota + X \beta + (I - \gamma W) ^ {-1} \epsilon
+y = \alpha j + X \beta + (I - \gamma W) ^ {-1} \epsilon
 $$
 which is a SEM model without Durbin terms. Therefore, the hypothesis that $\phi = 0$ is in the context of this model the hypothesis of common factors and can easily be tested using a likelihood ratio test:
 \idxfun{lrtest}{lmtest}\idxfun{gaze}{micsr}
@@ -1308,7 +1303,7 @@ V <- G %*% Vr %*% t(G)
 ```
 
 We finally compute the table of the structural parameters:
-\idxfun{diag}{base}\idxfun{pnorm}{stats}\idxfun{abs}{base}\idxfun{cbind}{base}
+\idxfun{diag}{base}\idxfun{pnorm}{stats}\idxfun{cbind}{base}
 
 ```{r}
 stdev <- V %>% diag %>% sqrt
