@@ -1,3 +1,5 @@
+# Censored and truncated models {#sec-tobit}
+
 <!-- precportfolio food trafficcitations + charitable dans tobit1 -->
 
 ```{r }
@@ -6,41 +8,39 @@
 source("../_commonR.R")
 ```
 
-# Censored and truncated models {#sec-tobit}
-
 We'll discuss in this chapter models for which the value of the
 response is continuous and observed only in a certain range. These
 variables are truncated for a certain value, which can be on the left
 side of the distribution ($l$), on the right side ($u$) or on both
 sides. Therefore, the distribution of such a variable is a mix of a
-discrete and of a continuous distribution:
+discrete and a continuous distribution:
 
 - the value of $y$ is continuous on the $]l, u[$ interval, and its
   distribution can be described by a density function $f(y)$,
 - there is a mass of probability on $l$ or/and on $u$, which is
   described by a probability $P(y = l)$ or/and $P(y = u)$.
   
-@sec-trunc_cens describes the situations where such responses occur. The Tobit model is presented in details in @sec-tobit1, the relevant estimation methods in @sec-tobit_estim and their implementation in **R** in @sec-tobit_estim_R. @sec-tobit_eval presents different tools useful to evaluate fitted models. Finally, @sec-tobit2 presents the two equations tobit model. 
+@sec-trunc_cens describes the situations where such responses occur. The Tobit model is presented in details in @sec-tobit1, the relevant estimation methods in @sec-tobit_estim and their implementation in **R** in @sec-tobit_estim_R. @sec-tobit_eval presents different tools useful to evaluate fitted models. Finally, @sec-tobit2 presents the two-equations tobit model. 
 
 ## Truncated response, truncated and censored samples {#sec-trunc_cens}
   
-Truncated responses are observed in different context in
-economics. The first one is a corner solution, the second one is a
-problem of missing data, also called censoring and the last one is a
+Truncated responses are observed in different contexts in
+economics. The first is a corner solution, the second is a
+problem of missing data, also called censoring, and the last is a
 problem of selection, also called incidental truncation.
 
 ### Corner solution
 \index[general]{corner solution|(}
 
 Consider a consumer who can buy two goods, food ($z$) and vacations
-($y$). Denoting $q_z$ and $q_y$ the quantities of the two goods, assume that the preferences of the consumer can be represented by the following utility function:
+($y$). Denoting $q_z$ and $q_y$ as the quantities of the two goods, assume that the preferences of the consumer can be represented by the following utility function:
 
 $$
 U(q_y,q_z) = (q_y + \mu) ^ \beta q_z ^ {1 - \beta}
 $$
 
 where $0 < \beta < 1$ and $\mu > 0$. The consumer seeks to maximize
-its utility subject to its budget constraint, which writes $x=p_y q_y +
+their utility subject to their budget constraint, which writes $x=p_y q_y +
 p_z q_z$, where $x$ is the income and $p_y$ and $p_z$ are the
 unit prices of the two goods. For an interior solution, the consumer should equate the
 marginal rate of substitution to the price ratio\:
@@ -63,8 +63,8 @@ q_y &=& \displaystyle\beta \frac{x}{p_y} - (1-\beta)\mu \\
 $$
 
 Note that the demand function for $y$ can return negative values,
-which of course is impossible. Therefore, the pseudo demand function
-previously written are only suitable for an interior solution, ie when
+which of course is impossible. Therefore, the pseudo-demand function
+previously written are only suitable for an interior solution, i.e., when
 both goods are consumed. This is only the case for a sufficient level
 of income, namely $\bar{x} = \frac{1 - \beta}{\beta} p_y
 \mu$. For a lower level of income, we have $q_y = 0$ and therefore $q_z =
@@ -112,7 +112,7 @@ substitution equals the price ratio. The consumption of $y$ starts
 when the income is greater than this level.
 The expression simplifies by taking as the response the expense for
 the good, $y = p_y q_y$ and not the quantity. We then have: $y = \beta x - (1 -
-\beta)p_y\mu$ or, replacing $p_y \mu$ by it's expression in terms of
+\beta)p_y\mu$ or, replacing $p_y \mu$ by its expression in terms of
 $\bar{x}$\:
 
 $$
@@ -120,8 +120,8 @@ y = - \beta \bar{x} + \beta x = \alpha + \beta x
 $$
 
 In a linear regression context, the slope is therefore the marginal
-propensity to consume the specific good (for 1 more $ of income, the
-expense increases by $\beta$ $) and the intercept is the opposite of
+propensity to consume the specific good (for 1 more dollar of income, the
+expense increases by $\beta$ dollars) and the intercept is the opposite of
 $\beta$ times the minimum income $\bar{x}$ for which the
 consumption is positive.
 
@@ -140,9 +140,8 @@ good $z$ and not good $y$.
 
 Data censoring occurs when the value of the variable is reported only
 in a certain range $]l,u[$ and is set to $l$ or $u$ otherwise. For
-example, @CROM:PALM:URBA:97\index[author]{De Crombrugghe}\index[author]{Palm}\index[author]{Urbain} estimate the demand for food using
-households survey data in the Netherlands. For the upper five
-percentiles (13030 Dfl), the expenditure is not reported, but is
+example, @CROM:PALM:URBA:97\index[author]{De Crombrugghe}\index[author]{Palm}\index[author]{Urbain} estimate the demand for food using household survey data in the Netherlands. For the upper 5
+percentiles (13030 Dfl), the expenditure is not reported, but it is
 replaced by the average value (17670 Dfl). Therefore, the response is
 right-truncated with $u =13030$. In this case, the data censoring
 process takes the **top-coding** form and $13030$ is not a relevant value of the covariate.\index[general]{top-coding}
@@ -151,18 +150,17 @@ means that only observations for which the response is in the
 continuous observed range are selected. A classic example is
 Hausman and Wise [-@HAUS:WISE:76; -@HAUS:WISE:77]\index[author]{Hausman}\index[author]{Wise} who used data from the New Jersey
 negative income tax experiment, for which families with income above
-one and a half times the poverty level were excluded.
+1.5 times the poverty level were excluded.
 
 ### Sample selection
 \index[general]{sample selection|(}
-The last data generating process is the one of sample selection. It
+The last data-generating process is the one of sample selection. It
 means that the observation of the response in a particular sample is
-not random because of a self selection process. This kind of process
-was first analyzed by @GRON:73\index[author]{Gronau} in the context of women participation
-to the labor force: the response is the wage offered to women, but it is only observed for women who participate to the labor market.
+not random because of a self-selection process. This kind of process
+was first analyzed by @GRON:73\index[author]{Gronau} in the context of women participation in the labor force: the response is the wage offered to women, but it is only observed for women who participate in the labor market.
 Although it is clearly a different form of truncation compared to the
 case of a corner solution or data censoring, the models that deal with
-these kinds of responses are much alike, it therefore makes sense to
+these kinds of responses are much alike; it therefore makes sense to
 consider these two cases in the same chapter.
 \index[general]{sample selection|)}
 <!-- Data censoring often occurs when the response is a duration, for -->
@@ -186,46 +184,45 @@ Responses considered in this chapter are **truncated variables**, but the
 sample used can be either truncated or censored. For the demand for
 vacations\:
 
-- a **censored sample** consists on households for which the expenditure on vacations is positive and on household for which this exprenditure is 0,
-- a **truncated sample** consists only on households for which the expenditure
+- a **censored sample** consists of households for which the expenditure on vacations is positive and on household for which this expenditure is 0,
+- a **truncated sample** consists only of households for which the expenditure
   is strictly positive. 
   
 Samples used in consumer expenditure surveys are censored. A
-representative sample of households is surveyed and this includes
+representative sample of households is surveyed, and this includes
 households that don't have any expenditure on vacations during the survey.
-On the contrary, samples that consist on individual surveyed in a
-travel agency or in an airport are truncated samples, ie sample for
+On the contrary, samples that consist of individual surveyed in a
+travel agency or in an airport are truncated samples, i.e., sample for
 which the variable of interest (vacation expenditure) is strictly
 positive. 
 Estimation of models using censored samples are called **censored
 regression model** or **tobit** models. The tobit name comes from James
-Tobin, who is the first economist that proposed this model in
-econometrics [@TOBI:58]\index[author]{Tobin} and was proposed by @GOLD:64\index[author]{Goldberger} because of its similarity
-with the probit model.
+Tobin, who is the first economist who proposed this model in
+econometrics [@TOBI:58]\index[author]{Tobin}, and it was proposed by @GOLD:64\index[author]{Goldberger} because of its similarity
+to the probit model.
 Estimation on truncated samples leads to the **truncated regression
 model** [@CRAG:71; and @HAUS:WISE:76;@HAUS:WISE:77]\index[author]{Hausman}\index[author]{Wise}\index[author]{Cragg}.
 
-In a classic paper, @AMEM:84\index[author]{Amemiya} surveyed different flavors of the tobit
-model and proposed a typology of 5 categories, that he called tobit1,
-tobit2, ..., tobit5. We'll concentrate on this chapter on the first
+In a classic paper, @AMEM:84\index[author]{Amemiya} surveyed different flavors of the tobit model and proposed a typology of five categories, tobit1,
+tobit2, ..., tobit5. We'll concentrate in this chapter on the first
 two categories:
 
-- the **tobit-1** model, which is a model with one equation which
+- the **tobit-1** model is a model with one equation which
   explains jointly the probability that the value of the response is in the observable
   range and the value of the response if it is observed,
-- the **tobit-2** model, which is a bivariate model, the first equation indicating whether the response
-  is in the observable range or not and the second one indicating
+- the **tobit-2** model, which is a bivariate model, with the first equation indicating whether the response
+  is in the observable range or not, and the second one indicating
   the value of the response when it is observed.
 
 ## Tobit-1 model {#sec-tobit1}
 
-We'll denote by tobit-1 (or tobit for short)  a linear model of the usual form: $y_n = \alpha + \beta ^ \top x_n + \epsilon_n = \gamma ^ \top z_n + \epsilon_n$, where $y$ is only observed in a certain range, say $y \in ] l, u[$. In general, the tobit name is restricted to models estimated in a censored sample. We'll treat in the same section the case where the estimation is performed in a truncated sample.
-In a semi-parametric setting, no hypothesis are made on the
+We'll denote by tobit-1 (or tobit, for short)  a linear model of the usual form: $y_n = \alpha + \beta ^ \top x_n + \epsilon_n = \gamma ^ \top z_n + \epsilon_n$, where $y$ is only observed in a certain range, say $y \in ] l, u[$. In general, the tobit name is restricted to models estimated in a censored sample. We'll treat in the same section the case where the estimation is performed in a truncated sample.
+In a semi-parametric setting, no hypotheses are made on the
 distribution of $\epsilon_n$. On the contrary, a fully  parametric model
-will specify the distribution of $\epsilon$, for example it will
-suppose that $\epsilon_n \sim \mathcal{N} (0, \sigma_\epsilon^2)$, ie that the errors of the
+will specify the distribution of $\epsilon$; for example, it will
+suppose that $\epsilon_n \sim \mathcal{N} (0, \sigma_\epsilon^2)$, i.e., that the errors of the
 model are normal and homoskedastic. In the context of the linear
-regression model, violation of these assumptions are not too severe,
+regression model, violation of these assumptions is not too severe,
 as the estimator is still consistent. This is not the case for the
 model studied in this chapter, as wrong assumptions of
 homoskedasticity and normality will lead to biased and inconsistent
@@ -274,13 +271,13 @@ $$
 so that $\int_{l}^{u} f(y) dy = 1$.
 As $y$ is truncated, its expected value and its variance are not
 $\mu$ and $\sigma^ 2$. More precisely, left(-right) truncation will lead
-to an expected value greater(-lower) than $\mu$. On
+to an expected value greater(-lower) than $\mu$. In
 @fig-normal2Trunc, the expected value is greater than $\mu$
 because the truncation is more severe on the left. Obviously,
 reducing the range of the values of $y$ implies a reduction of the
 variance, so that $\mbox{V}(y) < \sigma^2$. 
 To compute the first two moments of this distribution, it's easier to consider
-first a truncated standard normal deviate $z$. The three following results will be used: $\phi(z)' = - z \phi(z)$, $\left[\Phi(z) - z \phi(z)\right]' = z ^ 2 \phi(z)$ and $\lim\limits_{z \to \pm \infty}z\phi(z)=0$
+first a truncated standard normal deviate $z$. The three following results will be used: $\phi(z)' = - z \phi(z)$, $\left[\Phi(z) - z \phi(z)\right]' = z ^ 2 \phi(z)$ and $\lim\limits_{z \to \pm \infty}z\phi(z)=0$.
 
 For the left-truncated case, the expectation and the variance are:
 
@@ -337,13 +334,13 @@ $\mbox{V}(y \mid y < u) = \sigma ^ 2\left[1 -\lambda_{\tilde{u}}(\lambda_{\tilde
 <!-- \end{array} -->
 <!-- $$ -->
 
-Consider now the special (and very common) case where the distribution of $y$ is normal left-truncated at $l = 0$, with untruncated mean and variance equals to $\mu_n = \alpha + \beta ^ \top x_n = \gamma ^ \top z_n$ and $\sigma_\epsilon ^ 2$. Then, $\tilde{l} = - \mu_n / \sigma$ and the inverse mills ratio is:^[By symmetry of the normal distribution, $\phi(-z) = \phi(z)$ and $1 - \Phi(z) = \Phi(-z)$.]
+Consider now the special (and very common) case where the distribution of $y$ is normal left-truncated at $l = 0$, with untruncated mean and variance equal to $\mu_n = \alpha + \beta ^ \top x_n = \gamma ^ \top z_n$ and $\sigma_\epsilon ^ 2$. Then, $\tilde{l} = - \mu_n / \sigma$ and the inverse mills ratio is:^[By symmetry of the normal distribution, $\phi(-z) = \phi(z)$ and $1 - \Phi(z) = \Phi(-z)$.]
 
 $$
 \lambda_{\tilde{0}} = \frac{\phi(-\mu_n/\sigma)}{1 - \Phi(-\mu_n/\sigma)} = \frac{\phi(\mu_n/\sigma)}{\Phi(\mu_n/\sigma)}
 $$
 Let $r(x) = \frac{\phi(x)}{\Phi(x)}$; then $\lambda_{\tilde{0}} = r(\mu_n / \sigma)$. The derivative of $r$ is: $r'(x) = - r(x) \left[r(x) + x\right]$. 
-$r(x)$ is represented on @fig-mills. It is a decreasing function, with $\displaystyle \lim_{x\rightarrow
+$r(x)$ is represented in @fig-mills. It is a decreasing function, with $\displaystyle \lim_{x\rightarrow
 -\infty} r(x) + x= 0$ and $\displaystyle \lim_{x\rightarrow +\infty} r(x)= 0$.
 
 ```{r }
@@ -432,11 +429,11 @@ model:
 
 - the conditional variance depends on $x$ so that the errors of the
   model are heteroskedastic,\index[general]{heteroskedasticity}
-- the conditional expectation of $y$ is now longer equal to
+- the conditional expectation of $y$ is no longer equal to
   $\mu_n = \alpha+\beta ^ \top x_n$, but to $\mu_n + \sigma r(\mu_n / \sigma)$ or, stated differently, the errors of the model are correlated with the covariate as $\mbox{E}(\epsilon \mid x) = \sigma r(\mu_n / \sigma)$.
   
 The first point implies that the OLS estimator is
-inefficient, the second one that it is biased and inconsistent. For the case where there is only one covariate and $\beta > 0$, this correlation is illustrated on @fig-normtrunc4
+inefficient, the second one that it is biased and inconsistent. For the case where there is only one covariate and $\beta > 0$, this correlation is illustrated in @fig-normtrunc4
 which presents the distribution of $y$ for different values of $x$. The
 mode of the distribution is $\alpha + \beta x$ (and it would also be
 $\mbox{E}(y\mid x)$ if the response weren't
@@ -453,7 +450,7 @@ knitr::include_graphics("./tikz/fig/normTrunc4.png", auto_pdf = TRUE)
 
 As $x$ increases, $\alpha + \beta x$ increases, which reduces
 $\mbox{P}(y < 0)$ and makes the truncated normal density closer to the
-untruncated one. As we can see on @fig-normtrunc4, the distance between the
+untruncated one. As we can see in @fig-normtrunc4, the distance between the
 mode of the distribution $\alpha + \beta x$ and $\mbox{E}(y|x)$, which is
 $\mbox{E}(\epsilon\mid x)$ decreases with higher values of $x$.
 This situation is illustrated, using simulated data on
@@ -461,11 +458,12 @@ This situation is illustrated, using simulated data on
 line is the regression line for this sample. Its slope is slightly
 lower than $\beta$, which illustrates the fact that the OLS estimator
 of the slope is downward biased (if $\beta > 0$, which is the case
-here). The dashed line depicts $\mbox{E}(y\mid x, y > 0)$. For large
-values of $x$, it is almost the same as the black line, which indicates than in this range of values of $x$,
+here). The dashed line depicts $\mbox{E}(y\mid x, y > 0)$. 
+
+For large values of $x$, it is almost the same as the black line, which indicates that in this range of values of $x$,
 $\mbox{E}(y\mid x, y > 0)$ is almost equal to $\alpha + \beta x$, which
 means than the correlation between $x$ and $\epsilon$ almost
-vanishes. On the opposite, for low values of $x$, the gap between
+vanishes. Conversely, for low values of $x$, the gap between
 $\mbox{E}(y\mid x, y > 0)$ and $\alpha + \beta x$
 increases. This gap is $\mbox{E}(\epsilon\mid x, y > 0)$, it is
 positive and is particularly high for very low values of $x$. As
@@ -548,7 +546,7 @@ is biased and inconsistent.\index[general]{bias!truncated response}
 Least squares estimation is illustrated, using simulated data, on
 @fig-simulbiascens. The downward bias of the slope seems more severe than for the
 truncated sample because there are much more observations for very low
-values of $x$, ie in the range of the values of $x$ where the
+values of $x$, i.e., in the range of the values of $x$ where the
 correlation between $x$ and $\epsilon$ is severe.
 
 ```{r }
@@ -563,7 +561,7 @@ d %>% ggplot(aes(x, y)) + geom_jitter(size = 0.1, width = 0, height = .02) +
 ```
 
 The asymptotic bias of the OLS estimator has been computed by @GOLD:81\index[author]{Goldberger} for a truncated sample and by
-@GREE:81\index[author]{Greene} for a censored sample, with the hypothesis that $y$ and $x$ follow a jointly normal distribution. In both cases, we have, denoting $\hat{\beta}$ the OLS estimator: $\mbox{plim}\;  \hat{\beta} = \theta \beta$, with $0 < \theta < 1$. Therefore the bias of the OLS estimator is an attenuation bias, which means that the OLS estimator converges in absolute value to a value lower than the true parameter. Moreover, for the censored sample case: 
+@GREE:81\index[author]{Greene} for a censored sample, with the hypothesis that $y$ and $x$ follow a jointly normal distribution. In both cases, we have, denoting $\hat{\beta}$ the OLS estimator: $\mbox{plim}\;  \hat{\beta} = \theta \beta$, with $0 < \theta < 1$. Therefore, the bias of the OLS estimator is an attenuation bias, which means that the OLS estimator converges in absolute value to a value lower than the true parameter. Moreover, for the censored sample case: 
 
 $$
 \mbox{plim}\;  \hat{\beta} = \Phi(\mu_y / \sigma) \beta
@@ -842,7 +840,7 @@ x_{nk}} &=& \beta_k \left[1 + r'\left(\frac{\mu_n}{\sigma}\right) \right]
 \right.
 $$
 
-The effect of a change of a covariate is represented on
+The effect of a change of a covariate is represented in
 @fig-mfx for the simple covariate case, with $\beta > 0$.
 When the value of $x$ increases from $x_1$ to $x_2$, the untruncated
 normal density curve moves to the right, the mode increasing from
@@ -861,12 +859,12 @@ expectation of $x$, which is multiplied by the probability that $y$ is
 observed: $\Delta \mbox{E}(y\mid x, y > 0) \times \Phi\left(\frac{\alpha +
 \beta x}{\sigma}\right)$.
 The first one can be considered as an increase of $y$ on the **extensive
-margin**, ie due to the fact that for more people, we observe $y >
+margin**, i.e., due to the fact that for more people, we observe $y >
 0$. The second one is an increase of $y$ on the **intensive margin**,
-which means that for people for which $y$ was already positive, the
+which means that people for which $y$ was already positive, the
 value of $y$ increases.^[This decomposition of marginal effects for
 tobit models was first proposed by @MCDO:MOFF:80\index[author]{McDonald}\index[author]{Moffitt}]
-The sum of these two components give the marginal effect of a
+The sum of these two components gives the marginal effect of a
 variation of $x$ on the unconditional expected value of $y$, which is
 simply:
 
@@ -885,7 +883,7 @@ Note (@eq-bias_ols_censored_sample) that it is exactly the probability limit of 
 
 ## Methods of estimation {#sec-tobit_estim}
 
-Several consistent estimators are available for the truncated and for the
+Several consistent estimators are available for the truncated and the
 censored model. We'll start by inefficient estimators (non-linear
 least squares, probit and two-step estimators). We'll then present
 the maximum likelihood estimator which is asymptotically efficient if
@@ -921,16 +919,16 @@ To estimate the probit model, we first have to compute a binary
 response from the observed response which is equal to 1 if $y > 0$ and
 0 if $y = 0$. We then obtain a vector of estimated coefficients
 $\hat{\delta}$ which are related to the structural coefficients of the
-model by the relation $\delta = \frac{\gamma}{\sigma}$. Obviously the
+model by the relation $\delta = \frac{\gamma}{\sigma}$. Obviously, the
 probit estimation can only be performed for a censored sample, and
-not for a truncated sample for which all the values of $y$ are
+not a truncated sample for which all the values of $y$ are
 positive.
-Remind that the expected value of $y$ is: $\mbox{E}(y_n\mid x_n) = \gamma^\top z_n + \sigma r\left(\gamma^\top z_n/\sigma\right)$.
+Remember that the expected value of $y$ is: $\mbox{E}(y_n\mid x_n) = \gamma^\top z_n + \sigma r\left(\gamma^\top z_n/\sigma\right)$.
 If $\gamma/\sigma$ were known and denoting $r_n =
 r(\gamma^\top z_n/\sigma)$, estimating the equation: $y_n=\gamma ^\top z_n + \sigma r_n + \nu_n$
 by least squares would lead to consistent estimates of $\gamma$ and
 $\sigma$ as $\mbox{E}(y_n\mid x_n, r_n) = \gamma^\top x_n + \sigma r_n$
-or $\mbox{E}(\nu_n\mid x_n, r_n) = 0$. $r_n$ is obviously unknown as
+or $\mbox{E}(\nu_n\mid x_n, r_n) = 0$. $r_n$ is obviously unknown, as
 it depends on the parameters we seek to estimate, but it can be
 consistently estimated, using the probit estimator, by $\hat{r}_n =
 r\left(\hat{\delta}^\top z_n\right)$. This idea leads to the
@@ -947,13 +945,12 @@ Denote $W = (Z, \hat{r}) = (1, X, \hat{r})$ the matrix of covariates for the sec
   reported by the OLS estimation is $\hat{\sigma}_\epsilon ^ 2 (W^\top W) ^
   {-1}$. It is inconsistent for two reasons:
   
-- the first one is that the errors of the model are heteroskedastic,
+- the errors of the model are heteroskedastic,
   their variance being $\mbox{V}(\epsilon_n) = \sigma ^ 2 (1 +
   r'(\gamma^\top z_n / \sigma))$,
-- the second one is that the supplementary covariate $\hat{r}(\delta^ \top z_n)$ differs from the true value of
-  $r(\delta ^ \top z_n)$, which inflates the variance of the estimators.
+- the supplementary covariate $\hat{r}(\delta^ \top z_n)$ differs from the true value of $r(\delta ^ \top z_n)$, which inflates the variance of the estimators.
 A consistent estimate of the covariance matrix of the two-step
-estimator is^[See for example @AMEM:84\index[author]{Amemiya} equation 28 page 13.]:
+estimator is^[See for example @AMEM:84\index[author]{Amemiya}, equation 28, page 13.]:
 \index[general]{covariance matrix!two-step estimator}
 
 $$
@@ -965,9 +962,8 @@ $$
 $\Sigma$ is a matrix that takes into account the
 heteroskedasticity, it is a diagonal matrix that contains either
 $\hat{\sigma} ^ 2 (1 + r'(\hat{\delta}^\top z_n))$ 
-or, following @WHIT:80's\index[author]{White} argument, the square of the residual
-$y_n - \hat{\gamma} ^ \top z_n -  \hat{\sigma} \hat{r}_n$.
-The second matrix, that uses the covariance matrix of the first stage probit regression, takes into account the fact that $\hat{r}_n$ is introduced in place of $r_n$.
+or, following the argument of @WHIT:80\index[author]{White}, the square of the residual $y_n - \hat{\gamma} ^ \top z_n -  \hat{\sigma} \hat{r}_n$.
+The second matrix, which uses the covariance matrix of the first stage probit regression, takes into account the fact that $\hat{r}_n$ is introduced in place of $r_n$.
 
 \index[general]{tobit-1!two-step estimator|)}
 \index[general]{two-step estimator!tobit-1|)}
@@ -1024,7 +1020,7 @@ which is simply the product of:
 
 - the likelihood of a probit model which explains that $y=0$ or $y >
   0$ (the first line of @eq-tobit1_probit_plus_trunc),
-- the likelihood of $y$ for the truncated sample (the second line). 
+- the likelihood of $y$ for the truncated sample (the second line of @eq-tobit1_probit_plus_trunc). 
 
 Denoting $L^P$ the likelihood of the probit model, we then have:
 
@@ -1032,7 +1028,7 @@ $$
 L^C(\gamma, \sigma \mid y,x)=L^P(\gamma,\sigma\mid y, x) \times L^T(\gamma, \sigma \mid y, x)
 $$
 
-Taking logs and re-arranging terms, we finally get:
+Taking logs and rearranging terms, we finally get:
 
 $$
 \begin{array}{rcl}
@@ -1058,13 +1054,13 @@ $$
 \psi_n = - (1 - d_n)\sigma r_n + d_n (y_n - \mu_n)
 $$ {#eq-gen_residuals_tobit}
 
-should be orthogonal to all the regressors. Note that, for positive values of $y$, the generalized residual is just the standard residual. For null values of $y$, which means negative values of $y^*$, the generalized residual is: $\mbox{E}(y_n^* - \mu_n \mid x, y_n ^*\leq 0) = - \sigma r_n$. As $y_n^*$ and therefore the residual for null observations are unobserved, they are simply replaced by their expectations.
+and it is orthogonal to all the regressors. Note that, for positive values of $y$, the generalized residual is just the standard residual. For null values of $y$, which means negative values of $y^*$, the generalized residual is: $\mbox{E}(y_n^* - \mu_n \mid x, y_n ^*\leq 0) = - \sigma r_n$. As $y_n^*$ and therefore the residuals for null observations are unobserved; they are simply replaced by their expectations.
 The hessian is rather tricky, but its
 expression can be greatly simplified using a reparametrization, due
 to @OLSE:78\index[author]{Olsen}: $\delta = \gamma / \sigma$ and $\theta = 1 / \sigma$.
 @OLSE:78\index[author]{Olsen} showed that the log-likelihood function of the censored model
 expressed in terms of $\delta$ and $\theta$ is globally concave and
-therefore admit a unique optimum which is a maximum. 
+therefore admits a unique optimum which is a maximum. 
 \index[general]{residuals!generalized!censored regression model|)}
 \index[general]{generalized residuals!censored regression model|)}
 
@@ -1073,8 +1069,8 @@ therefore admit a unique optimum which is a maximum.
 
 \index[general]{semi-parametric estimator!tobit-1|(}
 \index[general]{tobit-1!semi-parametric estimator|(}
-In a semi-parametric approach, only the regression function, ie
-$\mbox{E}(y \mid x)= \mu_n = \alpha + \beta^\top x$ is parametrically specified, while the rest of the
+In a semi-parametric approach, only the regression function, i.e., 
+$\mbox{E}(y \mid x)= \mu_n = \alpha + \beta^\top x$, is parametrically specified, while the rest of the
 model (especially the conditional distribution of $y$) is not. This
 approach is therefore much more generally applicable. Compared to the
 estimators presented in the previous two sections, which are only
@@ -1083,29 +1079,27 @@ homoskedastic, the semi-parametric estimator presented in this section [@POWE:86
 is consistent in a much broader context, as it requires only the
 symmetry of the conditional distribution of the response.
 
-For the left-zero truncated response
-case, the OLS estimator is biased because the conditional distribution
+For the zero left-truncated response case, the OLS estimator is biased because the conditional distribution
 of $y$ is asymmetric, as the observations on the lower tail of the
 distribution ($y < 0$) are either missing (the case of a truncated
 sample) or set to 0 (the case of a censored sample). For the case of a
 truncated sample, trimming the observations for which 
-$y_n > 2\mu_n$, ie observations that lie in the upper tail, would restore
-the symmetry and OLS estimation on this trimmed sample would be
-consistent. This situation is depicted on @fig-symmetric.
-
+$y_n > 2\mu_n$, i.e., observations that lie in the upper tail, would restore
+the symmetry, and OLS estimation on this trimmed sample would be
+consistent. This situation is depicted in @fig-symmetric.
 
 ```{r }
 #| label: fig-symmetric
-#| fig-cap: "Symmetricaly trimmed truncated distribution"
+#| fig-cap: "Symmetrically trimmed truncated distribution"
 #| echo: FALSE
 knitr::include_graphics("./tikz/fig/symetric.png", auto_pdf = TRUE)
 ```
 
-The plain line represents the distribution of the not-truncated
+The plain line represents the distribution of the untruncated
 response, the dashed line the corresponding distribution of the
-zero-left truncated response. This distribution is asymmetric and the
+left zero-truncated response. This distribution is asymmetric, and the
 expected value of $y$ for $x=x_n$ is above $\mu_n$
-because of the left truncation. The dotted line represents the
+because of the left-truncation. The dotted line represents the
 two-sided truncated distribution of $y$, truncated at 0 on the left side
 and at $2\mu_n$ on the right side. As the untruncated distribution
 of $y$ is symmetric, so is the two-sided truncated distribution, for
@@ -1113,12 +1107,12 @@ which the conditional expected value of $y$ is now equal to
 $\mu_n$. Therefore, if we were able to remove from the sample
 all the observations for which $y_n > 2 \mu_n$, the OLS estimator
 on this trimmed sample would be consistent. Of course, the problem is
-that the right truncation point is unknown for every observation as
+that the right-truncation point is unknown for every observation, as
 it depends on $\gamma$ which is the parameter vector that we seek to
 estimate. The subset of observations that should be kept are such that $0 < y_n < 2\gamma^\top z_n$, or $-\gamma^\top z_n < \epsilon_n < \gamma^\top z_n$, the first inequality being always verified for a truncated sample. Note that this condition will remove all the
 observations for which $\gamma^\top z_n < 0$.
 
-The first order conditions to minimize the sum of squares
+The first-order conditions to minimize the sum of squares
 of the residuals for the trimmed sample is then similar to the normal
 equations ($\sum_{n=1}^N (y_n - \gamma ^ \top z_n) z_n = 0$) on the relevant
 subset of the sample:
@@ -1144,16 +1138,15 @@ z_n\right)\right] ^ 2
 $$
 
 leads to @eq-foc_trimmed_trunc.
-This **symmetrically truncated least square** estimator easily extends to the case of
-censored samples. In this case, negative values of $y$ are unobserved
+This **symmetrically truncated least squares** estimator easily extends to the case of
+censored samples. In this case, negative values of $y$ are unobserved,
 and the value of the response is set to 0. A symmetrically censored
-sample is obtained by setting the response, for observations for which
+sample is obtained by setting the response, for observations whose
 the observed value of $y$ is greater than $2\mu_n$ to
-$2\mu_n$. This means that as the response is zero-left
-censored, we also right-censor it, with a truncation value that is
-specific to the observation and that depends on the set of unknown
+$2\mu_n$. This means that as the response is zero left-censored, we also right-censor it, with a truncation value that is
+specific to the observation, and that depends on the set of unknown
 parameters $\gamma$ we seek to estimate. The resulting first-order
-conditions to minimize the sum of squares of the "symmetrically
+condition to minimize the sum of squares of the "symmetrically
 censored sample" is:
 
 $$
@@ -1175,7 +1168,7 @@ $$
 
 ## Estimation of the tobit-1 model with R {#sec-tobit_estim_R}
 
-The estimation the tobit-1 model is available in functions of different packages: `AER::tobit`, `censReg::censReg` and `micsr::tobit1`. All these functions use the usual formula-data interface to describe the model to be estimated and also a `left` and a `right` argument to indicate the truncation points. The default values of these last two arguments are 0 and $+\infty$, which corresponds to the most usual zero-left truncated case. The   `micsr::tobit1` function allows to use either a censored or a truncated sample by setting the `sample` argument either to `"censored"` or `"truncated"`. The other two functions only allows the estimation of the censored regression model. The truncated regression model can also be estimated using the `truncreg::truncreg` function. `micsr::tobit1` also has the advantage of providing several different estimators, selected using the `method` argument: `"ml"` for maximum likelihood, `"lm"` for linear model, `"twostep"` for the two-step estimator, `"trimmed"` for the trimmed estimator and `"nls"` for the non-linear least squares estimator, the two other functions only providing the maximum likelihood estimator. We'll present three examples of application, with respectively a left-truncated, a right-truncated and a two-sided truncated response.
+The estimation of the tobit-1 model is available in functions of different packages: `AER::tobit`, `censReg::censReg` and `micsr::tobit1`. All these functions use the usual formula-data interface to describe the model to be estimated and also a `left` and a `right` argument to indicate the truncation points. The default values of these last two arguments are 0 and $+\infty$, which correspond to the most usual zero left-truncated case. The   `micsr::tobit1` function allows to use either a censored or a truncated sample by setting the `sample` argument either to `"censored"` or `"truncated"`. The other two functions only allow the estimation of the censored regression model. The truncated regression model can also be estimated using the `truncreg::truncreg` function. `micsr::tobit1` also has the advantage of providing several different estimators, selected using the `method` argument: `"ml"` for maximum likelihood, `"lm"` for linear model, `"twostep"` for the two-step estimator, `"trimmed"` for the trimmed estimator and `"nls"` for the non-linear least squares estimator, the two other functions only providing the maximum likelihood estimator. We'll present three examples of application, with respectively a left-truncated, a right-truncated and a two-sided truncated response.
 
 ### Left-truncated response {#sec-charitable_estimation}
 
@@ -1188,18 +1181,13 @@ The `charitable` data set is used by @WILH:08\index[author]{Wilhelm} and concern
 charitable %>% print(n = 3)
 ```
 
-The response is called `donation`, it measures annual charitable
-givings in $US. This variable is left-censored for the value of 25, as
-this value corresponds to the item "less than 25 $US
-donation". Therefore, for this value, we have households who didn't
-make any charitable giving and some who made a small giving (from 1
-to 25 $US). The covariates used are the donation made by the parents
-(`donparents`), two factors indicating the educational level and
+The response is called `donation`; it measures annual charitable
+giving in US dollars. This variable is left-censored for the value of 25, as
+this value corresponds to the item "less than $25 donation". Therefore, for this value, we have households who didn't make any charitable giving and some who made a small giving (from $1 to $25). The covariates used are the donations made by the parents (`donparents`), two factors indicating the educational level and
 religious beliefs (respectively `education` and `religion`), annual
 income (`income`) and two dummies for living in the south (`south`)
 and for married couples (`married`). 
-@WILH:08\index[author]{Wilhelm} considers the value of the donation in logs and subtract from it $\ln
-25$, so that the response is 0 for households who gave no donation or
+@WILH:08\index[author]{Wilhelm} considers the value of the donation in logs and subtracts from it $\ln 25$, so that the response is 0 for households who gave no donation or
 a small donation.
 \idxfun{mutate}{dplyr}
 
@@ -1235,11 +1223,11 @@ ch_ols <- update(ch_ml, method = "lm")
 <!-- nls only for zero-left truncated with truncated sample -->
 
 The results of the three models are presented in 
-@tbl-models.^[To save place, the coefficients of the levels of the `education` and `religion` covariates are omitted.] The last two columns of @tbl-models match  the
+@tbl-models.^[To save space, the coefficients of the levels of the `education` and `religion` covariates are omitted.] The last two columns of @tbl-models match  the
 first two columns of table 3 of @WILH:08\index[author]{Wilhelm}, page 577. Note that the OLS
 estimators are in general lower in absolute values than those of the three
 other estimators, which illustrates the fact that OLS estimators are
-biased toward zero when the response is censored. More precisely @eq-bias_ols_censored_sample indicates that the OLS estimator converges to $\Phi(\mu_y / \sigma) \beta$. $\Phi(\mu_y / \sigma)$ is the probability of $y > 0$ ($y$ being in our example the log of the donation minus $\ln 25$) and can be consistently estimated by the share of uncensored observations in our sample, which is about two thirds. Therefore, the ratio of the OLS estimator and one of a consistent estimator, for example the ML estimator, should be approximately equal to 2/3. This is actually the case for the first two covariates: 
+biased toward zero when the response is censored. More precisely @eq-bias_ols_censored_sample indicates that the OLS estimator converges to $\Phi(\mu_y / \sigma) \beta$. $\Phi(\mu_y / \sigma)$ is the probability of $y > 0$ ($y$ being in our example the log of the donation minus $\ln 25$) and can be consistently estimated by the share of uncensored observations in our sample, which is about two-thirds. Therefore, the ratio of the OLS estimator and one of a consistent estimator, for example the ML estimator, should be approximately equal to two-thirds. This is actually the case for the first two covariates: 
 $`r round(coef(ch_ols)[2], 3)` / `r round(coef(ch_ml)[2], 3)` = `r round(coef(ch_ols)[2] / coef(ch_ml)[2], 3)`$ and 
 $`r round(coef(ch_ols)[3], 3)` / `r round(coef(ch_ml)[3], 3)` = `r round(coef(ch_ols)[3] / coef(ch_ml)[3], 3)`$.
 
@@ -1251,7 +1239,8 @@ $`r round(coef(ch_ols)[3], 3)` / `r round(coef(ch_ml)[3], 3)` = `r round(coef(ch
 modelsummary::msummary(list("OLS" = ch_ols, "2-steps" = ch_twostep, 
                             "ML" = ch_ml, "SCLS" = ch_scls), 
                        coef_omit = "(education|religion)", estimate = "{estimate}{stars}",
-                       coef_rename = c("sigma" = "$\\sigma$"), escape = FALSE)
+                       coef_rename = c("sigma" = "$\\sigma$"), escape = FALSE,
+                       output = "kableExtra")
 ```
 \idxdata[)]{charitable}{micsr}
 
@@ -1274,8 +1263,7 @@ food %>% filter(year == 1980) %>%
               f = mean(food == 17670))
 ```
 
-The percentage of censored observations is a not exactly 5% because some observations have been excluded because of missing values for some covariates. The response being expressed
-in logarithms, the right threshold is set to `log(13030)` and the left
+The percentage of censored observations is not exactly 5%, because some observations have been excluded due to missing values for some covariates. The response being expressed in logarithms, the right threshold is set to `log(13030)` and the left
 one to `- Inf` as the response is not left-truncated.
 \idxfun{tobit1}{micsr}\idxfun{gaze}{micsr}
 
@@ -1289,7 +1277,7 @@ food_tobit %>% gaze
 
 \idxdata[)]{food}{micsr}
 The main coefficient of interest is the one associated with the
-`log(income)` covariate. Remind that in this data censoring case, the coefficient is the marginal effect, in the present context the income elasticity of food which is equal to `r round(coef(food_tobit)[2], 2)`.
+`log(income)` covariate. Remember that in this data censoring case, the coefficient is the marginal effect, in the present context the income elasticity of food which is equal to `r round(coef(food_tobit)[2], 2)`.
 
 ### Two-sided tobit models
 
@@ -1297,25 +1285,25 @@ The main coefficient of interest is the one associated with the
 \idxdata[(]{portfolio}{micsr}
 @HOCH:03 estimates the share of riskless assets, which can be either
   an internal solution, or a corner solution with the share equal to 0
-  or 1 ($l = 0$ and $u=1$). He therefore estimates a two-sided tobit
+  or 1 ($l = 0$ and $u=1$). Hochguertel therefore estimates a two-sided tobit
   model. The paper seeks to explain the low share of risky assets in
   portfolios of Dutch households.  The data set is called `portfolio`.
 This data set is a panel of annual observations from 1993 to 1998. In
     his paper, @HOCH:03 used panel and cross-section estimators (the
-    latter being obtained on the whole data set by pooling the 6
-    time-series). The response is `share` and the two covariates of main interest
+    latter being obtained on the whole data set by pooling the six
+    time-series). The response is `share`, and the two covariates of main interest
     are `uncert` and `expinc`.
 
-- `uncert` indicates the degree of uncertainty felt by the household,
+- `uncert` indicates the degree of uncertainty felt by the household;
   it is a factor with levels `low`, `moderate` and `high`,
 - `expinc` indicates the prediction of the household concerning the
-  evolution of their income in the next 5 years, it is a factor with
+  evolution of their income in the next 5 years; it is a factor with
   levels `increase`, `constant` and `decrease`. 
   
 We'll use a simpler specification than the one used by the author, which contains a lot of
 covariates; we only add to the two covariates previously described
 the net worth, the age of household's head and its square and a dummy
-for households for which the head is a woman. We use the `micsr::tobit1`
+for households whose head is a woman. We use the `micsr::tobit1`
 function and we set the `left` and the `right` arguments respectively
 to 0 and 1.
 \idxfun{mutate}{dplyr}\idxfun{tobit1}{micsr}\idxfun{gaze}{micsr}
@@ -1329,8 +1317,8 @@ prec_ml <- tobit1(share ~ uncert + expinc + networth +
 prec_ml %>% gaze
 ```
 
-As expected, high uncertainty and pessimist expectations about future
-income increase the share of riskless assets. Net worth has a negative effect on the share of riskless assets and households headed by a woman have a higher share of riskless assets. Finally
+As expected, high uncertainty and pessimistic expectations about future
+income increase the share of riskless assets. Net worth has a negative effect on the share of riskless assets, and households headed by a woman have a higher share of riskless assets. Finally
 the effect of age is U-shaped.
 Actually, @HOCH:03 doesn't estimate this model, as he suspected the
 presence of heteroskedascticity. Therefore, he estimates a model for
@@ -1341,10 +1329,10 @@ parameters to be estimated. The `crch::crch` function [@MESS:MAYR:ZEIL:WILK:14]
 such models. The model is described using a two-part formula, the
 second one containing the covariates that are used to estimate
 $\sigma_n$. By default, a logistic link is used ($\ln \sigma_n =
-\gamma ^ \top z_n$) but other links can be selected using the
+\gamma ^ \top z_n$), but other links can be selected using the
 `link.scale` argument. Moreover, departure from normality can be taken
 into account using the `dist` argument by, for example, switching
-from a gaussian distribution (the default) to a student or a
+from a gaussian distribution (the default) to a Student or a
 logistic. For the skedasticity function, we use all the covariates
 used in the main equation except `uncert` and `expinc` which appear to
 be insignificant. 
@@ -1376,8 +1364,8 @@ specification is supported by the data, the log-likelihood value of
 the second specification being much larger than the one of standard
 tobit model. The value of some coefficients are strikingly
 different. For example, the coefficient of `networth` is
-`r round(coef(prec_ml)["networth"], 3)` for the tobit model, but
-`r coef(prec_ht)["networth"]` for the heteroskedastic model, as this
+$`r round(coef(prec_ml)["networth"], 3)`$ for the tobit model, but
+$`r coef(prec_ht)["networth"]`$ for the heteroskedastic model, as this
 covariate also has a huge effect on the conditional variance of the
 response. 
 \idxdata[)]{portfolio}{micsr}
@@ -1390,9 +1378,8 @@ response.
 The most popular method of estimation for the tobit-1 model is the
 fully parametric maximum likelihood method. Contrary to the OLS model,
 the estimator is only consistent if the GDP process is perfectly
-described by the likelihood function, ie if $\epsilon_n \sim \mathcal{N}(0,\sigma)$. In particular, the consistency of the estimator rests on the hypothesis of
-normality and homoskedasticity.
-The conditional moment tests have been presented in @sec-ml_cond_moment_test, they use different powers of the residuals. We have seen on  @sec-cond_moment_binomial for the probit model how to compute these tests when the residuals are not observable: $\epsilon_n ^ k$ is then replaced by $\mbox{E}(\epsilon_n ^ k \mid x_n)$. The computation of the conditional moment test for the tobit model is quite similar, except that the residuals are partially observed (when $d_n=\mathbf{1}(y_n>0) = 1$). Then, we'll use $\epsilon_n ^ k$ if $d_n=1$ and $\mbox{E}(\epsilon_n ^ k \mid x_n)$ if $d_n = 0$. From @eq-moments_normal_trunc, the moments of $\epsilon \sim \mathcal{N}(0, \sigma_\epsilon)$ right-truncated at $-\mu_n$ are, denoting $r_n = \frac{\phi(\mu_n / \sigma_\epsilon)}{1-\Phi(\mu_n / \sigma_\epsilon)}$:
+described by the likelihood function, i.e., if $\epsilon_n \sim \mathcal{N}(0,\sigma)$. In particular, the consistency of the estimator rests on the hypothesis of normality and homoskedasticity.
+The conditional moment tests have been presented in @sec-ml_cond_moment_test, they use different powers of the residuals. We have seen in  @sec-cond_moment_binomial for the probit model how to compute these tests when the residuals are not observable: $\epsilon_n ^ k$ is then replaced by $\mbox{E}(\epsilon_n ^ k \mid x_n)$. The computation of the conditional moment test for the tobit model is quite similar, except that the residuals are partially observed (when $d_n=\mathbf{1}(y_n>0) = 1$). Then, we'll use $\epsilon_n ^ k$ if $d_n=1$ and $\mbox{E}(\epsilon_n ^ k \mid x_n)$ if $d_n = 0$. From @eq-moments_normal_trunc, the moments of $\epsilon \sim \mathcal{N}(0, \sigma_\epsilon)$ right-truncated at $-\mu_n$ are, denoting $r_n = \frac{\phi(\mu_n / \sigma_\epsilon)}{1-\Phi(\mu_n / \sigma_\epsilon)}$:
 
 $$
 \mbox{E}(\epsilon_n ^ k \mid x_n, y_n ^ * \leq 0) = (k - 1) \sigma_\epsilon ^ 2 m_{k-2} -\sigma_\epsilon (- \mu_n) ^ {k-1} r_n
@@ -1415,7 +1402,7 @@ $$ {#eq-table_moments_tobit}
 
 Conditional moment tests can be computed using
 the `micsr::cmtest` function, which can take as input a model fitted by
-either `AER::tobit`, `censReg::censReg` or `micsr::tobit1`. To test respectively the hypothesis of normality and of homoscedasticity, we use:
+either `AER::tobit`, `censReg::censReg` or `micsr::tobit1`. To test respectively the hypothesis of normality and of homoskedasticity, we use:
 \idxfun{cmtest}{micsr}\idxfun{gaze}{micsr}
 \idxdata[(]{charitable}{micsr}
 
@@ -1435,8 +1422,7 @@ cmtest(ml_creg) %>% gaze
 ```
 
 Normality and heteroskedasticity are strongly rejected. The values are
-different from @WILH:08\index[author]{Wilhelm} as he used the "outer product of the gradient"
-form of the test. These versions of the test can be obtained by
+different from @WILH:08\index[author]{Wilhelm}, as he used the "outer product of the gradient" form of the test. These versions of the test can be obtained by
 setting the `opg` argument to `TRUE`.
 \idxfun{cmtest}{micsr}\idxfun{gaze}{micsr}
 
@@ -1493,7 +1479,7 @@ ggplot(filter(charitable, logdon > 0), aes(logdon)) +
 ### Endogeneity
 
 \index[general]{endogeneity!tobit1}
-We have seen in @sec-endog_probit how endogeneity can be taken into account in a probit model. The analyze is almost the same for the probit model. The joint density of the distribution of the latent variable $y^*$ and the endogenous covariates $w$ is assumed to be normal and can be written as the product of the marginal density of $w$ (@eq-marg_density_w) and of the conditional density of $y^*$ (@eq-cond_density_y_star). For the tobit model, the former is exactly the same, but the latter is different because, for the probit model, only the sign of $y ^ *$ is observed. This is not the case for the tobit model, the value of the response being observed if $y^*>0$. Therefore, @eq-cond_density_y_star becomes:
+We have seen in @sec-endog_probit how endogeneity can be taken into account in a probit model. The analysis is almost the same for the probit model. The joint density of the distribution of the latent variable $y^*$ and the endogenous covariates $w$ is assumed to be normal and can be written as the product of the marginal density of $w$ (@eq-marg_density_w) and of the conditional density of $y^*$ (@eq-cond_density_y_star). For the tobit model, the former is exactly the same, but the latter is different because, for the probit model, only the sign of $y ^ *$ is observed. This is not the case for the tobit model, the value of the response being observed if $y^*>0$. Therefore, @eq-cond_density_y_star becomes:
 
 $$
 \begin{array}{rcl}
@@ -1508,7 +1494,7 @@ where, as usual, $d_n = \mathbf{1}(y_n ^ * > 0)$. Note that, as the value of the
 
 \index[general]{endogeneity!tobit1}
 
-In the protection for sale model of @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman}, empirically tested by @GOLD:MAGG:99\index[author]{Goldberg}\index[author]{Maggi}, trade protection is determined by capital owners' lobbying. @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke} extend this model by introducing the potential effect of trade unions' lobbying on trade protection. The response is non-tariff barriers coverage ratio $\tau$, transformed as $\frac{\tau}{1 + \tau}$. The two covariates of @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman} are the inverse of the import penetration ratio^[The value of gross imports divided by the value of shipments.] divided the importation demand elasticity $x_1$ and this variable in interaction with a dummy for capital owner's lobbying $x_2$. The supplementary covariate in @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s model $x_3$ takes into account trade union's lobbying. The data set is called `trade_protection`. We first compute the response and the covariates using raw series:^[The third covariate is quite complicated to compute and is directly available  in `trade_protection` as `labvar`.]
+In the protection for sale model of @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman}, empirically tested by @GOLD:MAGG:99\index[author]{Goldberg}\index[author]{Maggi}, trade protection is determined by capital owners' lobbying. @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke} extend this model by introducing the potential effect of trade unions' lobbying on trade protection. The response is non-tariff barriers coverage ratio $\tau$, transformed as $\frac{\tau}{1 + \tau}$. The two covariates of @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman} are the inverse of the import penetration ratio^[The value of gross imports divided by the value of shipments.] divided by the importation demand elasticity $x_1$ and this variable in interaction with a dummy for capital owners' lobbying $x_2$. The supplementary covariate in the model of @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke} $x_3$ takes into account trade union's lobbying. The data set is called `trade_protection`. We first compute the response and the covariates using raw series:^[The third covariate is quite complicated to compute and is directly available  in `trade_protection` as `labvar`.]
 \idxfun{mutate}{dplyr}\idxfun{rename}{dplyr}
 \idxdata[(]{trade\_protection}{micsr}
 
@@ -1521,19 +1507,19 @@ trade_protection <- trade_protection %>%
   rename(x3 = labvar)
 ```
 
-@MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s theoretical model result in the following structural equation:
+The theoretical model of @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke} results in the following structural equation:
 
 $$
 \frac{\tau}{1+\tau} = - \frac{\Theta}{\Theta + a} x_1 + \frac{1}{\Theta + a}x_2 + \frac{1}{\Theta + a} x_3
 $$
-Therefore, denoting $(\alpha, \beta_1, \beta_2, \beta_3)$ the reduced form parameters, @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s model implies that $\alpha = 0$ and that $\beta_2 = \beta_3$ as, in @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman}'s model $\alpha = \beta_3 = 0$. @MATS:SHER:06 suspect that the three covariates may be endogenous and therefore use the @SMIT:BLUN:86's model. Three models are estimated: 
+Therefore, denoting $(\alpha, \beta_1, \beta_2, \beta_3)$ the reduced form parameters, the model of @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke} implies that $\alpha = 0$ and that $\beta_2 = \beta_3$ as, in the model of  @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman} $\alpha = \beta_3 = 0$. @MATS:SHER:06 suspect that the three covariates may be endogenous and therefore use the model of @SMIT:BLUN:86. Three models are estimated: 
 
-- the @GROS:HELP:94\index[author]{Grossman}\index[author]{Helpman}'s model (GH in short), ie $x_3$ is omitted,
-- the @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s "full" model, that doesn't impose that $\beta_2 = \beta_3$,
-- the @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s "short" model, that imposes that $\beta_2 = \beta_3$,
+- Grossman and Helpman's model \index[author]{Grossman}\index[author]{Helpman} (GH), i.e., $x_3$ is omitted,
+- Matschke and Sherlund's "full" model, \index[author]{Sherlund}\index[author]{Matschke} that doesn't impose that $\beta_2 = \beta_3$,
+- Matschke and Sherlund's "short" model, \index[author]{Sherlund}\index[author]{Matschke} that imposes that $\beta_2 = \beta_3$,
 
 The hypothesis that $\alpha = 0$ is not imposed in the three models.
-Numerous instruments are used, as described in @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}, page 415 and are defined below as a one-side formula:
+Numerous instruments are used, as described in @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}, page 415 and are defined below as a one-sided formula:
 
 ```{r}
 #| label: trade_protection_instruments
@@ -1543,7 +1529,7 @@ inst <- ~ sic3 + k_serv + inv + engsci + whitecol + skill + semskill +
   klratio + bunion
 ```
 
-The formulas for the different models are, in terms of response and covariates only `y ~ x_1 + x_2` for the GH model, `y ~ x_1 + x_2 + x_3` for the full model and `y ~ x_1 + I(x_2 + x_3)` for the short model. To construct the relevant two-part formulas for the IV estimation, we use the `Formula::as.Formula` function that enables to construct a two-part formula, using a standard formula and a one side formula. As an example:
+The formulas for the different models are, in terms of response and covariates only `y ~ x_1 + x_2` for the GH model, `y ~ x_1 + x_2 + x_3` for the full model and `y ~ x_1 + I(x_2 + x_3)` for the short model. To construct the relevant two-part formulas for the IV estimation, we use the `Formula::as.Formula` function that enables to construct a two-part formula, using a standard formula and a one-sided formula. As an example:
 \idxfun{as.Formula}{Formula}
 
 ```{r}
@@ -1567,7 +1553,7 @@ Full <- tobit1(Formula::as.Formula(y ~ x1 + x2 + x3, inst),
 
 ```{r}
 #| echo: false
-#| tbl-cap: "Estimation results for the protection for sale model"
+#| tbl-cap: "Estimation results of the protection for sale model"
 #| label: tbl-protection_for_sale
 modelsummary::msummary(list(GH = GH, Full = Full, Short = Short), 
                        fmt = 4, estimate = "{estimate}{stars}",
@@ -1579,7 +1565,7 @@ modelsummary::msummary(list(GH = GH, Full = Full, Short = Short),
                                     "rho_x3" = "$\\gamma_3$",
                                     "rho_I(x2 + x3)" = "$\\gamma_2 = \\gamma_3$",
                                     "sigma" = "$\\sigma$"),
-                       escape = FALSE)
+                       escape = FALSE, output = "kableExtra")
 ```
 
 The results are presented in @tbl-protection_for_sale.^[See @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}, table 3, page 417.] As in the original article, we use the name of the coefficients and not the name of the terms, which are listed below:
@@ -1604,7 +1590,7 @@ endogtest(Formula::as.Formula(y ~ x1 + I(x2 + x3), inst),
 endogtest(Formula::as.Formula(y ~ x1 + x2 + x3, inst), 
           trade_protection, model = "tobit") %>% gaze
 ```
-The exogeneity hypothesis is not rejected for the GH model, but it is for the two versions of @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s model. The GH model, which is a special case of the Full model is relevant if the hypothesis $\beta_3 = \gamma_3 = 0$ are not rejected. Performing a Wald test, we get:
+The exogeneity hypothesis is not rejected for the GH model, but it is for the two versions of Matschke and Sherlund's model. \index[author]{Sherlund}\index[author]{Matschke} The GH model, which is a special case of the Full model is relevant if the hypotheses $\beta_3 = \gamma_3 = 0$ are not rejected. Performing a Wald test, we get:
 \idxfun{waldtest}{lmtest}\idxfun{gaze}{micsr}
 
 ```{r}
@@ -1613,7 +1599,8 @@ The exogeneity hypothesis is not rejected for the GH model, but it is for the tw
 lmtest::waldtest(Full, GH) %>% gaze
 ```
 
-and the hypothesis is therefore rejected at the 5% (but not at the 1%) level. Then, the hypothesis that $\beta_2 = \beta_3$ and $\gamma_2 = \gamma_3$ implied by @MATS:SHER:06\index[author]{Sherlund}\index[author]{Matschke}'s model can be tested:
+and the hypothesis is therefore rejected at the 5% (but not at the 1%) level. Then, the hypothesis that $\beta_2 = \beta_3$ and $\gamma_2 = \gamma_3$ implied by
+Matschke and Sherlund's\index[author]{Sherlund}\index[author]{Matschke} model can be tested:
 \idxfun{linearHypothesis}{car}\idxfun{gaze}{micsr}
 
 ```{r}
@@ -1628,7 +1615,7 @@ and is not rejected.
 
 \index[general]{tobit-2|(}
 **Tobit-2** models are bivariate models, the first equation being the
-**selection equation** and the second one the **outcome equation**. The model
+**selection equation** and the second the **outcome equation**. The model
 can be written as follow:
 
 $$
@@ -1655,24 +1642,23 @@ Note that the tobit-2 model reduces to the tobit-1 model if $x_1=x_2$
 and $\beta_1=\beta_2$. In the outcome equation, $y_2 ^ *$ can be
 replaced by $\ln y_2 ^*$, so that predicted values of $y_2$ are
 necessarily positive. 
-The tobit-2 model is more general than the tobit-1 model as it allows the
+The tobit-2 model is more general than the tobit-1 model, as it allows the
 economic mechanisms that explain the fact that the response is
 observed to be different from those that explain the value of the
 response.
-The seminal papers about the tobit-2 model are @GRON:73\index[author]{Gronau} with his model
-of female labor supply and Heckman [-@HECK:76; -@HECK:79]\index[author]{Heckman} who precisely described the
+The seminal papers about the tobit-2 model are @GRON:73\index[author]{Gronau} with his model of female labor supply, and Heckman [-@HECK:76; -@HECK:79]\index[author]{Heckman} who precisely described the
 statistical properties of this model and proposed a two-step
 estimator.
-Hurdle models, proposed by @CRAG:71\index[author]{Cragg} can also be considered as tobit-2
+Hurdle models, proposed by @CRAG:71,\index[author]{Cragg} can also be considered as tobit-2
 models. These models describe the level of consumption of a good as a
-two steps process: first, the good should be selected (selection
+two-step process: first, the good should be selected (selection
 equation) and then the level of the consumption is set (outcome
 equation). 
 The tobit-2 model is also widely used to measure the treatment effect
 of public programs. If the selection of individuals in a particular
 program is not purely random, the selection equation describes as a
 binomial model the process of getting hired in the program and the
-outcome equation measures the effectiveness of the program, eg
+outcome equation measures the effectiveness of the program, e.g., 
 the wage one year after leaving the program.
 
 ### Two-part models
@@ -1681,22 +1667,21 @@ the wage one year after leaving the program.
 With the assumption of uncorrelation between $\epsilon_1$ and
 $\epsilon_2$ (which means uncorrelation of the unobserved part of the
 two responses), the tobit-2 model is called the **two-part** model, and the
-two equations can be estimated independently, the first one by any
+two equations can be estimated independently, the first by any
 binomial model (very frequently but not necessarily a probit) with the
 response equal to 0/1 for positive/negative values of $y_1^*$ and the
-second one by least squares (with either $y_2$ or $\ln y_2$ as the
+second by least squares (with either $y_2$ or $\ln y_2$ as the
 response). The main advantage of this model is that it can be
 estimated without further hypothesis about the conditional
 distribution of $y_2$ and can therefore be viewed as a semi-parametric
-estimator, which would be consistent in a wide variety of context (eg
+estimator, which would be consistent in a wide variety of contexts (e.g., 
 heteroskedasticity and non-normality).
 \index[general]{two-part models|(}
 
 ### Hurdle models
 
 \index[general]{hurdle model!censored regression model|(}
-Hurdle models, proposed by @CRAG:71\index[author]{Cragg} share with the two-part models the
-fact that the errors of the two equations are uncorrelated. He
+Hurdle models, proposed by @CRAG:71,\index[author]{Cragg} share with the two-part models the fact that the errors of the two equations are uncorrelated. Cragg
 proposed three flavors of hurdle models: 
 
 - simple hurdle models with a log-normal or a truncated normal
@@ -1705,7 +1690,7 @@ distribution for the outcome response,
   response.
   
 The **log-normal simple hurdle** model is a two-part model for
-which the outcome equation consists on a linear regression of the
+which the outcome equation consists of a linear regression of the
 logarithm of the outcome equation on the set of covariates $x_2$,
 which is consistent even without the hypothesis of normality and homoskedasticity.
 
@@ -1796,7 +1781,7 @@ $$
 						  \end{array} \right)
 \right)
 $$
-Two properties of the bivariate normal distribution should be remembered. For a couple of standard normal deviates ($u_1$ and $u_2$), the joint normal density can be writen as the product of the marginal density of $u_1$ and the conditional density of $u_2$:
+Two properties of the bivariate normal distribution should be remembered. For a couple of standard normal deviates ($u_1$ and $u_2$), the joint normal density can be written as the product of the marginal density of $u_1$ and the conditional density of $u_2$:
 
 $$
 \phi_b(u_1, u_2, \rho) = \frac{1}{2\pi\sqrt{1-\rho ^  2}} e ^ {-\frac{1}{2}\left(\frac{u_1 ^ 2 + u_2 ^ 2 - 2 \rho u_1 u_2}{1 - \rho ^ 2}\right)}
@@ -1833,7 +1818,7 @@ f(y_2) &=& \frac{1}{\sigma}\frac{\int_{0} ^ {+\infty}\phi_b(y_1 ^ * - \mu_1, (y_
 $$ {#eq-density_y2_observed}
 
 The contribution of an observation to the likelihood is either
-$P(y_1^* < 0)$ (one minus the probability given by @eq-prob_y2_observed) if $y_2$ is not observed and $P(y_1^* > 0)$ (@eq-prob_y2_observed) times the density of $y_2$ (@eq-density_y2_observed) if it is, which leads to the following likelihood
+$P(y_1^* < 0)$ (one minus the probability given by @eq-prob_y2_observed) if $y_2$ is not observed and $P(y_1^* > 0)$ (@eq-prob_y2_observed) times the density of $y_2$ (@eq-density_y2_observed) if it is; which leads to the following likelihood
 function:
 
 $$
@@ -1848,7 +1833,7 @@ L(\theta | y,X)=\prod_{n=1}^{N_o}
       \mu_{n2}}{\sigma}}{\sqrt{1-\rho^2}}\right)
 \phi\left(\frac{y_{n}-\mu_{n2}}{\sigma}\right)
 $$
-Consider now the conditional expectation of $y$ if it is observed, ie if $y_1 ^ *  > 0$:
+Consider now the conditional expectation of $y$ if it is observed, i.e., if $y_1 ^ *  > 0$:
 
 $$
 \mbox{E}(y\mid x_2, y > 0) = 
@@ -1864,13 +1849,13 @@ $$ {#eq-cond_exp_heckit}
 
 As for the tobit-1 model, the conditional expectation is not equal to
 $\mu_2 = \gamma^\top z_2$ because of the supplementary term $\sigma\rho
-r(\gamma_1^\top x_1)$. The linear estimator is therefore biased if 
+(\gamma_1^\top x_1)$. The linear estimator is therefore biased if 
 the omitted variable if $r(\gamma_1^\top z_1)$ is correlated
 with $x_2$, which is obviously the case if there are common covariates
 in $x_1$ and $x_2$. @eq-cond_exp_heckit also directly leads to an
-alternative estimator. This estimator
+alternative estimator. This 
 is a two-step estimator, sometimes called the **heckit** estimator. It
-consists on first regressing $\mathbf{1}(y_1^* > 0)$ on $x_1$ using a probit, and then estimating $r(\gamma^\top z_1)$ by $r(\hat{\gamma}^\top z_1)$, $\hat{\gamma}^\top z_1$ being the linear
+consists of first regressing $\mathbf{1}(y_1^* > 0)$ on $x_1$ using a probit, and then estimating $r(\gamma^\top z_1)$ by $r(\hat{\gamma}^\top z_1)$, $\hat{\gamma}^\top z_1$ being the linear
 predictor of the probit model. In a second step, regressing $y_2$ on
 $x_2$ and the supplementary covariate $r(\hat{\gamma}_1^\top z_1)$
 leads to a consistent estimate of $\gamma_2$.
@@ -1882,63 +1867,61 @@ coefficients of the second steps of the heckit estimator are only
 identified by the non-linearity of $r$. The high correlation between
 $x_2$ and $r(\hat{\gamma}^\top_1z_1)$ will lead in this case to very
 imprecise estimates. It is therefore recommended to impose exclusion
-conditions, ie to exclude at least one covariate of the $x_1$ set for
+conditions, i.e., to exclude at least one covariate of the $x_1$ set for
 the second step of the estimator. This (or these) excluded covariates
 must be relevant for the selection equation, but not for the outcome
 equation. In practice, it is often  difficult to provide theoretical
-basements to such exclusion conditions. 
+bases to such exclusion conditions. 
 
-The relative merits of the two-parts and the heckit models have been discussed in numerous articles, especially in the field of health economics. The arguments are presented in @JONE:00\index[author]{Jones} and @DOW:NORT:03\index[author]{Dow}\index[author]{Norton}.
+The relative merits of the two-part and the heckit models have been discussed in numerous articles, especially in the field of health economics. The arguments are presented in @JONE:00\index[author]{Jones} and @DOW:NORT:03\index[author]{Dow}\index[author]{Norton}.
 \index[general]{two-step estimator}
 \index[general]{heckit model|)}
 \index[general]{tobit-2|)}
 
 ### Application
 
-\idxdata[(]{traffic\_citation}{micsr.data}
+\idxdata[(]{traffic\_citations}{micsr.data}
 
-@MAKO:STRA:09\index[author]{Makowsky}\index[author]{Stratmann} analyse the behavior of policemen in terms of fees
-because of excessive speed. A policeman has to take two decisions:
+@MAKO:STRA:09\index[author]{Makowsky}\index[author]{Stratmann} analyze the behavior of policemen in terms of issuing speeding tickets, because of excessive speed. A policeman has to make two decisions:
 
-- the first one is whether to give a fee or not,
-- if a fee is given, its amount should be set, with the
+- whether to give a ticket or not,
+- if a ticket is given, its amount should be set, with the
   recommendation of applying the following formula: 
   $50 + (speed - (max speed allowed + 10))
 
-The authors make the hypotheses that policeman's behavior will depend
+The authors make the hypotheses that a policeman's behavior will depend
 on their institutional and political environment. First, there are two
-kind of policemen, belonging to the municipality or to the state of
+kinds of policemen, belonging to the municipality or to the state of
 Massachusetts. Municipality agents are headed by a chief who is
-nominated by the municipality authorities and can be fired at any
+nominated by the municipal authorities and can be fired at any
 time. One can suppose, that contrary to the state policemen, these
 local policemen will act in the interest of the local
-authorities, for which the fees policy has two aspects;
+authorities, for which the fees policy has two aspects:
 
-- firstly, fees is a source of income, which can be particularly
+- fees are a source of income, which can be particularly
   important for municipalities with budget problems,
-- secondly, fees given to drivers from the municipality can make them
+- fees given to drivers from the municipality can make them
   unhappy and unwilling to vote for the current authorities, which is
   not an issue for drivers from other municipalities.
 
 The data set, called `traffic_citations` includes:
 
-- two responses: `fine` which indicates whether a fee has been given
+- two responses: `fine` which indicates whether a ticket has been given
 or not, and `amount` which is the amount of the fine when it has been
 issued,
 - covariates that describe local fiscal conditions: `prval` is the
   average property value in the municipality, which is the base of the
-  main local tax and `overloss` which indicates that an override
-  referendum (which indicates that the municipal anticipates
+  main local tax, and `overloss` which indicates that an override
+  referendum (which indicates that the municipality anticipates
   insufficient revenues) fails to pass,
-- characteristics of the offender: `ethn` indicates the ethnicity of the driver (`"other"`, `"hispanic"` or `"black"`), the sex is indicated by a dummy `female` and `res` indicates whether the driver lives in the municipality (`"loc"`), in another municipality of the State
+- characteristics of the offender: `ethn` indicates the ethnicity of the driver (`"other"`, `"hispanic"` or `"black"`), the sex is indicated by a dummy `female` and `res` indicates whether the driver lives in the municipality (`"loc"`), in another municipality of the state
 (`"oto"`) or in another State (`"ost"`), `courtdist` is the
 distance to the courts where the driver can appeal the citation,
 `mph` is the difference between the speed of the driver and the
-legal limit and `cdl` is a dummy for commercial driving license.
-- characteristics of the policeman: `stpol` is a dummy for state officers and is therefore 0 for local policemen.
+legal limit and `cdl` is a dummy for a commercial driver's license.
+- characteristics of the policemen: `stpol` is a dummy for state officers and is therefore 0 for local policemen.
 
-We start by defining the selection and the outcome equations. The authors suppose that the probability of receiving a fine depends on the difference between the actual and the limit speed, the ethnicity, the sex and the age of the offender, the fact that the driving license is commercial and covariates describing local fiscal conditions and place of residence of the offender in interaction with the dummy for state officers. As the log of age is introduced in interaction with the `female` dummy, we divide the age by the sample mean so that the coefficient of `female` is the effect for the mean age.
-For the outcome equation, the set of covariates is the same except that the dummy for commercial driving license is removed:
+We start by defining the selection and the outcome equations. The authors suppose that the probability of receiving a fine depends on the difference between the actual and the limit speed, the ethnicity, the sex and the age of the offender, the fact that the driver's license is commercial and covariates describing local fiscal conditions and place of residence of the offender in interaction with the dummy for state officers. As the log of age is introduced in interaction with the `female` dummy, we divide the age by the sample mean so that the coefficient of `female` is the effect for the mean age. For the outcome equation, the set of covariates is the same except that the dummy for commercial driver's license is removed:
 \idxfun{mutate}{dplyr}\idxfun{update}{stats}
 
 ```{r}
@@ -1953,9 +1936,9 @@ sel_c <- fine ~ log(mph) + ethn + female * log(age) +
 out_c <- update(sel_c, log(amount) ~ . - cdl)
 ```
 
-Therefore, the identification is performed using the hypothesis that `cdl` enters the selection equation, but not the outcome equation. The authors justify this hypothesis by the fact that a fine received by drivers with a commercial licence may have important consequences for them, because the accumulation of points may lead to the suspension of their license and can cause the loss of their employment and affect their future income. Once the fine has been issued, their is no clear incentive for the officer to impose a lower fine [@MAKO:STRA:09, page 515-516]\index[author]{Makowsky}\index[author]{Stratmann}.
+Therefore, the identification is performed using the hypothesis that `cdl` enters the selection equation, but not the outcome equation. The authors justify this hypothesis by the fact that a fine received by drivers with a commercial license may have important consequences for them, because the accumulation of points may lead to the suspension of their license and can cause the loss of their employment and affect their future income. Once the fine has been issued, there is no clear incentive for the officer to impose a lower fine [@MAKO:STRA:09, page 515-516]\index[author]{Makowsky}\index[author]{Stratmann}.
 
-The hypothesis is that local policemen have an incentive to fine when their town experiment fiscal problems and when the offender is not a resident of the town. Therefore, the coefficients on `prval`, `overloss`, `locoto` and `locost` should be negative for the first one and positive for the other three. Interacting these covariates with the dummy for state officers, an opposite sign should be observed. 
+The hypothesis is that local policemen have an incentive to fine when their town experiences fiscal problems and when the offender is not a resident of the town. Therefore, the coefficients on `prval`, `overloss`, `locoto` and `locost` should be negative for the first one and positive for the other three. Interacting these covariates with the dummy for state officers, an opposite sign should be observed. 
 We can then compute the heckit estimator. First, we estimate the selection equation using a probit and we estimate the inverse mills ratio:
 \idxfun{glm}{stats}\idxfun{dnorm}{stats}\idxfun{pnorm}{stats}
 
@@ -1994,12 +1977,12 @@ tc_ml <- update(tc_heck, method = "ml")
 #| tbl-cap: "Traffic citations"
 library(modelsummary)
 msummary(list("maximum likelihood" = tc_ml, heckit = tc_heck), shape = ~ component,
-         estimate = "{estimate}{stars}")
+         estimate = "{estimate}{stars}", output = "kableExtra", stars = TRUE)
 ```
 
 \idxdata[)]{traffic\_citations}{micsr.data}
 
-Remind that for the probit, the marginal effect is the coefficient times the probability that a fine has been issued. As the mean value of `fine` is close to 0.5, we can multiply probit's coefficients by 0.4 as an estimate of the marginal effect at the sample mean. Being a female reduce the probability of having a fine by about 8%. The probability is higher for Hispanic drivers (about 12%), there is not such effect for black drivers. State policemen are less sever than local policemen in terms of fine issuing, but when the fine is issued, the amount is the same as the one set by local policemen. The coefficients of `log(prval)` and `oloss` have the expected sign and are highly significant. Moreover, as expected, the coefficients of these covariates in interaction with state policemen have the opposite sign and are significant. Out of town and out of state offenders have a higher probability to receive a fine and, if it is the case, the average amount is higher than the one for local offenders. The interaction term with the state policemen dummy is not significant for out of town offenders and is positive for out of state offenders. Finally, as expected, the probability of receiving a fine is lower for drivers with a commercial license. In the two-step model, the inverse mills ratio is positive and highly significant. The implied coefficient of correlation is 0.506 and the estimated value using ML is 0.360. Therefore, we can conclude that the unobserved parts of the selection and of the outcome equations are positively correlated.
+Remember that for the probit, the marginal effect is the coefficient times the probability that a fine has been issued. As the mean value of `fine` is close to 0.5, we can multiply probit's coefficients by 0.4 as an estimate of the marginal effect at the sample mean. Being a female reduces the probability of having a fine by about 8%. The probability is higher for Hispanic drivers (about 12%), there is not such effect for black drivers. State policemen are less severe than local policemen in terms of fine issuing, but when the fine is issuing; the amount is the same as the one set by local policemen. The coefficients of `log(prval)` and `oloss` have the expected sign and are highly significant. Moreover, as expected, the coefficients of these covariates in interaction with state policemen have the opposite sign and are significant. Out-of-town and out-of-state offenders have a higher probability to receive a fine and, if it is the case, the average amount is higher than the one for local offenders. The interaction term with the state policemen dummy is not significant for out-of-town offenders and is positive for out-of-state offenders. Finally, as expected, the probability of receiving a fine is lower for drivers with a commercial license. In the two-step model, the inverse mills ratio is positive and highly significant. The implied coefficient of correlation is 0.506 and the estimated value using ML is 0.360. Therefore, we can conclude that the unobserved parts of the selection and the outcome equations are positively correlated.
 
 
 

@@ -1,38 +1,38 @@
 project:
   type: book
   
-title: "Microeconometrics with R"
 lot: true
 lof: true
 
 book:
+  title: "Microeconometrics with R"
   author: "Yves Croissant"
   date: "2024/06/04"
   chapters:
   - index.qmd
   - part: OLS.qmd
     chapters:
-      - ./chapters/simple_regression.qmd
-      - ./chapters/simple_regression_properties.qmd
-      - ./chapters/multiple_regression.qmd
-      - ./chapters/coefficients.qmd
+      - chapters/simple_regression.qmd
+      - chapters/simple_regression_properties.qmd
+  - chapters/multiple_regression.qmd
+  - chapters/coefficients.qmd
   - part: beyond_OLS.qmd
     chapters:
-      - ./chapters/maximum_likelihood.qmd
-      - ./chapters/non_spherical.qmd
-      - ./chapters/endogeneity.qmd
-      - ./chapters/treateff.qmd
-      - ./chapters/spatial.qmd
+      - chapters/maximum_likelihood.qmd
+      - chapters/non_spherical.qmd
+      - chapters/endogeneity.qmd
+      - chapters/treateff.qmd
+      - chapters/spatial.qmd
   - part: special_responses.qmd
     chapters:
-      - ./chapters/binomial.qmd
-      - ./chapters/tobit.qmd
-      - ./chapters/count.qmd
-      - ./chapters/duration.qmd
-      - ./chapters/rum.qmd
+      - chapters/binomial.qmd
+      - chapters/tobit.qmd
+      - chapters/count.qmd
+      - chapters/duration.qmd
+      - chapters/rum.qmd
   - references.qmd
+  
 bibliography: references.bib
-link-bibliography: true
 
 knitr:
   opts_chunk:
@@ -42,12 +42,24 @@ knitr:
 
 format:
   html:
+    number-depth: 2
     theme: cosmo
+    code-fold: false
+    code-summary: "Code"
+    code-tools: true
+    code-link: true
+    knitr:
+      opts_chunk:
+        out.width: 100%
+        R.options:
+          width: 68
   pdf:
     documentclass: krantz 
     classoption: [krantz2, a4paper]
+    keep-tex: true
     include-in-header: 
       text: |
+        \usepackage{makecell}
         \usepackage{makeidx}
         \usepackage{imakeidx}
         \usepackage{ifthen}
@@ -74,6 +86,7 @@ format:
         \pagenumbering{roman}
     include-before-body: 
       text: |
+        \cleardoublepage
         \vspace{5cm}
         \bookepigraph{5cm}
         {The most important date in a man's life is that of his father's death.}
@@ -85,6 +98,7 @@ format:
     include-after-body:
       text: |
         \cleardoublepage
+        \backmatter
         \addcontentsline{toc}{chapter}{Indexes}
         \chapter*{Indexes}
         \printindex[general]

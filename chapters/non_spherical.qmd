@@ -1,13 +1,13 @@
+# Non-spherical disturbances {#sec-non_spherical}
+
 ```{r }
 #| include: false
 source("../_commonR.R")
 ```
 
-# Non-spherical disturbances {#sec-non_spherical}
-
 
 In the first part of the book, we considered a model of the form:
-$y_n = \alpha + \beta x_n + \epsilon_n$ with the hypothesis that the errors where homoskedastic: $\mbox{V}(\epsilon_n) = \sigma_\epsilon ^ 2$ and uncorrelated: $\mbox{E}(\epsilon_n \epsilon_m) = 0 \; \forall n \neq m$.In this case, the errors (or disturbances) are
+$y_n = \alpha + \beta x_n + \epsilon_n$ with the hypothesis that the errors were homoskedastic: $\mbox{V}(\epsilon_n) = \sigma_\epsilon ^ 2$ and uncorrelated: $\mbox{E}(\epsilon_n \epsilon_m) = 0 \; \forall n \neq m$. In this case, the errors (or disturbances) are
 **spherical** and the covariance matrix of the errors $\Omega$ is, up to
 a multiplicative constant $\sigma_\epsilon^2$, the identity matrix:
 
@@ -21,13 +21,13 @@ in the first part of the book:
 
 -   the OLS estimator is still consistent: this means that $\hat{\beta}$
     estimates consistently $\beta$ and $\hat{\epsilon}$ estimates also
-    consistently $\epsilon$; this is an important result as the
+    consistently $\epsilon$; this is an important result, as the
     residuals of the OLS estimator can therefore be used to test whether
     the errors are spherical or not,
--   the OLS estimator is no longer BLUE, ie it is no longer the best
+-   the OLS estimator is no longer BLUE, i.e., it is no longer the best
     linear unbiased estimator,
 -   there is another linear unbiased estimator (the **generalized least
-    squares**, abbreviated as **GLS**) which is more efficient (which
+    squares**, or **GLS**) which is more efficient (which
     means that it has a smaller variance) than the OLS estimator and
     which is the BLUE estimator when the errors are non-spherical,\index[general]{generalized least squares}
 -   the simple formula for the variance of the OLS estimator,
@@ -53,15 +53,14 @@ compute the inverse of this matrix.
 ### Heteroskedasticity
 \index[general]{heteroskedasticity|(}
 In a linear model: $y_n = \alpha + \beta x_n + \epsilon_n$, 
-
 heteroskedasticity occurs when the conditional variance of the response
 $y_n$ (the variance of $\epsilon_n$) is not a constant. 
-As an example, @HOUT:51\index[author]{Houthakker} analyzed electric consumption in the United Kingdom and his data set (called `uk_elec`)\idxdata{uk\_elec}{micsr.data} is a sample of 42 British cities.^[This data set is used extensively by @BERN:91\index[author]{Berndt}, chapter 7.] The response is the per capita consumption in kilowatt hours. Denoting $c_{ni}$ the consumption of an individual $i$ in city $n$, the response is then $y_n =\frac{1}{I_n}\sum_i^{I_n} c_{ni}$ where $I_n$ is the total number of consumers in city $n$. Then, if the standard
+As an example, @HOUT:51\index[author]{Houthakker} analyzed electric consumption in the United Kingdom, and his data set (called `uk_elec`)\idxdata{uk\_elec}{micsr.data} is a sample of 42 British cities.^[This data set is used extensively by @BERN:91\index[author]{Berndt}, chapter 7.] The response is the per capita consumption in kilowatt hours. Denoting $c_{ni}$ the consumption of an individual $i$ in city $n$, the response is then $y_n =\frac{1}{I_n}\sum_i^{I_n} c_{ni}$ where $I_n$ is the total number of consumers in city $n$. Then, if the standard
 deviation of the individual consumption is $\sigma_c$ (the same in every
 city), the variance of $y_n$ is $\sigma_c ^ 2 / I_n$ and therefore
 depends on the number of consumer units of the city. Even
 if covariates are taken into account, it is doubtful that the
-conditional variance of $y$ will be the same for every city and a more
+conditional variance of $y$ will be the same for every city, and a more
 reasonable hypothesis is that, as the unconditional variance, it is
 inversely proportional to the number of consumer units. With heteroskedastic but uncorrelated errors, the matrix of covariance of the errors is a diagonal matrix with non-constant diagonal terms:
 
@@ -101,20 +100,20 @@ element $\left(\sigma_n^2\right)^r$.
 Consider now the case where we have several observations from the same
 **entity**. An example is the case where the unit of
 observation is the individual, but siblings are observed. In this case, each observation is doubly indexed,
-the first index being the family and the second one the rank of birth in the sibling.
+the first index being the family and the second one the rank of the sibling's birth.
 Another very important case is when the same individual
-(in a wide sense, it can be an household, a firm, a country, ...) is
+(in a wide sense, it can be a household, firm, country, etc.) is
 observed several times, for example for different periods like years
 or months. Such a data set is called a **panel data**. 
 \index[general]{panel data|(}
-In the subsequent sections, we'll use two data sets. The first one, called `twins`, 
+In the subsequent sections, we'll use two data sets. The first data set, called `twins`, 
 is from @BONJ:CHERK:KASK:03\idxdata{twins}{micsr.data}
 \index[author]{Bonjour}\index[author]{Cherkas}\index[author]{Haskel}\index[author]{Hawkes}\index[author]{Spector} who studied the return to education with a
-sample of twins. The sample contains 428 observations (214 couples
-of twins) and it is reasonable to assume that, for a given pair of twins,
+sample of twins. The sample contains 428 observations (214 pairs
+of twins), and it is reasonable to assume that, for a given pair of twins,
 the two errors are correlated as they partly contain unobserved
 characteristics that are common to both twins.
-The second one, called `tobinq`, is from @SCHA:90\index[author]{Schaller} who tests the relevance of Tobins' Q theory of investment by
+The second data set, called `tobinq`, is from @SCHA:90\index[author]{Schaller} who tests the relevance of Tobins' Q theory of investment by
 regressing the investment rate (the ratio of the investment and the
 stock of capital) to Tobin's Q, which is the ratio of the value of the
 firm and the stock of capital. The data set is a panel of 188 firms observed for 35 years (from 1951 to 1985).\idxdata{tobinq}{micsr.data}
@@ -131,7 +130,7 @@ components:
 
 We therefore have $\epsilon_{nt} = \eta_n + \nu_{nt}$. This leads to the
 so-called **error-component** model, which can be easily analyzed with the following
-hypothesis:\index[data]{error component model}
+hypothesis:\index[general]{error component model}
 
 -   the two components are homoskedastic and uncorrelated:
     $\mbox{V}(\eta_n) = \sigma_{\eta} ^ 2, \forall n$,
@@ -143,7 +142,7 @@ hypothesis:\index[data]{error component model}
     observations of different entities
     $\mbox{cov}(\nu_{nt}, \nu_{ms})=\mbox{cov}(\eta_n, \eta_m)=0\; \forall \; n \neq m, t, s$.
 
-With these hypothesis, we have:
+With these hypotheses, we have:
 
 $$
 \left\{
@@ -227,7 +226,7 @@ $$
 
 The first matrix is called the **within** matrix. Premultiplying a
 vector by $W$ transforms it as deviations from the individual means. The
-second one is called the **between** matrix and premultiplying a vector
+second matrix is called the **between** matrix, and premultiplying a vector
 by $B$ transforms it as a vector of individual means. These two symmetric
 matrices have interesting properties:
 \index[general]{within matrix}\index[general]{between matrix}
@@ -284,7 +283,7 @@ $$
 $$
 Assume that the errors of two equations $l$ and $m$ for the same
 observation are correlated and that the covariance, denoted
-$\sigma_{lm}$, is constant. The variance of errors for each equation $l$ is denoted $\sigma_{ll}$ and may be different from one equation to another. Moreover, we assume that errors for different individuals are uncorrelated. With these hypothesis, the covariance matrix is, denoting $I$ the identity matrix of dimension $N$:
+$\sigma_{lm}$, is constant. The variance of errors for each equation $l$ is denoted $\sigma_{ll}$ and may be different from one equation to another. Moreover, we assume that errors for different individuals are uncorrelated. With these hypotheses, the covariance matrix is, denoting $I$ the identity matrix of dimension $N$:
 
 $$
 \Omega=
@@ -298,7 +297,7 @@ $$
 \right)
 $$
 
-Denoting $\Sigma$ the $L\times L$ matrix of inter-equations variances and covariances, we have:
+Denoting $\Sigma$ the $L\times L$ matrix of inter-equation variances and covariances, we have:
 
 $$
 \Sigma=
@@ -312,15 +311,15 @@ $$
 \right)
 $$
 
-and $\Omega=\Sigma \otimes I$. The inverse of the covariance matrix of the errors is easily obtained as it requires only to compute the inverse of $\Sigma$: $\Omega ^ {-1} = \Sigma ^ {-1} \otimes I$.
+and $\Omega=\Sigma \otimes I$. The inverse of the covariance matrix of the errors is easily obtained, as it requires only to compute the inverse of $\Sigma$: $\Omega ^ {-1} = \Sigma ^ {-1} \otimes I$.
 
 ## Testing for non-spherical disturbances {#sec-test_non_spher}
 
 Numerous tests have been proposed to investigate whether, in different
-contexts, the disturbances are spherical or note. Among them, we'll
+contexts, the disturbances are spherical or not. Among them, we'll
 present a family of tests that are based on OLS residuals. Even if the disturbances are non-spherical, OLS is
 a consistent estimator and therefore OLS's residuals are a consistent
-estimate of the errors of the model. Therefore one can use these
+estimate of the errors of the model. Therefore, one can use these
 residuals to analyze the unknown features of the errors.
 
 ### Testing for heteroskedasticity
@@ -328,7 +327,7 @@ residuals to analyze the unknown features of the errors.
 \index[general]{Breusch Pagan test!heteroskedasticity|(}
 
 @BREU:PAGA:79\index[author]{Breusch}\index[author]{Pagan} consider the following heteroskedastic model: $y_n = \gamma ^ \top z_n + \epsilon_n$ with $\epsilon_n \sim \mathcal{N}(0, \sigma_n ^ 2)$. Assume that $\sigma_n^2$ is a
-function of a set of $J$ covariates denoted $w_n$:
+function of a set of $J$ covariates denoted by $w_n$:
 
 $$
 \sigma_n ^ 2 = h(\delta ^ \top w_n)
@@ -394,7 +393,7 @@ $w_n$ and is a $\chi ^ 2$ with $J$ degrees of freedom in case of homoskedasticit
 Note also that
 $f^\top f / N = \sum_n \left(\frac{\hat{\epsilon}_n ^ 2}{\hat{\sigma} ^ 2} - 1\right) ^ 2 / N= \sum_n\left(\frac{\hat{\epsilon}_n ^ 4}{\hat{\sigma} ^ 4} + 1 - 2 \frac{\hat{\epsilon}_n ^ 2}{\hat{\sigma} ^ 2}\right) / N$
 is the total sum of squares divided by $N$. It converges to
-2 as the first term is the fourth center moment of a normal variable, which is 3.. Therefore, a second version of the statistic can be computed as $N$ times the R^2^ of a regression of the first-step residuals on $w$:
+2 as the first term is the fourth center moment of a normal variable, which is 3. Therefore, a second version of the statistic can be computed as $N$ times the R^2^ of a regression of the first-step residuals on $w$:
 
 $$
 N R^2 = \frac{f^\top P_W f}{f'f / N}
@@ -406,8 +405,8 @@ estimates.^[See @sec-sandwich.] This matrix depends on the squares and on the
 cross-products of the covariates. Therefore, he proposed to run a
 regression of the squares of the first-step residuals on the covariates,
 their squares and their cross-product. $N R^2$ of this regression is
-asymptotically distributed as a $\chi ^ 2$ with $K(K+1)/2$ degrees of freedom. Therefore, @WHIT:80's\index[author]{White} test
-can be viewed as a special case of @BREU:PAGA:79's test\index[author]{Breusch}\index[author]{Pagan}.
+asymptotically distributed as a $\chi ^ 2$ with $K(K+1)/2$ degrees of freedom. Therefore, White's test
+can be viewed as a special case of Breusch and Pagan's test\index[author]{Breusch}\index[author]{Pagan}.
 
 In his electric consumption regression, @HOUT:51\index[author]{Houthakker} used as covariates `inc` (average yearly income in pounds), the inverse of `mc6` (the marginal cost of electricity), `gas6` (the marginal price of gas) and `cap` (the average holdings of heavy electric equipment). The OLS estimation is:
 \idxfun{lm}{stats}\idxdata[(]{uk\_elec}{micsr.data}
@@ -433,7 +432,7 @@ We then regress $f$ on $W$ (which is here a constant and the inverse of `cust`) 
 lm_elec_resid <- lm(f ~ I(1 / cust), uk_elec)
 bp1_elec <- sum(fitted(lm_elec_resid) ^ 2) / 2
 ```
-For the second version of the test we compute $N$ times the $R ^ 2$:
+For the second version of the test, we compute $N$ times the $R ^ 2$:
 \idxfun{nobs}{stats}\idxfun{rsq}{micsr}
 
 ```{r}
@@ -452,7 +451,7 @@ pchisq(c(bp1_elec, bp2_elec), lower.tail = FALSE, df = 1)
 ```
 
 The homoskedasticity hypothesis is therefore highly rejected.
-The `lmtest::bptest` computes automatically the Breusch-Pagan test for heteroskedasticity, with two formulas: the first one being the formula of the model and the second one being a one-side formula for the skedasticity equation. An alternative syntax is to provide a `lm` model as the first argument:
+The `lmtest::bptest` computes automatically the Breusch-Pagan test for heteroskedasticity, with two formulas: the first being the formula of the model and the second being a one-side formula for the skedasticity equation. An alternative syntax is to provide a `lm` model as the first argument:
 \idxfun{bptest}{lmtest}
 
 ```{r}
@@ -486,7 +485,7 @@ $\sigma_\iota ^ 2 = \sigma_\nu + T \sigma_\eta$. Then,
 
 $$\epsilon^ \top \Omega ^ {-1} \epsilon = 
 \frac{1}{\sigma_\nu ^ 2}\epsilon ^ \top W \epsilon + \frac{1}{\sigma_\iota ^ 2}\epsilon ^ \top B \epsilon$$
-The determinant of $\Omega$ is the product of its eigen values, which are $\sigma_\nu ^ 2$ with periodicity $N(T-1)$ and $\sigma_\iota^2$ with periodicity $N$. Then, taking the logarithm of @eq-joint_density_panel and denoting $\theta^ \top = (\sigma_\nu ^ 2, \sigma_\eta ^ 2)$, we get the following log-likelihood function:
+The determinant of $\Omega$ is the product of its eigenvalues, which are $\sigma_\nu ^ 2$ with periodicity $N(T-1)$ and $\sigma_\iota^2$ with periodicity $N$. Then, taking the logarithm of @eq-joint_density_panel and denoting $\theta^ \top = (\sigma_\nu ^ 2, \sigma_\eta ^ 2)$, we get the following log-likelihood function:
 
 $$
 \ln L (\theta)= \frac{NT}{2} \ln 2\pi - \frac{N(T-1)}{2}\ln \sigma_\nu ^ 2 - \frac{N}{2}\ln(T\sigma_\eta ^ 2 + \sigma_\nu ^ 2) - \frac{\epsilon ^ \top W \epsilon}{2\sigma_\nu ^ 2}- \frac{\epsilon ^ \top W \epsilon}{2(\sigma_\nu ^ 2 + T \sigma_\eta ^ 2)}
@@ -608,7 +607,7 @@ lm_twins <- lm(log(earning) ~ poly(age, 2) + educ, twins)
 lm_twins %>% coef
 ```
 
-We then add the residuals to the data an we compute the individual mean of the residuals by grouping by entities and then using `mutate` and not `summarise` to compute the mean,  $B\epsilon$ being a vector of length $N \times T$ where each value is returned $T$ times:
+We then add the residuals to the data and we compute the individual mean of the residuals by grouping by entities and then using `mutate` and not `summarise` to compute the mean,  $B\epsilon$ being a vector of length $N \times T$ where each value is returned $T$ times:
 \idxfun{add\_column}{tibble}\idxfun{resid}{stats}\idxfun{group\_by}{dplyr}\idxfun{ungroup}{dplyr}
 
 ```{r}
@@ -632,7 +631,7 @@ twins %>%
 ```
 
 
-The **plm** package [@CROI:MILL:08; @CROI:MILL:18]\index[author]{Croissant}\index[author]{Millo} provides different tools to deal with panel or pseudo-panel data. In particular, @BREU:PAGA:80's\index[author]{Breusch}\index[author]{Pagan} test can easily be obtained using `plm::plmtest`. We set the `type` argument to `"bp"` to get the statistic of the original Breusch-Pagan test:
+The **plm** package [@CROI:MILL:08; @CROI:MILL:18]\index[author]{Croissant}\index[author]{Millo} provides different tools to deal with panel or pseudo-panel data. In particular, Breusch and Pagan's test\index[author]{Breusch}\index[author]{Pagan} can easily be obtained using `plm::plmtest`. We set the `type` argument to `"bp"` to get the statistic of the original Breusch-Pagan test:
 \idxfun{plmtest}{plm}\idxfun{gaze}{micsr}
 
 ```{r}
@@ -709,7 +708,7 @@ R[1, c(4,  9)] <- R[2, c(5, 12)] <- R[3, c(6, 10)] <- R[4, c(7, 11)] <-
 ols_const <- clm(ols_unconst, R)
 ```
 
-@BREU:PAGA:80\index[author]{Breusch}\index[author]{Pagan} also proposed a test of correlation between equations in a system of equation. Reminds that in this case, the covariance matrix of the errors for the whole system is $\Omega = \Sigma \otimes I$, where $\Sigma$ contains the variances (on the diagonal) and the covariances (off diagonal) of the errors of the $L$ equations. This symmetric matrix contains $L \times (L + 1) / 2$ distinct elements, $L \times (L + 1) / 2 - L = L \times (L - 1) / 2$ being covariances. The Breusch-Pagan test is based on the estimation of the the covariance matrix using OLS residuals. Denoting $\hat{\Xi} = (\hat{\epsilon}_1, \hat{\epsilon}_2, \ldots \hat{\epsilon}_L)$ the matrix where each column contains the vector of residuals for one equation:
+@BREU:PAGA:80\index[author]{Breusch}\index[author]{Pagan} also proposed a test of correlation between equations in a system of equation. Remember that in this case, the covariance matrix of the errors for the whole system is $\Omega = \Sigma \otimes I$, where $\Sigma$ contains the variances (on the diagonal) and the covariances (off diagonal) of the errors of the $L$ equations. This symmetric matrix contains $L \times (L + 1) / 2$ distinct elements, $L \times (L + 1) / 2 - L = L \times (L - 1) / 2$ being covariances. The Breusch-Pagan test is based on the estimation of the covariance matrix using OLS residuals. Denoting $\hat{\Xi} = (\hat{\epsilon}_1, \hat{\epsilon}_2, \ldots \hat{\epsilon}_L)$ the matrix where each column contains the vector of residuals for one equation:
 
 $$
 \hat{\Omega} = \hat{\Xi} ^ \top \hat{\Xi}=
@@ -729,7 +728,8 @@ $$
 $$
 The statistic is then $N \sum_{l=1} ^ {L-1} \sum_{m = l + 1} ^ L \hat{\rho}_{lm}^2$ and is a $\chi^2$ with $L(L-1) / 2$ degrees of freedom if the hypothesis of no correlation is true.
 
-We use the apple production example estimated in @sec-system_equation. The estimation for the whole system by OLS taking constrains into account was stored in an object called `ols_const`. We extract the residuals and arrange them in a $N\times L$ matrix. Taking the cross-product of this matrix and dividing by $N$, we get $\hat{\Sigma}$:
+\idxdata[(]{apples}{micsr}
+We use the apple production example estimated in @sec-system_equation. The estimation for the whole system by OLS taking constraints into account was stored in an object called `ols_const`. We extract the residuals and arrange them in a $N\times L$ matrix. Taking the cross-product of this matrix and dividing by $N$, we get $\hat{\Sigma}$:
 \idxfun{nobs}{stats}\idxfun{resid}{stats}\idxfun{matrix}{base}\idxfun{crossprod}{base}
 
 ```{r }
@@ -780,7 +780,7 @@ c(bp_stat, pval_pb)
 The hypothesis of no correlation is clearly rejected.
 \index[general]{test!inter-equation correlation|)}
 \index[general]{Breusch Pagan test!inter-equation correlation|)}
-
+\idxdata[)]{apples}{micsr}
 
 ## Robust inference {#sec-sandwich}
 
@@ -840,7 +840,7 @@ of the variance of $\hat{\beta}$.
 The first possibility is to take only the diagonal terms of this matrix,
 which is relevant if we maintain the hypotheses that the errors are
 uncorrelated. In this case, we get the so-called
-**heterosckedastic-consistent** (or **HC**) estimator of
+**heteroskedastic-consistent** (**HC**) estimator of
 $\sigma_{\hat{\beta}}$ proposed by @WHIT:80:\index[author]{White}
 \index[general]{sandwich!heteroskedastic-consistent}
 
@@ -849,13 +849,13 @@ $$
 ^ N (x_n - \bar{x}) ^ 2 \hat{\epsilon}_n ^ 2 
 $$ {#eq-vcovHC}
 
-Consider now the case where some errors are correlated This often
+Consider now the case where some errors are correlated. This often
 happens when some observations share some common unobserved
 characteristics which are included in their (therefore correlated)
 errors. For example, if observations belong to different regions, their
 errors may share some common unobserved features of the regions.
-In our 4 observations case, suppose that the first two
-observations belong to one group, and the two other to an other group.
+In our four observations case, suppose that the first two
+observations belong to one group, and the two others to another group.
 Then, a consistent estimator is obtained by summing the
 following subset of elements of the preceding matrix:
 \index[general]{sandwich!cluster|(}
@@ -894,10 +894,10 @@ $$
 $$ {#eq-vcovCL}
 
 which is consistent with the hypothesis that errors are correlated
-*within* a group, but uncorrelated *between* group.
+*within* a group, but uncorrelated *between* groups.
 \index[general]{sandwich!cluster|)}
 To illustrate the computation of robust covariance estimators, we use
-the data set `urban_gradient` of @DURA:PUGA:20\index[author]{Duranton}\index[author]{Puga}. It contains, the
+the data set `urban_gradient` of @DURA:PUGA:20\index[author]{Duranton}\index[author]{Puga}. It contains the
 population, the area and the distance to the central business district
 for 2315 block groups^[A block group is a geographical unit which is between the census tract and the census block.] in Alabama.^[Actually, the whole data set covers the whole United States, but we use here the small subsample that concerns the state of Alabama.]
 
@@ -908,7 +908,7 @@ urban_gradient %>% print(n = 5)
 
 A classic model in urban economics states that urban density is a
 negative exponential function of the distance to the central business
-district : $y = A e^{\beta x}$ where $y$ is measured in inhabitants per
+district: $y = A e^{\beta x}$ where $y$ is measured in inhabitants per
 square kilometers, $x$ is measured in kilometers and $\beta<0$ is
 called the urban gradient. Taking logs, this leads to a semi-log linear
 regression model:
@@ -931,11 +931,11 @@ ols_ug %>% gaze
 ```
 
 The estimated standard deviation of the slope is
-`r round(sqrt(vcov(ols_ug)[2, 2]), 4)` but it may be seriously biased if the
+`r round(sqrt(vcov(ols_ug)[2, 2]), 4)`, but it may be seriously biased if the
 errors are heteroskedastic and/or correlated. We first plot the data
-and the regression line on @fig-dataug, the shape of the points
-depending on the metropolitan statistical area (MSA in short, there are 12 of them in
-the sample).
+and the regression line in @fig-dataug, the shape of the points
+depending on the metropolitan statistical area (MSA, there are 12 of them in
+the data set).
 \idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{scale\_shape\_manual}{ggplot2}
 
 ```{r}
@@ -988,7 +988,7 @@ sd_CL
 \idxdata[)]{urban\_gradient}{micsr.data}
 
 This time, we get a much higher estimate of the standard deviation of the slope
-(about three time larger than the one obtained with the simple formula).
+(about three times larger than the one obtained with the simple formula).
 
 \index[general]{covariance matrix estimation!simple linear regression!sandwich|)}
 
@@ -1037,7 +1037,7 @@ $$
 $$
 
 This is a sandwich formula, the meat (the variance of the score) being surrounded by two slices of bread (the inverse of the covariance matrix of the covariates).
-Remind from @sec-variance_ols that the meat can be written, for $K = 2$, as the expected value of:
+Remember from @sec-variance_ols that the meat can be written, for $K = 2$, as the expected value of:
 
 $$
 \scriptsize
@@ -1109,9 +1109,9 @@ $$ {#eq-clustered_meat}
 \idxdata[(]{uk\_elec}{micsr.data}
 Going back to the electricity consumption estimation, `lm_elec` is the
 model fitted by OLS. We first compute the estimator manually,
-computing the meat (the cross products of the model matrix multiplied
+computing the meat (the cross-products of the model matrix multiplied
 by the vector of residuals divided by the sample size) and the bread
-(the inverse of the cross products of the model matrix divided by the sample size). The covariance matrix is then computed using @eq-sandwich_hc_multi and we extract the standard errors of the estimates:
+(the inverse of the cross-products of the model matrix divided by the sample size). The covariance matrix is then computed using @eq-sandwich_hc_multi, and we extract the standard errors of the estimates:
 \idxfun{nobs}{stats}\idxfun{model.matrix}{stats}\idxfun{resid}{stats}\idxfun{crossprod}{base}\idxfun{solve}{base}
 
 ```{r}
@@ -1138,10 +1138,10 @@ B <- bread(lm_elec)
 (B %*% M %*% B / N_el) %>% stder
 ```
 
-`sandwich::vcovHC` uses these functions to compute the HC estimator; it's first
+`sandwich::vcovHC` uses these functions to compute the HC estimator; its first
 argument is a fitted model and a `type` argument can also be supplied. Setting `type` to `"HC0"` gives the simplest version of the estimator, the one we have
 previously computed "by hand". Other flavors of this
-heteroskedasciticy-robust estimator can be obtained by setting the
+heteroskedasticity-robust estimator can be obtained by setting the
 `type` to `"HC1"`, $\ldots$, `"HC5"` to perform different flavors of degrees of
 freedom correction. For example, when `type = "HC1"` (which is the default), the covariance
 matrix is multiplied by $N / (N - K)$:[^non_spherical-2]
@@ -1173,8 +1173,8 @@ In this example, the robust standard errors are very close to the ones obtained 
 \idxdata[(]{twins}{micsr.data}
 To illustrate the use of the clustered sandwich estimator, we use the `twins` data set. `lm_twins` is the OLS estimation of the Mincer equation. In this context, the meat can easily be computed using the `apply` and `tapply` functions:
 
-- `apply` performs an operation on one of the margin (1 for rows, 2 for columns) of a matrix,
-- `tapply` performs an operation (the third argument) on a vector (the first argument) conditional on the values of an other vector (the second argument).
+- `apply` performs an operation on one of the margins (1 for rows, 2 for columns) of a matrix,
+- `tapply` performs an operation (the third argument) on a vector (the first argument) conditional on the values of another vector (the second argument).
 \idxfun{model.matrix}{stats}\idxfun{resid}{stats}\idxfun{crossprod}{base}\idxfun{tapply}{base}\idxfun{apply}{base}\idxfun{solve}{base}
 
 ```{r}
@@ -1209,14 +1209,14 @@ plm_twins <- plm(log(earning) ~ poly(age, 2) + educ, twins,
                  model = "pooling")
 ```
 
-A `plm` object is returned and the `vcovHC` method for `plm`s objects returns by default the same clustered covariance matrix as previously:
+A `plm` object is returned and the `vcovHC` method for a `plm` object returns by default the same clustered covariance matrix as previously:
 \idxfun{vcovHC}{sandwich}
 
 ```{r}
 V_3 <- vcovHC(plm_twins)
 ```
 
-The `vcovHC` and `vcovCL` functions are particularly useful while using the testing functions of the **lmtest** package. For example, `lmtest::coeftest` computes the usual table of coefficients (the same as the one obtained using `summary`), but a matrix or a function that computes a covariance matrix can be passed as a supplementary argument. Therefore, `lmtest::coeftest(lm_twins)` returns exactly the same table of coefficients as `summary(lm_twins)`, but other standard errors are obtained by filling the second argument. For example, to get the clustered standard errors with our preferred specification without degrees of freedom correction (`type = "HC0", cadjust = FALSE`), we can use any of the following three equivalent syntax:
+The `vcovHC` and `vcovCL` functions are particularly useful while using the testing functions of the **lmtest** package. For example, `lmtest::coeftest` computes the usual table of coefficients (the same as the one obtained using `summary`), but a matrix or a function that computes a covariance matrix can be passed as a supplementary argument. Therefore, `lmtest::coeftest(lm_twins)` returns exactly the same table of coefficients as `summary(lm_twins)`, but other standard errors are obtained by filling the second argument. For example, to get the clustered standard errors with our preferred specification without degrees of freedom correction (`type = "HC0", cadjust = FALSE`), we can use any of the following three equivalent syntaxes:
 \idxfun{vcovCL}{sandwich}\idxfun{coeftest}{lmtest}\idxfun{function}{base}
 
 ```{r}
@@ -1230,7 +1230,7 @@ coeftest(lm_twins, vcovCL, cluster = ~ family,
          cadjust = FALSE, type = "HC0")
 ```
 
-In the first expression, we provide a matrix previously computed. In the second expression, we use an anonymous function with our preferred options. In the last one, the two arguments of `vcovCL` are indicated as arguments of `coeftest` and are passed internally to `vcovCL`.
+In the first expression, we provide a matrix that was previously computed. In the second expression, we use an anonymous function with our preferred options. In the last one, the two arguments of `vcovCL` are indicated as arguments of `coeftest` and are passed internally to `vcovCL`.
 We finally compare the ordinary and the robust estimates of the standard errors of the OLS estimate:
 \idxfun{vcov}{stats}\idxfun{stder}{micsr}\idxfun{rbind}{base}
 
@@ -1259,15 +1259,15 @@ As for the electricity consumption example, we can see that the robust standard 
 \index[general]{sandwich|)}
 \index[general]{covariance matrix estimation!sandwich|)}
 
-
+\newpage
 ## Generalized least squares estimator {#sec-gls}
 \index[general]{generalized least squares|(}
 
 For a linear model
 $y_n = \alpha + \beta^\top x_n + \epsilon_n = \gamma ^ \top z_n + \epsilon_n$
 with non-spherical disturbances ($\Omega \neq \sigma_\epsilon ^ 2 I$),
-the OLS estimator is now longer BLUE. A more efficient estimator called
-the **generalized least squares** (**GLS** in short) can then be used instead.
+the OLS estimator is no longer BLUE. A more efficient estimator called
+the **generalized least squares** (**GLS**) can then be used instead.
 
 ### General formulation of the GLS estimator
 
@@ -1302,7 +1302,7 @@ Written this way, the GLS estimator is unfeasible for two reasons:
     parameters.
 
 A **feasible GLS** estimator is obtained by imposing some structure on
-$\Omega$ so that the number of unknown parameters became much less than
+$\Omega$ so that the number of unknown parameters becomes much less than
 $N(N+1)/2$ and by estimating these unknown parameters using residuals of
 a first step consistent estimation. Actually, in practice, the GLS
 estimator is obtained by performing OLS on transformed data. More
@@ -1333,7 +1333,7 @@ $C\Omega^{-1}C^\top = C (C^\top C)^{-1} C^\top = C C ^ {-1} C^{\top-1}C^\top=I$[
 and therefore, @eq-glsvar simplifies to:
 
 [^non_spherical-3]: $(AB) ^ {-1} = B^{-1} A^{-1}$ if the inverse of the
-    two matrix exists, see @GREE:18\index[author]{Greene}, online appendix p 1074.
+    two matrices exists, see @GREE:18\index[author]{Greene}, online appendix p 1074.
 
 $$
 \mbox{V}(\hat{\gamma}) = \left(Z^{*\top}Z^*\right)^{-1}
@@ -1365,16 +1365,16 @@ C=
 \right)
 $$
 
-and therefore, pre-multiplying any vector by $C$ leads to a transformed
+and therefore, premultiplying any vector by $C$ leads to a transformed
 vector where each value is divided by the standard deviation of the
 corresponding error:
 $z^{*\top} = (z_1 / \sigma_1, z_2 / \sigma_2, \ldots, z_N / \sigma_N)$.
-Performing OLS on the transformed data, we get the **weighted-least square** estimator (**WLS**). The name of this estimator comes from the fact that the estimator can be obtained by minimizing $\sum_n \epsilon_n ^ 2 / \sigma_n ^ 2$, ie by
+Performing OLS on the transformed data, we get the **weighted-least square** (**WLS**) estimator. The name of this estimator comes from the fact that the estimator can be obtained by minimizing $\sum_n \epsilon_n ^ 2 / \sigma_n ^ 2$, i.e., by
 minimizing not the sum of the squares of the residuals, but a linear combination of
 the squares of the residuals, the weight of each observation being $1 / \sigma_n ^ 2$. Therefore, an observation $n$ for which $\sigma_n^2$ is high will
 receive a smaller weight in WLS compared to OLS. The weights
-are unknown and therefore need to be estimated. The simplest solution is to assume that the variance (or the standard deviation) of the errors are
-proportional to an observed variable (which may be or not a covariate of
+are unknown and therefore need to be estimated. The simplest solution is to assume that the variance (or the standard deviation) of the errors is
+proportional to an observed variable (which may or may not be a covariate of
 the regression). We then get either $\sigma_n ^ 2 = \sigma ^ 2 w_n$ or $\sigma_n ^ 2 = \sigma ^ 2 w_n ^ 2$ and the weights are then respectively $1 / w_n$ or $1 / w_n ^ 2$. The WLS estimator can then be obtained by OLS with all the variables divided either by $\sqrt{w_n}$ or $w_n$. 
 A more general solution is to assume a functional form
 for the skedastic function: $\sigma_n ^ 2 = h(\delta^\top w_n)$ where
@@ -1401,7 +1401,7 @@ in three steps:
     $\hat{\sigma}_n$ and perform OLS on the transformed variables.
 
 Note that there is no intercept in the third estimation as the
-"covariate" associated to the intercept (a vector of 1) becomes a vector
+"covariate" associated with the intercept (a vector of 1) becomes a vector
 with typical element $1/\hat{\sigma}_n$.
 
 For the electricity consumption example, we know that the unconditional variance of $y$ in city $n$ is $\sigma_{yn} ^ 2 = \sigma_c ^ 2 / I_n$, $I_n$ being the number of consumption units in city $n$ and $\sigma_c ^ 2$ the variance of the individual consumption. Assuming that the same relation applies for the conditional variance, then $\sigma_{\epsilon n} ^ 2 = \sigma ^ 2 / I_n$ and the WLS estimator can then be obtained by computing OLS on series multiplied by $\sqrt{I_n}$:
@@ -1430,7 +1430,7 @@ std_wls <- vcov(wls_elec2) %>% stder
 tibble(ols = std_ols, wls = std_wls, ratio = wls / ols)
 ```
 
-The efficiency gain of using WLS is substantial, as the standard errors reduce by about 25/50% depending on the coefficient.\idxdata[)]{uk\_elec}{micsr.data}
+The efficiency gain of using WLS is substantial, as the standard errors reduce by about 25$-$50% depending on the coefficient.\idxdata[)]{uk\_elec}{micsr.data}
 
 \index[general]{weighted least squares|)}
 \index[general]{generalized least squares!weighted least squares|)}
@@ -1441,9 +1441,9 @@ The efficiency gain of using WLS is substantial, as the standard errors reduce b
 \index[general]{panel data!error component model|(}
 \index[general]{generalized least squares!error component model|(}
 
-The error component model is suitable for panel data or pseudo panel data. In the remaining of this section, we'll mention individual means, which is the proper term for panel data, but should be replaced by entity means for pseudo panel data.
-Remind that for the error component model, @eq-poweromegaec is a general
-formula that can be used to compute any power of $\Omega$ and $C$ is in
+The error component model is suitable for panel data or pseudo panel data. In the remainder of this section, we'll mention individual means, which is the proper term for panel data, but should be replaced by entity means for pseudo-panel data.
+Remember that for the error component model, @eq-poweromegaec is a general
+formula that can be used to compute any power of $\Omega$, and $C$ is in
 this context obtained by taking $r=-0.5$:
 
 $$
@@ -1457,7 +1457,7 @@ C = \Omega ^ {-0.5} = \frac{1}{\sigma_\nu}\left(I - \left[1 -\frac{\sigma_\nu}{\
 $$ {#eq-Cerrcomp2}
 
 with $\theta = 1 - \frac{\sigma_\nu}{\sigma_\iota}$. $\theta$ can be
-further writen as:
+further written as:
 
 $$
 \theta = 1 - \frac{\sigma_\nu}{\sqrt{T \sigma_\eta^2 + \sigma_\nu ^ 2}} = 1 - \frac{1}{\sqrt{T \sigma_\eta ^ 2 / \sigma_\nu^2+1}}
@@ -1473,12 +1473,12 @@ The share of the individual mean that is subtracted depends on:
 
 -   the relative weights of the two variances: $\theta \rightarrow 0$
     when $\sigma_\eta ^ 2 / \sigma_\nu ^ 2 \rightarrow 0$, which means
-    that there is no individual effects. As
+    that there are no individual effects. As
     $\sigma_\eta ^ 2 / \sigma_\nu ^ 2 \rightarrow + \infty$,
     $\theta \rightarrow 1$ and the transformation is the difference from
-    the individual mean,
+    the individual mean;
 -   the number of observations for each individual,
-    $\theta \rightarrow 1$ when $T\rightarrow + \infty$, therefore the
+    $\theta \rightarrow 1$ when $T\rightarrow + \infty$; therefore the
     transformation is close to a difference from individual mean for
     large $T$.
 
@@ -1519,7 +1519,7 @@ $$
 \frac{1}{T^2}(T-1)\sigma_{\nu}^2 = \frac{T-1}{T}\sigma_\nu ^ 2
 $$
 If $\epsilon$ were known, natural estimators of these two variances
-$\sigma_{\iota}^2$ et $\sigma_{\nu}^2$ would be:
+$\sigma_{\iota}^2$ and $\sigma_{\nu}^2$ would be:
 
 $$
 \hat{\sigma}_\iota^2 = T \frac{\sum_{n=1}^N\bar{\epsilon}_{n.}^2}{N} =
@@ -1534,7 +1534,7 @@ $$
 $$ {#eq-varidios}
 
 Several estimators of the two components of the variance have been
-proposed in the literature. They all consist on replacing
+proposed in the literature. They all consist of replacing
 $\epsilon_{nt}$ in the previous two equations by consistent estimates
 (and for some of them by applying some degrees of freedom correction).
 The estimator proposed by @WALL:HUSS:69\index[author]{Wallace}\index[author]{Hussain} is particularly simple because
@@ -1560,7 +1560,7 @@ sigs <- twins %>%
 sigs
 ```
 
-The `plm` function performs the GLS estimation, ie an OLS regression on data transformed using quasi-differences ($w_{nt} ^ * = w_{nt} - \theta \bar{w}_{n.}$) if the `model` argument is set to `"random"`:
+The `plm` function performs the GLS estimation, i.e., an OLS regression on data transformed using quasi-differences ($w_{nt} ^ * = w_{nt} - \theta \bar{w}_{n.}$) if the `model` argument is set to `"random"`:
 \idxfun{plm}{plm}
 
 ```{r}
@@ -1578,7 +1578,7 @@ The output is quite similar to the one for `lm` objects, except the two parts th
 pdim(twins, index = c("family", "twin"))
 ```
 
-The second specific part of the output gives information about the variances of the two components of the error. We can see here that the individual effects (in this example a family effect) account for only 15% of the total variance of the error. Therefore, only a small part of the individual mean is removed while performing GLS (14.3%). This information can be obtained using the `ercomp` function:
+The second specific part of the output gives information about the variances of the two components of the error. We can see here that the individual effects (in this example, a family effect) account for only 15% of the total variance of the error. Therefore, only a small part of the individual mean is removed while performing GLS (14.3%). This information can be obtained using the `ercomp` function:
 \idxfun{ercomp}{plm}
 
 ```{r}
@@ -1608,7 +1608,7 @@ rbind(ols = ord_se, gls = gls_se, ratio = gls_se / ols_se)
 ```
 
 \idxdata[)]{twins}{micsr.data}
-and therefore, there seems to be no gain of efficiency while using OLS instead of GLS. With the Tobin's Q example, we get:
+and therefore, there seems to be no gain of efficiency while using OLS instead of GLS. With Tobin's Q example, we get:
 \idxdata[(]{tobinq}{micsr.data} \idxfun{plm}{plm}\idxfun{ercomp}{plm}
 
 ```{r}
@@ -1616,7 +1616,7 @@ gls_q <- plm(ikn ~ qn, tobinq, model = "random")
 ercomp(gls_q)
 ```
 
-The share of the individual effect is now 27.5% and the GLS is now OLS on series for which 73.5% of the individual mean has been removed, mostly because the time dimension of the panel is high (35 years). Comparing the robust standard errors of OLS and those of GLS, we get:
+The share of the individual effect is now 27.5%, and the GLS is now OLS on series for which 73.5% of the individual mean has been removed, mostly because the time dimension of the panel is high (35 years). Comparing the robust standard errors of OLS and those of GLS, we get:
 \idxfun{lm}{stats}\idxfun{vcovCL}{sandwich}\idxfun{stder}{micsr}\idxfun{vcov}{stats}\idxfun{rbind}{base}
 
 ```{r}
@@ -1626,7 +1626,7 @@ sd_gls_q <- vcov(gls_q) %>% stder
 rbind(ols = sd_ols_q, gls = sd_gls_q, ratio = sd_gls_q / sd_ols_q)
 ```
 
-GLS is much more efficient that OLS as the standard error of the slope is about 4 times smaller.
+GLS is much more efficient than OLS as the standard error of the slope is about four times smaller.
 \idxdata[)]{tobinq}{micsr.data}
 
 \index[general]{error component model|)}
@@ -1638,12 +1638,11 @@ GLS is much more efficient that OLS as the standard error of the slope is about 
 \index[general]{seemingly unrelated regression|(}
 \index[general]{generalized least squares!seemingly unrelated regression|(}
 
-Because of the inter-equations correlations, the efficient estimator is
+Because of the inter-equation correlations, the efficient estimator is
 the GLS estimator:
 $\hat{\gamma}=(Z^\top\Omega^{-1}Z)^{-1}Z^\top\Omega^{-1}y$. This
-estimator, first proposed by @ZELL:62\index[author]{Zellner}, is known by the acronym **SUR**
-for **seemingly unrelated regression**. It can be obtained by applying
-OLS on transformed data, each variable being pre-multiplied by
+estimator, first proposed by @ZELL:62\index[author]{Zellner}, is known as a **seemingly unrelated regression** (**SUR**). It can be obtained by applying
+OLS on transformed data, each variable being premultiplied by
 $\Omega^{-0.5}$. This matrix is simply
 $\Omega^{-0.5}=\Sigma^{-0.5}\otimes I$. Denoting $\delta_{lm}$ the
 elements of $\Sigma^{-0.5}$, the transformed response and covariates
@@ -1686,14 +1685,15 @@ following way:
 -   finally, estimate the model by applying OLS on transformed data.
 
 $\Sigma^{-0.5}$ can conveniently be computed using the Cholesky
-decomposition, ie the upper-triangular matrix $C$ which is
+decomposition, i.e., the upper-triangular matrix $C$ which is
 such that $C^\top C=\Sigma^{-1}$.
 
 <!-- clarifier lower/uper triangular -->
 
+\idxdata[(]{apples}{micsr}
 To illustrate the use of the **SUR** estimator, we go back to the
 estimation of the system of three equations (one cost
-function and two factor shares equations) for the production of apples
+function and two factor share equations) for the production of apples
 started in @sec-system_equation. In this section, we computed a tibble containing the three responses `Y` and the model matrices for the three equations `Z_c`, `Z_l` and `Z_m` (respectively for the cost, the labor and the materials equations). In @sec-bptest_system, we estimated the covariance matrix of the errors of the three equations `Sigma`.
 To implement the **SUR** estimator, we compute the Cholesky decomposition of the inverse of the estimated covariance matrix of the errors of the three equations:
 \idxfun{transmute}{dplyr}\idxfun{filter}{dplyr}\idxfun{model.frame}{stats}\idxfun{model.matrix}{stats}\idxfun{model.response}{stats}\idxfun{Formula}{Formula}\idxfun{paste}{base}\idxfun{bdiag}{Matrix}\idxfun{as.matrix}{base}\idxfun{model.part}{Formula}\idxfun{pivot\_longer}{tidyr}\idxfun{bind\_cols}{dplyr}\idxfun{nobs}{stats}\idxfun{clm}{micsr}\idxfun{lm}{stats}\idxfun{resid}{stats}\idxfun{crossprod}{base}\idxfun{matrix}{base}\idxfun{colnames}{base}
@@ -1782,7 +1782,7 @@ $$
 \mbox{ and } \sigma_{ii} = \frac{\beta_{ij} - s_i(1 - s_i)}{s_i ^ 2}
 $$
 
-Denote $B$ the matrix containing the coefficients $\beta_{ij}$. Remind that, imposing the homogeneity of degree one of the cost function, we imposed that $\beta_{iI} = - \sum_{i=1}^{I-1}\beta_{ij}$. Therefore $\beta_{iI}$ was not estimated and we must added to the $B$ matrix using this formula:
+Denote as $B$ the matrix containing the coefficients $\beta_{ij}$. Remember that, by imposing the homogeneity of degree one of the cost function, we imposed that $\beta_{iI} = - \sum_{i=1}^{I-1}\beta_{ij}$. Therefore $\beta_{iI}$ was not estimated and we must add it to the $B$ matrix using this formula:
 \idxfun{matrix}{base}\idxfun{coef}{stats}\idxfun{apply}{base}\idxfun{cbind}{base}\idxfun{rbind}{base}\idxfun{diag}{base}\idxfun{outer}{base}\idxfun{list}{base}\idxfun{dimnames}{base}
 
 ```{r }
@@ -1798,7 +1798,7 @@ dimnames(elast) <- list(c("l", "m", "k"), c("l", "m", "k"))
 elast
 ```
 
-The three factors are substitutes all the Allen elasticities of
+The three factors are substitutes, all the Allen elasticities of
 substitution being positive. 
 The price elasticities are given by: $\epsilon_{ij} = s_j \sigma_{ij}$.
 \idxfun{rbind}{base}
@@ -1807,14 +1807,15 @@ The price elasticities are given by: $\epsilon_{ij} = s_j \sigma_{ij}$.
 elast * rbind(shares, shares, shares)
 ```
 
-Note that this matrix is not symmetric: for example $0.1675$ is the
-elasticity of the demand of materials with the price of labor as $0.1039$
+Note that this matrix is not symmetric: for example, $0.1675$ is the
+elasticity of the demand of materials with the price of labor whereas $0.1039$
 is the elasticity of the demand of labor with the price of materials.
-The price elasticities indicate that the demand for the three inputs are
+The price elasticities indicate that the demand for the three inputs is
 inelastic, and it is particularly the case for labor and materials.
 
 \index[general]{system estimation!seemingly unrelated regression|)}
 \index[general]{seemingly unrelated regression|)}
 \index[general]{generalized least squares!seemingly unrelated regression|)}
 \index[general]{generalized least squares|)}
-\idxdata[)]{data}{micsr.data}
+\idxdata[)]{apples}{micsr}
+

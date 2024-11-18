@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.475">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="author" content="Yves Croissant">
+<meta name="dcterms.date" content="2024-06-04">
+<title>Microeconometrics with R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./OLS.html" rel="next">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+</head>
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }"><div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Microeconometrics with R</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Microeconometrics with R</a> 
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link active">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./OLS.html" class="sidebar-item-text sidebar-link">Ordinary least squares estimator</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/simple_regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Simple linear regression model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/simple_regression_properties.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Statistical properties of the simple linear estimator</span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/multiple_regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Multiple regression model</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/coefficients.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Interpretation of the Coefficients</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./beyond_OLS.html" class="sidebar-item-text sidebar-link">Beyond the OLS estimator</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/maximum_likelihood.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Maximum likelihood estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/non_spherical.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Non-spherical disturbances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/endogeneity.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Endogeneity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/treateff.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Treatment effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/spatial.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Spatial econometrics</span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./special_responses.html" class="sidebar-item-text sidebar-link">Special responses</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/binomial.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Binomial models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/tobit.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Censored and truncated models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/count.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Count data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/duration.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Duration models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/rum.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Discrete choice models</span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+</div>
+</nav><!-- margin-sidebar --><div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li>
+<a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface">Preface</a>
+  <ul class="collapse">
+<li><a href="#r-and-rstudio" id="toc-r-and-rstudio" class="nav-link" data-scroll-target="#r-and-rstudio">R and RStudio</a></li>
+  <li><a href="#r-packages" id="toc-r-packages" class="nav-link" data-scroll-target="#r-packages">R packages</a></li>
+  <li><a href="#data-sets" id="toc-data-sets" class="nav-link" data-scroll-target="#data-sets">Data sets</a></li>
+  <li><a href="#the-micsr-package" id="toc-the-micsr-package" class="nav-link" data-scroll-target="#the-micsr-package">The micsr package</a></li>
+  </ul>
+</li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Microeconometrics with R</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Yves Croissant </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 4, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header><section id="preface" class="level1 unnumbered"><h1 class="unnumbered">Preface</h1>
+<p>This book is about doing microeconometrics with R. Microeconometrics is defined by <span class="citation" data-cites="CAME:TRIV:05">Cameron and Trivedi (<a href="#ref-CAME:TRIV:05" role="doc-biblioref">2005</a>)</span> as “the analysis of individual-level data on the economic behavior of individuals or ﬁrms using regression methods applied to cross-section and panel data”. We’ll use in this book a broader definition of microeconometrics, as some of the empirical examples use countries or regions as a unit of observation. But, nevertheless, the underlying model will have microeconomic foundations, as for example the Solow growth model that is treated at length in <a href="chapters/multiple_regression.html"><span>Chapter&nbsp;3</span></a> and <a href="chapters/spatial.html"><span>Chapter&nbsp;9</span></a> and the Kuzets curve presented in <a href="chapters/coefficients.html"><span>Chapter&nbsp;4</span></a>. A negative delimitation of what is in this book is that it doesn’t contain any analyses of time series.</p>
+<p>I used throughout the book some manuals. My main reference was <span class="citation" data-cites="CAME:TRIV:05">Cameron and Trivedi (<a href="#ref-CAME:TRIV:05" role="doc-biblioref">2005</a>)</span>, but I also used <span class="citation" data-cites="GREE:18">Greene (<a href="#ref-GREE:18" role="doc-biblioref">2018</a>)</span> (especially the online mathematical and statistical appendices that I found particularly useful) and <span class="citation" data-cites="WOOL:10">Wooldridge (<a href="#ref-WOOL:10" role="doc-biblioref">2010</a>)</span>. At an introductory level, I also used <span class="citation" data-cites="STOC:WATS:15">Stock and Watson (<a href="#ref-STOC:WATS:15" role="doc-biblioref">2015</a>)</span> and <span class="citation" data-cites="MADD:LAHI:09">Maddala and Lahiri (<a href="#ref-MADD:LAHI:09" role="doc-biblioref">2009</a>)</span>. For some points (geometry of least squares, asymptotic theory, data generating process, computational considerations), I was also inspired by Davidson and MacKinnon <span class="citation" data-cites="DAVI:MACK:93 DAVI:MACK:04">(<a href="#ref-DAVI:MACK:93" role="doc-biblioref">1993</a>, <a href="#ref-DAVI:MACK:04" role="doc-biblioref">2004</a>)</span>. On more specific subjects, I used also some specialized textbook and surveys: <span class="citation" data-cites="MADD:83">Maddala (<a href="#ref-MADD:83" role="doc-biblioref">1983</a>)</span>, Amemiya <span class="citation" data-cites="AMEM:81 AMEM:84">(<a href="#ref-AMEM:81" role="doc-biblioref">1981</a>, <a href="#ref-AMEM:84" role="doc-biblioref">1984</a>)</span> for <a href="chapters/binomial.html"><span>Chapter&nbsp;10</span></a> and <a href="chapters/tobit.html"><span>Chapter&nbsp;11</span></a> (binomial and censored models), <span class="citation" data-cites="CAME:TRIV:13">Cameron and Trivedi (<a href="#ref-CAME:TRIV:13" role="doc-biblioref">2013</a>)</span> for <a href="chapters/count.html"><span>Chapter&nbsp;12</span></a> (count data), <span class="citation" data-cites="LANC:90">Lancaster (<a href="#ref-LANC:90" role="doc-biblioref">1990</a>)</span> and <span class="citation" data-cites="KIEF:88">Kiefer (<a href="#ref-KIEF:88" role="doc-biblioref">1988</a>)</span> for <a href="chapters/duration.html"><span>Chapter&nbsp;13</span></a> (duration models) and <span class="citation" data-cites="TRAI:09">Train (<a href="#ref-TRAI:09" role="doc-biblioref">2009</a>)</span> for <a href="chapters/rum.html"><span>Chapter&nbsp;14</span></a> (discrete choice models).</p>
+<section id="r-and-rstudio" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="r-and-rstudio">R and RStudio</h2>
+<p><strong>R</strong> appeared in the late nineties as a clone of <strong>S</strong> which rapidly became a <strong>GNU</strong> project. It became increasingly popular among statisticians, especially in fields where <strong>S+</strong> was widely used. Its large adoption by econometricians is more recent, especially because of the use by econometricians of other softwares like <strong>SAS</strong>, <strong>GAUSS</strong> and especially nowadays <strong>Stata</strong>, and the lack of some popular estimators and tests for econometrics in <strong>R</strong>. Since then, numerous excellent packages have since been developed that make the adoption of <strong>R</strong> as the primary software for an econometrician a relevant choice. Moreover, <strong>R</strong> has some characteristics that make <strong>R</strong> code concise and clear, compared to other softwares.</p>
+<p><strong>RStudio</strong> (now <strong>Posit</strong>), founded in 2009 by Joseph J. Allaire, developed an integrated development environment called <strong>RStudio</strong> and a set of <strong>R</strong> packages that changed deeply the way a lot of <strong>R</strong> users (including myself) use <strong>R</strong>. Among them, <strong>quarto</strong> was used to build this book and the set of packages called the <strong>tidyverse</strong> is used extensively for all the basic tasks of an applied statistician which are, citing <span class="citation" data-cites="WICK:CETI:GROL:23">Wickham, Cetinkaya-Rundel, and Grolemund (<a href="#ref-WICK:CETI:GROL:23" role="doc-biblioref">2023</a>)</span>, importing, tidying, transforming and visualizing data sets. Packages of the <strong>tidyverse</strong>, respectively <strong>readr</strong>, <strong>tidyr</strong>, <strong>dplyr</strong> and <strong>ggplot2</strong> enable to perform these tasks using a set of efficient, intuitive and consistent functions.</p>
+<p>This book requires basic knowledge of <strong>R</strong> and the <strong>tidyverse</strong>, at the level of the first part of <span class="citation" data-cites="WICK:CETI:GROL:23">Wickham, Cetinkaya-Rundel, and Grolemund (<a href="#ref-WICK:CETI:GROL:23" role="doc-biblioref">2023</a>)</span>, which is titled “the whole game” and is an excellent introduction for readers of this book that are not <strong>R</strong> users. Moreover, there is a free online version of this book that can be found at <a href="https://r4ds.hadley.nz/" class="uri">https://r4ds.hadley.nz/</a>.</p>
+</section><section id="r-packages" class="level2"><h2 class="anchored" data-anchor-id="r-packages">R packages</h2>
+<p><strong>R</strong> has a modular structure. A particular analysis with <strong>R</strong> requires the use of functions that are part of different <strong>packages</strong>. To use these functions, the user can either “attach” the package (using the <code>library</code> function) or prefix the name of the function with the name of the package. For example, to use the <code>waldtest</code> function of the <strong>lmtest</strong> package, one can either use:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">waldtest</span>(<span class="sc">---</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>or:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lmtest<span class="sc">::</span><span class="fu">waldtest</span>(<span class="sc">---</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A relevant strategy is to attach only the packages that are often used in the analysis.</p>
+<p>Different kinds of packages should be considered:</p>
+<ul>
+<li>the <strong>base</strong> packages contain the core of <strong>R</strong>. They are included in any distribution of <strong>R</strong> and they are automatically attached, which means that the user can have access directly to the functions they contain. The two most important are <strong>base</strong> and <strong>stats</strong>, which contain respectively the basic general and statistical functions of <strong>R</strong>.</li>
+<li>the <strong>R</strong> distribution also contains 15 <strong>recommended</strong> packages, which are not attached. Among them, we’ll use in this book <strong>survival</strong> and <strong>MASS</strong>.</li>
+<li>
+<strong>contributed</strong> R packages. They are developed by <strong>R</strong> users and are hosted by the Comprehensive R Archive Network (<strong>CRAN</strong>). They can be very easily installed within the RStudio IDE (using the <code>Packages</code> tab on the right bottom panel of RStudio). Nowadays, there are more than 20,000 of them.</li>
+</ul>
+<p>Twenty years ago, using <strong>R</strong> for econometrics analysis required a lot of programming because a lot of core methods of econometrics were not available neither in the core of <strong>R</strong>, nor in contributed packages. Nowadays, most of the basic methods are available in contributed packages, and the book uses extensively these packages. Some missing methods are implemented in the companion package of the book called <strong>micsr</strong>.</p>
+</section><section id="data-sets" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="data-sets">Data sets</h2>
+<p>This book uses a lot of data sets to illustrate the use of the techniques described in the book. A particular care was given to use original and interesting data sets. Our main source to get data was the Journal of Applied Econometrics data archive maintained by James G. MacKinnon since 1994 and available at <a href="http://qed.econ.queensu.ca/jae/" class="uri">http://qed.econ.queensu.ca/jae/</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and the website of the American Economic Association <a href="https://www.aeaweb.org" class="uri">https://www.aeaweb.org</a> which provides data sets and programs used in articles published in AEA’s journal, in particular the American Economic Review and the four American Economic Journals (we particularly used Applied Economics). We also wrote to a lot of authors to ask them whether the data used in their publications was still available and if they could share it with us. Many thanks for those who provided data sets that are now included in the <strong>micsr</strong> and the <strong>micsr.data</strong> packages: John Mullahy (<code>birthwt</code>, <code>cigmales</code>), Mark Ottoni Wilhelm (<code>charitable</code>), Lawrence Katz (<code>recall</code>), Joseph Terza (<code>trips</code>), Franck Koppelman (<code>toronto_montreal</code>), Christopher Skeels and David Drukker (<code>moffitt</code>), Winfried Pohlmeier (<code>doctor_ger</code>) and Rainer Winkelman (<code>jobmob</code>).<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+</section><section id="the-micsr-package" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="the-micsr-package">The micsr package</h2>
+<p>The book comes with a companion package called <strong>micsr</strong>. It is available on <strong>CRAN</strong> and is therefore very easy to install. As indicated previously, the book uses extensively the <strong>tidyverse</strong> package and it is therefore recommended to install <strong>tidyverse</strong> before trying to replicate the <strong>R</strong> code contained in the book. <strong>micsr</strong> contains a small subset of the data sets included in the book and some specific methods of estimations and testing procedures for microeconometrics. Data sets used in this book not included in the <strong>micsr</strong> package are available in the <strong>micsr.data</strong> package which is available from <strong>github</strong>. To install it, you should first install the <strong>pak</strong> package and then simply write in the console:</p>
+<div class="cell">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html">pkg_install</a></span><span class="op">(</span><span class="st">"ycroissant/micsr.data"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Throughout the book, we assume that the reader that is willing to replicate the examples had previously attached the <strong>tidyverse</strong>, <strong>micsr</strong> and <strong>micsr.data</strong> packages, using:</p>
+<div class="cell">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.r-project.org">micsr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.r-project.org">micsr.data</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div style="page-break-after: always;"></div>
+<p><strong>micsr</strong> provides specific estimation and testing methods that will be presented in the core of the book. It also provides some general purpose functions. Among them, the <code>gaze</code> function will be extensively used throughout the book.</p>
+<p>The output of <strong>R</strong> calls is often quite long and takes two much place in a book. For this reason, <strong>micsr</strong> contains a generic function called <code>gaze</code> with methods for a lot of <strong>R</strong> objects. Consider for example a t-test:</p>
+<div class="cell">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/t.test.html">t.test</a></span><span class="op">(</span><span class="va">extra</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">sleep</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    One Sample t-test
+
+data:  extra
+t = 3.413, df = 19, p-value = 0.002918
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ 0.5955845 2.4844155
+sample estimates:
+mean of x 
+     1.54 </code></pre>
+</div>
+</div>
+<p>The output is 12 lines long, including three blank lines. <code>gaze</code> writes the main part of the results in just one line:</p>
+<div class="cell">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/t.test.html">t.test</a></span><span class="op">(</span><span class="va">extra</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">sleep</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="va">gaze</span></span>
+<span><span class="co">## t = 3.413, df: 19, pval = 0.003</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<!-- **micsr** also contains some general utilities particularly useful to extract some information from fitted models. Consider the following linear model: -->
+<!-- ```{r} -->
+<!-- z <- lm(dist ~ speed, cars) -->
+<!-- summary(z) -->
+<!-- ``` -->
+
+<!-- The printed output of `summary` is quite long and contains informations that can't be easily extracted from the result. A `gaze` method for `lm` object is provided to print only the table of coefficients (by default without the intercept): -->
+<!-- ```{r} -->
+<!-- #| collapse: true -->
+<!-- z %>% gaze -->
+<!-- ``` -->
+<!-- With base **R**, its easy to extract the number of observations using `nobs`, but there is no such function to extract the number of parameters. We provide the `npar` function for this purpose: -->
+<!-- ```{r} -->
+<!-- #| collapse: true -->
+<!-- npar(z) -->
+<!-- ``` -->
+
+<!-- The second column of the table of the coefficients is the vector of standard errors of the coefficients With base **R**, it can be extract by first using the `vcov` function to extract the covariance matrix and then by taking the square roots of the diagonal elements of this matrix. **micsr** provide the `stder` function to achieve easily the same task: -->
+<!-- ```{r} -->
+<!-- #| collapse: true -->
+<!-- z %>% vcov %>% diag %>% sqrt -->
+<!-- z %>% stder -->
+<!-- ``` -->
+<!-- Two very important statistics of the linear model are the coefficient of determination (adujsted or not) and the F statistic. They should be extracted "manually" from the object returned by `summary`, applied to a `lm` object: -->
+<!-- ```{r} -->
+<!-- #| collapse: true -->
+<!-- summary(z)$r.squared -->
+<!-- summary(z)$adj.r.squared -->
+<!-- summary(z)$fstat -->
+<!-- ``` -->
+<!-- The `rsq` and the `ftest` of the **micsr** package can be used instead: -->
+<!-- ```{r} -->
+<!-- #| collapse: true -->
+<!-- z %>% rsq -->
+<!-- z %>% rsq(type = "adj") -->
+<!-- z %>% ftest %>% gaze -->
+<!-- ``` -->
+
+
+<!-- -->
+
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-AMEM:81" class="csl-entry" role="doc-biblioentry">
+Amemiya, Takeshi. 1981. <span>“<span>Qualitative Response Models: A Survey</span>.”</span> <em>Journal of Economic Literature</em> 19 (4): 1483–1536. <a href="https://ideas.repec.org/a/aea/jeclit/v19y1981i4p1483-1536.html">https://ideas.repec.org/a/aea/jeclit/v19y1981i4p1483-1536.html</a>.
+</div>
+<div id="ref-AMEM:84" class="csl-entry" role="doc-biblioentry">
+———. 1984. <span>“Tobit Models: A Survey.”</span> <em>Journal of Econometrics</em> 24 (1): 3–61. <a href="https://doi.org/10.1016/0304-4076(84)90074-5">https://doi.org/10.1016/0304-4076(84)90074-5</a>.
+</div>
+<div id="ref-CAME:TRIV:05" class="csl-entry" role="doc-biblioentry">
+Cameron, A. Colin, and Pravin K. Trivedi. 2005. <em>Microeconometrics</em>. Cambridge University Press. <a href="https://EconPapers.repec.org/RePEc:cup:cbooks:9780521848053">https://EconPapers.repec.org/RePEc:cup:cbooks:9780521848053</a>.
+</div>
+<div id="ref-CAME:TRIV:13" class="csl-entry" role="doc-biblioentry">
+———. 2013. <em>Regression Analysis of Count Data</em>. 2nd ed. 53. Cambridge: Cambridge University Press.
+</div>
+<div id="ref-DAVI:MACK:93" class="csl-entry" role="doc-biblioentry">
+Davidson, Russell, and James G. MacKinnon. 1993. <em>Estimation and Inference in Econometrics</em>. New-York: Oxford University Press.
+</div>
+<div id="ref-DAVI:MACK:04" class="csl-entry" role="doc-biblioentry">
+———. 2004. <em>Econometric Theory and Methods</em>. Oxford University Press.
+</div>
+<div id="ref-GREE:18" class="csl-entry" role="doc-biblioentry">
+Greene, William H. 2018. <em>Econometrics Analysis</em>. 8th ed. Pearson.
+</div>
+<div id="ref-KIEF:88" class="csl-entry" role="doc-biblioentry">
+Kiefer, Nicholas M. 1988. <span>“Economic Duration Data and Hazard Functions.”</span> <em>Journal of Economic Literature</em> 26 (2): 646–79. <a href="http://www.jstor.org/stable/2726365">http://www.jstor.org/stable/2726365</a>.
+</div>
+<div id="ref-LANC:90" class="csl-entry" role="doc-biblioentry">
+Lancaster, Tony. 1990. In <em>The Econometric Analysis of Transition Data</em>. Econometric Society Monographs. Cambridge University Press.
+</div>
+<div id="ref-MADD:83" class="csl-entry" role="doc-biblioentry">
+Maddala, G. S. 1983. <em>Limited-Dependent and Qualitative Variables in Econometrics</em>. Econometric Society Monographs. Cambridge University Press. <a href="https://doi.org/10.1017/CBO9780511810176">https://doi.org/10.1017/CBO9780511810176</a>.
+</div>
+<div id="ref-MADD:LAHI:09" class="csl-entry" role="doc-biblioentry">
+Maddala, G. S., and Kajal Lahiri. 2009. <em>Introduction to Econometrics</em>. 4th ed. Wiley.
+</div>
+<div id="ref-STOC:WATS:15" class="csl-entry" role="doc-biblioentry">
+Stock, James H., and Mark W. Watson. 2015. <em>Introduction to Econometrics</em>. Pearson.
+</div>
+<div id="ref-TRAI:09" class="csl-entry" role="doc-biblioentry">
+Train, Kenneth. 2009. <em>Discrete Choice Methods with Simulation</em>. Cambridge University Press. <a href="https://EconPapers.repec.org/RePEc:cup:cbooks:9780521766555">https://EconPapers.repec.org/RePEc:cup:cbooks:9780521766555</a>.
+</div>
+<div id="ref-WICK:CETI:GROL:23" class="csl-entry" role="doc-biblioentry">
+Wickham, Hadley, Mine Cetinkaya-Rundel, and Garrett Grolemund. 2023. <em>R for Data Science: Import, Tidy, Transform, Visualize, and Model Data</em>. O’Reilly.
+</div>
+<div id="ref-WOOL:10" class="csl-entry" role="doc-biblioentry">
+Wooldridge, Jeffrey M. 2010. <em><span class="nocase">Econometric Analysis of Cross Section and Panel Data</span></em>. Vol. 1. MIT Press Books 0262232588. The MIT Press. <a href="https://ideas.repec.org/b/mtp/titles/0262232588.html">https://ideas.repec.org/b/mtp/titles/0262232588.html</a>.
+</div>
+</div>
+</section></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>This website is still available but is superseded since 2022 by a new website at <a href="https://journaldata.zbw.eu/journals/jae" class="uri">https://journaldata.zbw.eu/journals/jae</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Franck Vella, Adrian Pagan, Jerry Hausman, Claudia Goldin, Wynand van de Ven, Andrew Jones, Richard J. Smith, Pramila Krishnan, Orley C. Ashenfelter, John Ham, James Adams, John McDonald, Laurence Kotlikoff, Mark Rosenzweig, James Dunvely and Kathryn Graddy kindly answered me that they were unable to share the data I required (most of the time because it was no longer available to them).<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./OLS.html" class="pagination-link">
+        <span class="nav-page-text">Ordinary least squares estimator</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb8" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Preface {.unnumbered}</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>This book is about doing microeconometrics with R. Microeconometrics is defined by @CAME:TRIV:05\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Cameron}\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Trivedi} as "the analysis of individual-level data on the economic behavior of individuals or ﬁrms using regression methods applied to cross-section and panel data". We'll use in this book a broader definition of microeconometrics, as some of the empirical examples use countries or regions as a unit of observation. But, nevertheless, the underlying model will have microeconomic foundations, as for example the Solow growth model that is treated at length in @sec-mult_reg_chapter and @sec-spatial_econometrics and the Kuzets curve presented in @sec-interpretation_chapter. A negative delimitation of what is in this book is that it doesn't contain any analyses of time series. </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>I used throughout the book some manuals. My main reference was @CAME:TRIV:05, but I also used @GREE:18 (especially the online mathematical and statistical appendices that I found particularly useful) and @WOOL:10. At an introductory level, I also used @STOC:WATS:15 and @MADD:LAHI:09. For some points (geometry of least squares, asymptotic theory, data generating process, computational considerations), I was also inspired by Davidson and MacKinnon <span class="co">[</span><span class="ot">-@DAVI:MACK:93; -@DAVI:MACK:04</span><span class="co">]</span>\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Davidson}\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{MacKinnon}.</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>On more specific subjects, I used also some specialized textbook and surveys: @MADD:83\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Maddala}, Amemiya <span class="co">[</span><span class="ot">-@AMEM:81; -@AMEM:84</span><span class="co">]</span>\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Amemiya} for @sec-binomial and @sec-tobit (binomial and censored models), @CAME:TRIV:13\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Cameron}\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Trivedi} for @sec-count (count data),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>@LANC:90\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Lancaster} and @KIEF:88\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Kiefer} for @sec-duration (duration models) and @TRAI:09\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Train} for @sec-rum (discrete choice models).</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## R and RStudio {-}</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>**R** appeared in the late nineties as a clone of **S** which rapidly became a **GNU** project. It became increasingly popular among statisticians, especially in fields where **S+** was widely used. Its large adoption by econometricians is more recent, especially because of the use by econometricians of other softwares like **SAS**, **GAUSS** and especially nowadays **Stata**, and the lack of some popular estimators and tests for econometrics in **R**. Since then, numerous excellent packages have since been developed that make the adoption of **R** as the primary software for an econometrician a relevant choice. Moreover, **R** has some characteristics that make **R** code concise and clear, compared to other softwares. </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>**RStudio** (now **Posit**), founded in 2009 by Joseph J. Allaire\index[author]{Allaire}, developed an integrated development environment  called **RStudio** and a set of **R** packages that changed deeply the way a lot of **R** users (including myself) use **R**. Among them, **quarto** was used to build this book and the set of packages called the **tidyverse** is used extensively for all the basic tasks of an applied statistician which are, citing @WICK:CETI:GROL:23\index[author]{Wickham}\index[author]{Cetinkaya-Rundel}\index[author]{Grolemund}, importing, tidying, transforming and visualizing data sets. Packages of the **tidyverse**, respectively **readr**, **tidyr**, **dplyr** and **ggplot2** enable to perform these tasks using a set of efficient, intuitive and consistent functions. </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>This book requires basic knowledge of **R** and the **tidyverse**, at the level of the first part of @WICK:CETI:GROL:23, which is titled "the whole game" and is an excellent introduction for readers of this book that are not **R** users. Moreover, there is a free online version of this book that can be found at <span class="ot">&lt;https://r4ds.hadley.nz/&gt;</span>.</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## R packages</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>**R** has a modular structure. A particular analysis with **R** requires the use of functions that are part of different **packages**. To use these functions, the user can either "attach" the package (using the `library` function) or prefix the name of the function with the name of the package. For example, to use the `waldtest` function of the **lmtest** package, one can either use:</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="fu">waldtest</span>(<span class="sc">---</span>)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>or:</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>lmtest<span class="sc">::</span><span class="fu">waldtest</span>(<span class="sc">---</span>)</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>A relevant strategy is to attach only the packages that are often used in the analysis.</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>Different kinds of packages should be considered:</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the **base** packages contain the core of **R**. They are included in any distribution of **R** and they are automatically attached, which means that the user can have access directly to the functions they contain. The two most important are **base** and **stats**, which contain respectively the basic general and statistical functions of **R**. </span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the **R** distribution also contains 15 **recommended** packages, which are not attached. Among them, we'll use in this book **survival** and **MASS**.</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**contributed** R packages. They are developed by **R** users and are hosted by the Comprehensive R Archive Network (**CRAN**). They can be very easily installed within the RStudio IDE (using the <span class="in">`Packages`</span> tab on the right bottom panel of RStudio). Nowadays, there are more than 20,000 of them. </span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>Twenty years ago, using **R** for econometrics analysis required a lot of programming because a lot of core methods of econometrics were not available neither in the core of **R**, nor in contributed packages. Nowadays, most of the basic methods are available in contributed packages, and the book uses extensively these packages. Some missing methods are implemented in the companion package of the book called **micsr**.</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data sets {-}</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>This book uses a lot of data sets to illustrate the use of the techniques described in the book. A particular care was given to use original and interesting data sets. Our main source to get data was the Journal of Applied Econometrics data archive maintained by James G. MacKinnon\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{MacKinnon} since 1994 and available at <span class="ot">&lt;http://qed.econ.queensu.ca/jae/&gt;</span>^<span class="co">[</span><span class="ot">This website is still available but is superseded since 2022 by a new website at &lt;https://journaldata.zbw.eu/journals/jae&gt;.</span><span class="co">]</span> and the website of the American Economic Association <span class="ot">&lt;https://www.aeaweb.org&gt;</span> which provides data sets and programs used in articles published in AEA's journal, in particular the American Economic Review and the four American Economic Journals (we particularly used Applied Economics). We also wrote to a lot of authors to ask them whether the data used in their publications was still available and if they could share it with us. Many thanks for those who provided data sets that are now included in the **micsr** and the **micsr.data** packages: John Mullahy\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Mullahy} (<span class="in">`birthwt`</span>, <span class="in">`cigmales`</span>), Mark Ottoni Wilhelm\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Wilhelm} (<span class="in">`charitable`</span>), Lawrence Katz\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Katz} (<span class="in">`recall`</span>), Joseph Terza\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Terza} (<span class="in">`trips`</span>), Franck Koppelman\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Koppelman} (<span class="in">`toronto_montreal`</span>), Christopher Skeels\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Skeels} and David Drukker\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Moffitt} (<span class="in">`moffitt`</span>), Winfried Pohlmeier\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Pohlmeier} (<span class="in">`doctor_ger`</span>) and Rainer Winkelman\index<span class="co">[</span><span class="ot">author</span><span class="co">]</span>{Winkelman} (<span class="in">`jobmob`</span>).^<span class="co">[</span><span class="ot">Franck Vella\index[author]{Vella}, Adrian Pagan\index[author]{Pagan}, Jerry Hausman\index[author]{Hausman}, Claudia Goldin\index[author]{Goldin}, Wynand van de Ven\index[author]{van de Ven}, Andrew Jones\index[author]{Jones}, Richard J. Smith\index[author]{Smith}, Pramila Krishnan\index[author]{Krishnan}, Orley C. Ashenfelter\index[author]{Ashenfelter}, John Ham\index[author]{Ham}, James Adams\index[author]{Adams}, John McDonald\index[author]{McDonald}, Laurence Kotlikoff\index[author]{Kotlikoff}, Mark Rosenzweig\index[author]{Rosenzweig}, James Dunvely\index[author]{Dunvely} and Kathryn Graddy\index[author]{Graddy} kindly answered me that they were unable to share the data I required (most of the time because it was no longer available to them).</span><span class="co">]</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="fu">## The micsr package {-}</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>The book comes with a companion package called **micsr**. It is available on **CRAN** and is therefore very easy to install. As indicated previously, the book uses extensively the **tidyverse** package and it is therefore recommended to install **tidyverse** before trying to replicate the **R** code contained in the book. **micsr** contains a small subset of the data sets included in the book and some specific methods of estimations and testing procedures for microeconometrics. Data sets used in this book not included in the **micsr** package are available in the **micsr.data** package which is available from **github**. To install it, you should first install the **pak** package and then simply write in the console:</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pkg_install</span>(<span class="st">"ycroissant/micsr.data"</span>)</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>Throughout the book, we assume that the reader that is willing to replicate the examples had previously attached the **tidyverse**, **micsr** and **micsr.data** packages, using:</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(micsr)</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(micsr.data)</span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>\newpage</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>**micsr** provides specific estimation and testing methods that will be presented in the core of the book. It also provides some general purpose functions. Among them, the <span class="in">`gaze`</span> function will be extensively used throughout the book.</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>The output of **R** calls is often quite long and takes two much place in a book. For this reason, **micsr** contains a generic function called `gaze` with methods for a lot of **R** objects. Consider for example a t-test:</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(extra <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> sleep)</span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>The output is 12 lines long, including three blank lines. <span class="in">`gaze`</span> writes the main part of the results in just one line:</span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a><span class="co">#| collapse: true</span></span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(extra <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> sleep) <span class="sc">%&gt;%</span> gaze</span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- **micsr** also contains some general utilities particularly useful to extract some information from fitted models. Consider the following linear model: --&gt;</span></span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ```{r} --&gt;</span></span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z &lt;- lm(dist ~ speed, cars) --&gt;</span></span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- summary(z) --&gt;</span></span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ``` --&gt;</span></span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- The printed output of `summary` is quite long and contains informations that can't be easily extracted from the result. A `gaze` method for `lm` object is provided to print only the table of coefficients (by default without the intercept): --&gt;</span></span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ```{r} --&gt;</span></span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- #| collapse: true --&gt;</span></span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z %&gt;% gaze --&gt;</span></span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ``` --&gt;</span></span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- With base **R**, its easy to extract the number of observations using `nobs`, but there is no such function to extract the number of parameters. We provide the `npar` function for this purpose: --&gt;</span></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ```{r} --&gt;</span></span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- #| collapse: true --&gt;</span></span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- npar(z) --&gt;</span></span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ``` --&gt;</span></span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- The second column of the table of the coefficients is the vector of standard errors of the coefficients With base **R**, it can be extract by first using the `vcov` function to extract the covariance matrix and then by taking the square roots of the diagonal elements of this matrix. **micsr** provide the `stder` function to achieve easily the same task: --&gt;</span></span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ```{r} --&gt;</span></span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- #| collapse: true --&gt;</span></span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z %&gt;% vcov %&gt;% diag %&gt;% sqrt --&gt;</span></span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z %&gt;% stder --&gt;</span></span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ``` --&gt;</span></span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Two very important statistics of the linear model are the coefficient of determination (adujsted or not) and the F statistic. They should be extracted "manually" from the object returned by `summary`, applied to a `lm` object: --&gt;</span></span>
+<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ```{r} --&gt;</span></span>
+<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- #| collapse: true --&gt;</span></span>
+<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- summary(z)$r.squared --&gt;</span></span>
+<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- summary(z)$adj.r.squared --&gt;</span></span>
+<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- summary(z)$fstat --&gt;</span></span>
+<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ``` --&gt;</span></span>
+<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- The `rsq` and the `ftest` of the **micsr** package can be used instead: --&gt;</span></span>
+<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ```{r} --&gt;</span></span>
+<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- #| collapse: true --&gt;</span></span>
+<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z %&gt;% rsq --&gt;</span></span>
+<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z %&gt;% rsq(type = "adj") --&gt;</span></span>
+<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- z %&gt;% ftest %&gt;% gaze --&gt;</span></span>
+<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- ``` --&gt;</span></span>
+<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a>\mainmatter</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+</body></html>

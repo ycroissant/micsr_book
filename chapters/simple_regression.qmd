@@ -1,3 +1,5 @@
+# Simple linear regression model {#sec-simple_ols}
+
 ```{r }
 #| include: false
 #| label: setup_simple_regression
@@ -8,23 +10,22 @@ source("../_commonR.R")
 <!-- the adoptees data set is quite heavy -->
 <!-- introduce the epsilon_O notation ? -->
 
-# Simple linear regression model {#sec-simple_ols}
 
 <!-- \newcommand{\indexfunction}[2]{\index[functions]{#1}} -->
 
 Obviously there will be rarely a deterministic relationship between
 a response and one or several covariates. Education has a positive
 causal effect on wage, but there are many other variables that affect
-wages: sex, ethnicity, experience, abilities to name a few. Even if a
+wages: sex, ethnicity, experience, abilities, to name a few. Even if a
 large set of relevant covariates are observed, some are not (this
 is in particular the case for abilities). Therefore, we won't try to
 modelize the value of $y$ as a function of covariates $x$ and some
 unknown parameters $\gamma$: $y = f(x, \gamma)$ but, more modestly,
-the **conditional expectation** of $y$: \index[general]{contional expectation|(}
+the **conditional expectation** of $y$: \index[general]{conditional expectation|(}
 
 $$
 \mbox{E}(y | x) = f(x, \gamma)
-$$ {#eq-condexp}
+$$ {#eq-condexpsimp}
 
 Back to our education / wage model, the conditional expectation is the
 mean value of the wage in the population for a given value of education. It is therefore a function of $x$ which takes as many values as there are distinct
@@ -33,14 +34,14 @@ values of $x$.
 In this chapter, we discuss the simplest econometric model, which is
 the simple linear regression model. This is a **simple** model because
 there is only one covariate $x$. This is a **linear** model
-because the $f$ function is assumed to be linear. @eq-condexp can then
+because the $f$ function is assumed to be linear. @eq-condexpsimp can then
 be rewritten as follow:
 
 $$
 \mbox{E}(y | x) = \alpha + \beta x
 $$ {#eq-lincondexp}
 
-@sec-condexp_covariance details the notion of conditional expectation and its relation with the notion of covariance. @sec-simple_model_data presents the model and the data set that will be used throughout this chapter. @sec-comp_simple_ols is devoted to the computation of the ordinary least squares estimator. @sec-simple_geometry presents the geometry of least squares. @sec-comp_ols_simple_R explains how to compute the ordinary least squares using **R**. Finally @sec-dgp_simulations presents the notion of data generator process and explains how useful simulations can be performed.
+@sec-condexp_covariance details the notion of conditional expectation and its relation with the notion of covariance. @sec-simple_model_data presents the model and the data set that will be used throughout this chapter. @sec-comp_simple_ols is devoted to the computation of the ordinary least squares estimator. @sec-simple_geometry presents the geometry of least squares. @sec-comp_ols_simple_R explains how to compute the ordinary least squares estimator using **R**. Finally @sec-dgp_simulations presents the notion of data generator process and explains how simulations can be usefully performed.
 
 ## Conditional expectation and covariance {#sec-condexp_covariance}
 \index[general]{covariance|(}
@@ -72,10 +73,10 @@ values, so does the conditional expectation. In a linear regression
 model, @eq-lincondexp will therefore returns two values, $\alpha$ for
 $x = 0$ and $\alpha + \beta$ for $x = 1$. $\alpha$ and $\alpha +
 \beta$ are therefore the expected birth weights for respectively
-non-smoking and smoking mothers. Note that, as we have as many
+non-smoking and smoking mothers. Note that, because we have as many
 parameters as values of the covariate, the linear hypothesis
-is necesseraly supported. Natural estimators of the conditional expectations
-are the conditional sample means, ie the average birth weights in the
+is necessarily supported. Natural estimators of the conditional expectations
+are the conditional sample means, i.e., the average birth weights in the
 sample for non-smoking and smoking women:
 
 ```{r }
@@ -99,10 +100,10 @@ $\hat{\alpha} = `r round(alpha, 1)`$ and the estimation of $\alpha +
 \beta$ is $`r round(alpha_beta, 1)`$, so that $\hat{\beta} =
 `r round(alpha_beta, 1)` - `r round(alpha, 1)` = `r round(beta, 1)`$
 ounces, which is the estimation of birth weight's loss caused by smoking during pregnancy.
-This can be illustrated using a scatter plot (see @fig-birthwt)\idxdata{cigarettes}{micsr}, with
+This can be illustrated using a scatterplot (see @fig-birthwt)\idxdata{cigarettes}{micsr}, with
 `smoke` on the horizontal axis and `birthwt` on the vertical axis, all
 the points having only two possible abscissa values, 0 and 1. The conditional means
-are represented by square points and we also drew the line that
+are represented by square points, and we also drew the line that
 contains these two points. The intercept is therefore the y-value of
 the square point for $x = 0$ which is $\hat{\alpha} = `r round(alpha,
 1)`$. The slope of the line is the ratio of the vertical and the
@@ -111,7 +112,7 @@ $\hat{\beta}$ and $1 - 0 = 1$ and is therefore equal to $\hat{\beta}$.
 
 ```{r}
 #| label: fig-birthwt
-#| fig-cap: "Birth Weight for non-smoking and smoking mothers"
+#| fig-cap: "Birth weight for non-smoking and smoking mothers"
 #| echo: false
 birthwt %>% ggplot(aes(smoke, birthwt)) + geom_point(size = 0.1) +
   geom_abline(slope = beta, intercept = alpha) + 
@@ -123,7 +124,7 @@ Consider now the relationship between education and wage. The
 `adoptees`\idxdata{adoptees}{micsr.data} data set [@PLUG:04]\index[author]{Plug} contains the number of years of education `educ`
 and the annual income `income` (in thousands of US$) for 16481
 individuals. We restrict the sample to individuals with an education level
-between 12 (high school degree) and 15 years (bachelor degree).
+between 12 (high school degree) and 15 years (bachelor's degree).
 
 ```{r }
 #| label: adoptees_filter
@@ -131,7 +132,7 @@ adoptees <- adoptees %>%
     filter(educ >= 12, educ <= 15)
 ```
 
-and we compute the mean income for the 4 values of education:
+and we compute the mean income for the four values of education:
 
 ```{r }
 #| adoptees_mean_income
@@ -139,7 +140,7 @@ adoptees %>% group_by(educ) %>%
     summarise(income = mean(income))
 ```
 
-The scatterplot is presented on @fig-adoptees:
+The scatterplot is presented in @fig-adoptees:
 
 ```{r }
 #| label: fig-adoptees
@@ -152,7 +153,7 @@ adoptees %>% ggplot(aes(educ, income)) + geom_point(size = 0.1) +
     scale_y_continuous(limits = c(5E01, 1E02))
 ```
 
-This time, we have 4 distinct values of the covariate and we can estimate 4 conditional sample means, but there are only two parameters to estimate in the simple linear model. Therefore, we can't estimate directly $\alpha$ and $\beta$ using the conditional means, except in the improbable case where the 4 conditional means lie on a straight line, which means that, for one additional year of education, the average wage increases exactly by the same amount. We can see on @fig-adoptees\idxdata{adoptees}{micsr.data} that it is not the case: the increase of income is `r round(diff(cond_means$income[1:2]), 1)` for a 13^th^ year of education, `r round(diff(cond_means$income[2:3]), 1)` for a 14^th^ year and `r round(diff(cond_means$income[3:4]), 1)` for a 15^th^ year. We therefore need a formal method of estimation which enables us to obtain values of $\hat{\alpha}$ and $\hat{\beta}$. The remaining of this chapter is devoted to the presentation of this estimator, which is called the **ordinary least squares** (or **OLS**) estimator. 
+This time, we have four distinct values of the covariate and we can estimate four conditional sample means, but there are only two parameters to estimate for the simple linear model. Therefore, we can't estimate directly $\alpha$ and $\beta$ using the conditional means, except in the improbable case where the four conditional means lie on a straight line, which means that, for one additional year of education, the average wage increases exactly by the same amount. We can see in @fig-adoptees\idxdata{adoptees}{micsr.data} that it is not the case: the increase of income is `r round(diff(cond_means$income[1:2]), 1)` for a 13th year of education, `r round(diff(cond_means$income[2:3]), 1)` for a 14th year and `r round(diff(cond_means$income[3:4]), 1)` for a 15th year. We therefore need a formal method of estimation which enables us to obtain values of $\hat{\alpha}$ and $\hat{\beta}$. The remaining of this chapter is devoted to the presentation of this estimator, which is called the **ordinary least squares** (**OLS**) estimator. 
 
 ### Linear model, conditional expectation and covariance
 
@@ -169,9 +170,9 @@ $$
 
 Therefore, the covariance between $x$ and $y$ is also the covariance between $x$ and the conditional expectation of $y$ (which is a function of $x$).
 
-As an example, consider the case where $y$ is the hourly wage and $x$ the education level, which takes the values 0 (high-school), 3 (bachelor) and 5 (graduate), the frequencies for the three levels of education being 0.4, 0.3 and 0.3. Let denote $h$, $b$ and $g$ these three education levels and assume that $\mbox{E}(y\mid x) = 8 + 0.5 x$, which means that one more year of education increases the expected wage by 0.5$. 
+As an example, consider the case where $y$ is the hourly wage and $x$ the education level, which takes the values 0 (highschool), 3 (bachelor) and 5 (graduate), the frequencies for the three levels of education being 0.4, 0.3 and 0.3. Let denote $h$, $b$ and $g$ these three education levels and assume that $\mbox{E}(y\mid x) = 8 + 0.5 x$, which means that one more year of education increases the expected wage by $0.5. 
 The expected level of education is $\mu_x = 0.4 \times 0 + 0.3 \times 3 + 0.3 \times 5 = 2.4$. 
-The expected wage for the three levels of education are $\mu_{xh} = 8$, $\mu_{xb} = 9.5$ and $\mu_{xg} = 10.5$. The expected wage is then $\mu_y = 0.4 \times 8 + 0.3 \times 9.5 + 0.3 \times 10.5 = 9.2$. We first compute the 1^st^ term of the covariance between wage and education for $x = x_h = 0$:
+The expected wage for the three levels of education are $\mu_{xh} = 8$, $\mu_{xb} = 9.5$ and $\mu_{xg} = 10.5$. The expected wage is then $\mu_y = 0.4 \times 8 + 0.3 \times 9.5 + 0.3 \times 10.5 = 9.2$. We first compute the first term of the covariance between wage and education for $x = x_h = 0$:
 
 $$ 
 \begin{array}{rcl}
@@ -194,7 +195,7 @@ $$
 \sigma_{xy} = 0.4 \times 2.88 + 0.3 \times 0.18 + 0.3 \times 3.38 = 2.22
 $$
 
-Now consider the case where the conditional expectation of the hourly wage is the same for the three education levels: $\mbox{E}(y \mid x = x_h) = \mbox{E}(y \mid x = x_b) = \mbox{E}(y \mid x = x_m)$. These three conditional expectations are therefore equal to the unconditional expectation $\mu_y$ and @eq-cov_one_term is clearly 0 and so is the covariance. Therefore, a constant conditional expectation of $y$ given $x$ implies that the covariance is 0. Note that the opposite is not true. For example, if $\mu_{yh} = 8$, $\mu_{yb} = 13.2$ and $\mu_{ym} = 6.2$, the relation between the conditional mean of the wage and the level of education is no more linear, and it is not monotonous but inversely U-shaped (the wage first increases with education and then decreases). The unconditional mean is still: $\mu_y = 0.4 \times 8 + 0.3 \times 13.2 + 0.3 \times 6.2 = 9.2$ but the covariance is then:
+Now consider the case where the conditional expectation of the hourly wage is the same for the three education levels: $\mbox{E}(y \mid x = x_h) = \mbox{E}(y \mid x = x_b) = \mbox{E}(y \mid x = x_m)$. These three conditional expectations are therefore equal to the unconditional expectation $\mu_y$ and @eq-cov_one_term is clearly 0 and so is the covariance. Therefore, a constant conditional expectation of $y$ given $x$ implies that the covariance is 0. Note that the opposite is not true. For example, if $\mu_{yh} = 8$, $\mu_{yb} = 13.2$ and $\mu_{ym} = 6.2$, the relation between the conditional mean of the wage and the level of education is no more linear, and it is not monotonous but inversely U-shaped (the wage first increases with education and then decreases). The unconditional mean is still: $\mu_y = 0.4 \times 8 + 0.3 \times 13.2 + 0.3 \times 6.2 = 9.2$, but the covariance is then:
 
 $$
 \sigma_{xy} = 0.4 \times (0-2.4) \times (8 - 9.2) + 0.3 \times (3-2.4) \times (13.2 - 9.2) + 0.3 \times (5 - 2.4) \times (6.2 - 9.2) = 0
@@ -290,10 +291,10 @@ $$
 
 Consider now the case where the mean wage is the same for every education level:
 $\bar{y}_b=\bar{y}_l=\bar{y}_m=\bar{y}=9.2$. In this case, the covariance is obviously 0 because $\bar{y}_k-\bar{y}=0\;\forall k$.
-\index[general]{contional expectation|)}
+\index[general]{conditional expectation|)}
 \index[general]{covariance|)}
 
-## The model and the data set {#sec-simple_model_data}
+## Model and data set {#sec-simple_model_data}
 
 We'll consider in this chapter the question of mode shares for
 inter-urban transportation. More precisely, considering that a trip
@@ -302,13 +303,13 @@ the market shares of both modes? We'll use in this section a popular
 model in transportation economics which is the price-time model.
 `price_time`\idxdata{price\_time}{micsr.data} contains aggregate data about rail
 and air transportation between Paris and 13 French towns in 1995, it
-is reproduced from @BONN:04 p. 364-366\index[author]{Bonnel}.
+is reproduced from @BONN:04 pp. 364-366\index[author]{Bonnel}.
 
 ```{r }
 #| label: price_time
 price_time %>% print(n = 3)
 ```
-For the sake of simplicity, We'll use shorter names for the variables:
+For the sake of simplicity, we'll use shorter names for the variables:
 
 ```{r }
 #| label: price_time_names
@@ -345,7 +346,7 @@ c_{r} ^ i &=& p_{r} + h ^ i t_{r} / 60\\
 $$ {#eq-generalized_costs}
 
 Plane is typically faster and more expensive than train, which means
-that in the time-value / generalized cost plane, the generalized cost
+that in the time-value\ /\ generalized cost plane, the generalized cost
 for rail will be represented by a line with a lower intercept (the price of train is
 lower) and with a higher slope (transport time is higher) than the one that corresponds to air. Generalized
 cost for both modes and for the two towns of Bordeaux and Nice are
@@ -399,7 +400,7 @@ from `r round(pull(top_n(prtime, -1, h), h))`
 (`r pull(top_n(prtime, -1, h), town)`) to `r round(pull(top_n(prtime, 1, h), h))` 
 (`r pull(top_n(prtime, 1, h), town)`) euros per hour.
 Before considering a theoretical model that links the market share of
-train with the threshold value of time, let's have a first glance on @fig-hsfsmpl of this relationship using a scatterplot.
+train with the threshold value of time, let's have a first glance at @fig-hsfsmpl of this relationship using a scatterplot.
 
 ```{r}
 #| label: fig-hsfsmpl 
@@ -412,7 +413,7 @@ prtime %>% ggplot(aes(h, sr)) + geom_point() +
 The relationship between the threshold value of time and rail's
 market share seems approximately linear, except for cities where the
 market share of train is very high (more than 75%). For now, we'll
-remove these 4 cities from the sample and plot on @fig-hsfsubsmpl the scatter plot for this restricted sample.^[This is obviously a very raw method to remove the non-linearity. Real time-price models use a much relevant solution, ie a transformation of the two variables in order to deal with the non-linearity.] 
+remove these four cities from the sample and plot on @fig-hsfsubsmpl the scatterplot for this restricted sample.^[This is obviously a very raw method to remove the non-linearity. Real time-price models use a much relevant solution, i.e., a transformation of the two variables in order to deal with the non-linearity.] 
 
 ```{r }
 #| label: subset_price_time
@@ -421,7 +422,7 @@ prtime <- filter(prtime, sr < 0.75)
 
 ```{r}
 #| label: fig-hsfsubsmpl
-#| fig-cap: "Share of rail in function of the threshold time value on a sub-sample"
+#| fig-cap: "Share of rail in function of the threshold time value on a subsample"
 #| echo: false
 prtime %>% ggplot(aes(h, sr)) + geom_point() +
     ggrepel::geom_label_repel(aes(label = town))
@@ -444,7 +445,7 @@ between $a$ and $b$. This rectangle has two components:
 - a second rectangle of width $[h ^*, b]$ which includes people for
   which time value is higher than $h^*$ and therefore take the plane.
   
-Stated differently : $s_f = \frac{h^* - a}{b - a} = -\frac{a}{b - a} +
+Stated differently: $s_f = \frac{h^* - a}{b - a} = -\frac{a}{b - a} +
 \frac{1}{b-a} h^*$ and this model therefore predicts a linear
 relationship between $h^*$ and $s_f$, the intercept being
 $-\frac{a}{b - a}$ and the slope $\frac{1}{b - a}$. Of course, rail's market share depends on other variables than the threshold value of time, so that the linear relationship concerns the conditional expectation of rail's market share. With $y=s_f$ and $x=h^*$, we therefore have a linear model of the form: $\mbox{E}(y | x) = \alpha + \beta x$. Moreover, the two parameters to be estimated $\alpha$ and $\beta$ are functions of the structural parameters of the model $a$ and $b$ which are the minimum and the maximum of the value of time.
@@ -457,7 +458,8 @@ $-\frac{a}{b - a}$ and the slope $\frac{1}{b - a}$. Of course, rail's market sha
 knitr::include_graphics("./tikz/fig/price_time.png", auto_pdf = TRUE)
 ```
 
-## Computation of the OLS Estimator {#sec-comp_simple_ols}
+\newpage
+## Computation of the OLS estimator {#sec-comp_simple_ols}
 
 The model we seek to estimate is: $\mbox{E}(y_n \mid x_n) = \alpha+\beta x_n$. The difference between the observed value of $y$ and
 its conditional expectation is called the **error** for observation
@@ -481,18 +483,18 @@ using an estimation method, $\epsilon_n$ will be called the
 therefore the vertical distance between the point for observation $n$
 and the regression line. \index[general]{residuals}
 
-We seek to draw a straight line that is closest as
+We seek to draw a straight line that is as closest as
 possible to all the points of our sample as in @fig-hsfsubsmpl. In the
 simple linear regression model, the distance between a
 point and the line is defined by the vertical distance, which is the residual for
 this observation. For the whole sample, we need to aggregate this
-individual measures of distance. Summing them is not an issue as there
+individual measures of distance. Summing them is not an issue, as there
 are positive and negative values of the residuals and the sum may be
 very close to zero even if the individual residuals are very high in
 absolute values. One solution would be to use the sum of the absolute
 values of the residuals,^[This estimator is called the least absolute deviations estimator.] but with the OLS estimator, we'll consider the sum of the squares of the
-residuals (also called the residual sum of squares **RSS**). Taking the squares, as taking the absolute values,
-removes the sign of the individual residuals and it results on an
+residuals (also called the residual sum of squares (**RSS**). Taking the squares, as taking the absolute values,
+removes the sign of the individual residuals and it results in an
 estimator which has nice mathematical and statistical
 properties. We'll therefore consider a function $f$ which
 depends on the value of the response and the covariate in the sample
@@ -506,7 +508,7 @@ $$
 
 Note that we write $f$ as a function of the two unknown parameters
 conditional on the values of $x$ and $y$ for a given sample.
-First order conditions for the minimization of $f$ are:
+First-order conditions for the minimization of $f$ are:
 
 $$
 \left\{
@@ -543,7 +545,7 @@ $$ {#eq-cpoalpha2}
 
 which means that the sample mean is on the
 regression line.
-Denoting $\hat{\epsilon}_n$ the residuals of the OLS estimator, @eq-cpobeta states that $\sum_n x_n \hat{\epsilon} / N=0$, ie that the
+Denoting $\hat{\epsilon}_n$ the residuals of the OLS estimator, @eq-cpobeta states that $\sum_n x_n \hat{\epsilon} / N=0$, i.e., that the
 average cross-product of the covariate and the residual is 0. But, as
 the sample mean of the residuals $\bar{\hat{\epsilon}}$ is 0, this expression is also the
 covariance between the covariate and the residuals:
@@ -586,16 +588,16 @@ $$
 $$ {#eq-slrbeta}
 
 
-@eq-slrbeta gives three formulation for this estimator:
+@eq-slrbeta gives three formulations for this estimator:
 
-- the first one indicates that it is the ratio of the covariation of
+- the first indicates that it is the ratio of the covariation of
   $x$ and $y$: $S_{xy}=\sum_{n = 1} ^ N (x_n - \bar{x})(y_n -
   \bar{y})$ and the variation of $x$: 
   $S_{xx}= \sum_{n = 1} ^ N (x_n - \bar{x}) ^ 2$,
-- the second one is obtained by dividing both sides of the ratio by the sample
+- the second is obtained by dividing both sides of the ratio by the sample
   size, so that the estimator is now the ratio of the sample covariance
   between $x$ and $y$ and the sample variance of $x$,
-- the third one is obtained by introducing the coefficient of
+- the third is obtained by introducing the coefficient of
   correlation between $x$ and $y$: $\hat{\rho}_{xy}
   =\frac{\hat{\sigma}_{xy}}{\hat{\sigma}_x\hat{\sigma}_y}$, so that the
   estimator is also expressed as the product of the coefficient of
@@ -603,7 +605,7 @@ $$ {#eq-slrbeta}
 
 This last formulation is particularly intuitive: $\hat{\rho}_{xy}$ is
 a pure measure of the correlation between the covariate and the
-response. This number has no unit and lies in the -1/+1 interval, a value of -1 (+1)
+response. This number has no unit and lies in the $-1$/$+1$ interval, a value of $-1$ ($+1$)
 indicating a perfect negative (positive) correlation and the value of 0 no correlation. The ratio of the standard deviations gives the relevant
 unit to the slope, which is the unit of $y$ divided by the unit of $x$.
 With this estimator of the slope in hand, we easily get the estimator
@@ -613,14 +615,14 @@ $$
 \hat{\alpha}=\bar{y}-\hat{\beta} \hat{x}
 $$ {#eq-slralpha}
 
-Consider now that prior the estimation, we deduced from the covariate
-and the response their sample means. We then use $\tilde{y}_n = y_n -
+Consider now that prior to the estimation, we sustracted from the covariate
+and the response their sample means. We then used $\tilde{y}_n = y_n -
 \bar{y}$ and $\tilde{x}_n = x_n - \bar{x}$ as the response and the
 covariate. In this case, as the mean of these two transformed
 variables are zero, the intercept is 0 (from @eq-slralpha) and the
 slope is simply $\sum \tilde{y}_n \tilde{x}_n / \sum \tilde{x}_n ^ 2$. 
 
-Once the parameters of the regression line have been computed, on can
+Once the parameters of the regression line have been computed, one can
 define the **fitted value** for observation $n$ as the value returned by
 the regression line for $x_n$, which is:
 
@@ -656,28 +658,28 @@ D = \frac{\partial^2 f}{\partial \alpha ^ 2}\frac{\partial^2 f}{\partial \beta ^
 > 0
 $$
 
-which is the case as the term in bracket is the variance of $x$ and is therefore positive.
+which is the case as the term in brackets is the variance of $x$ and is therefore positive.
 
-## Geometry of least squares, variance decomposition and coefficient of determination {#sec-simple_geometry}
+## Geometry of least squares, variance decomposition and \mbox{coefficient} of determination {#sec-simple_geometry}
 
 \index[general]{geometry of least squares!simple linear regression model|(}
 The OLS estimator relies on variances and covariances of several observable ($y$ and $x$) and computed ($\hat{y}$, $\hat{\epsilon}$) variables. Its properties can be nicely illustrated using vector algebra, each variable being represented by a vector, and by plotting these vectors.^[For a detailed presentation of the geometry of least squares, see @DAVI:MACK:04, chapter 2.]\index[author]{Davidson}\index[author]{McKinnon}
 
 ### Vectors, variance and covariance
 
-Every variable $z$ used in a regression is a vector of $\mathcal{R}_N$, ie a
+Every variable $z$ used in a regression is a vector of $\mathcal{R}_N$, i.e., a
 set of $N$ real values: $z^\top = (z_1, z_2, \ldots, z_N)$.
-The length (or norm) of the vector is: $\|z\| = \sqrt{\sum_{n=1}^N z_n ^ 2}$. Remind
+The length (or norm) of the vector is: $\|z\| = \sqrt{\sum_{n=1}^N z_n ^ 2}$. Remember
 that the OLS estimator can always be computed with data measured in
 deviations from their sample mean. Then, $\|z\| ^ 2 / N$ is the
 variance of the variable, or the norm of the vector is $\sqrt{N}$ times
 the standard deviation of the corresponding variable.
-The inner (or scalar) product of two vectors is denoted
+The inner (or scalar) product of two vectors is denoted by
 $z ^ \top w = w ^ \top z = \sum_{n=1} ^ N z_n w\index[author]{Davidson}\index[author]{McKinnon}_n$ (note that the inner
 product is commutative). For corresponding variables expressed in
 deviations from their respective means it is, up to the $1/N$ factor, the
 covariance between the two variables. Denoting $\theta$ the angle formed
-by the two vectors, we also have:^[see @DAVI:MACK:04, page 48.]
+by the two vectors, we also have:^[See @DAVI:MACK:04, p. 48.]
 $z ^ \top w = \cos \theta \|z\| \|w\|$.
 
 ```{r }
@@ -710,15 +712,15 @@ The angle formed by $x$ and $z$ is therefore:
 $\theta = \arccos `r z[1] / nrm(z)` - \arccos `r x[1] / nrm(x)` = `r round(theta_z - theta_x, 3)`$,
 with $\cos `r round(theta, 3)` = `r cos(theta)`$. We can then check that
 $z ^ \top x = `r x[1]` \times `r z[1]` + `r x[2]` \times `r z[2]` = `r sum(x * z)`$,
-which is equal to :
+which is equal to:
 $\cos \theta \|z\| \|w\| = `r cos(theta)` \times `r nrm(z)` \times `r nrm(x)`$.
-As the absolute value of $\cos \theta$ is necessary lower or equal than 1,
+As the absolute value of $\cos \theta$ is necessarily lower than or equal to 1,
 the inner product of two vectors is lower than the product of the norms
-of the two vectors and $\cos \theta = \frac{x ^ \top z}{\|x\| \|z\|}$ is
+of the two vectors, and $\cos \theta = \frac{x ^ \top z}{\|x\| \|z\|}$ is
 the ratio of the covariance between $x$ and $z$ and the product of their
 standard deviations, which is the coefficient of correlation between the
 two underlying variables $x$ and $z$. Consider now $z$ and $w$. Their
-inner product is :
+inner product is:
 $z ^ \top x = `r z[1]` \times `r w[1]` + `r z[2]` \times `r w[2]` = `r sum(z * w)`$.
 This is because $z$ and $w$ are two orthogonal vectors, which means that
 the two underlying variables are uncorrelated.
@@ -731,10 +733,10 @@ knitr::include_graphics("./tikz/fig/vectors2D.png", auto_pdf = TRUE)
 ```
 
 
-### The geometry of least squares {#sec-geometry_ols}
+### Geometry of least squares {#sec-geometry_ols}
 
-The geometry of the simple linear regression model is represented on @fig-smplregmodel.
-With $N = 2$, $x$ and $y$ are two vectors in a plane. For the "true" model, the $y$ vector is the sum of two vectors: $\beta x$ (which is the conditional expectation of $y$) and $\epsilon$, which is the vector of errors. For the estimated model, $y$ is the sum of the fitted values $\hat{y} = \hat{\beta} x$ and the residuals $\hat{\epsilon}$. Using the OLS estimator, we must minimize the sum of squares of the residuals, ie the norm of the $\hat{\epsilon}$ vector. Obviously, this implies that $\hat{\epsilon}$ should be orthogonal to $\hat{y}$ and therefore to $x$, which implies that the residuals are uncorrelated to the fitted values (and to the covariate) in the sample. 
+The geometry of the simple linear regression model is represented in @fig-smplregmodel.
+With $N = 2$, $x$ and $y$ are two vectors in a plane. For the "true" model, the $y$ vector is the sum of two vectors: $\beta x$ (which is the conditional expectation of $y$) and $\epsilon$, which is the vector of errors. For the estimated model, $y$ is the sum of the fitted values $\hat{y} = \hat{\beta} x$ and the residuals $\hat{\epsilon}$. Using the OLS estimator, we must minimize the sum of squares of the residuals, i.e., the norm of the $\hat{\epsilon}$ vector. Obviously, this implies that $\hat{\epsilon}$ should be orthogonal to $\hat{y}$ and therefore to $x$, which implies that the residuals are uncorrelated to the fitted values (and to the covariate) in the sample. 
 Note also that, except in the unlikely case where $\hat{\beta} = \beta$, $\|\hat{\epsilon}\| < \|\epsilon\|$ which means that the residuals have a smaller variance than the errors. Note finally that what determines $\hat{y}$ and $\hat{\epsilon}$ is not $x$
 per se, but the subspace defined by it, in our case the horizontal straight line. For
 example, consider the regression of $y$ on $z = 0.5 x$; we would then obtain exactly the same values for $\hat{y}$ and $\hat{\epsilon}$, the only difference being that the estimator of $\beta$ would be two times larger.
@@ -786,9 +788,9 @@ $$
 \hat{\epsilon}_n ^ 2
 $$ {#eq-variance_decomposition}
 
-This equation indicates that the total sum of squares of the response (TSS) equals the sum of the explained sum of squares (ESS) and of the residual sum of squares (RSS). This latter term is also called the **deviance** and it is the objective function for the OLS estimator. Dividing by $N$, we also have on the left-hand size the variance of $y$ and on the right-hand side the sum of the variances of $\hat{y}$ and $\hat{\epsilon}$. This is the formula of the **variance decomposition** of the response. It can be easily understood using @fig-smplregmodel. It is clear from this figure that $y = \hat{y} + \hat{\epsilon}$ and that $\hat{y}$ and $\hat{\epsilon}$ are orthogonal. Therefore, applying Pythagor theorem, we have $\|y\|^2 = \|\hat{y}\|^2 + \|\hat{\epsilon}\|^2$. Up to the $1/N$ factor, if the response is measured in deviation from its sample mean, we have on the left the total variance of $y$ and on the right the sum of the variances of $\hat{y}$ and $\hat{\epsilon}$. Not that it is a unique feature of the ordinary least square estimator. Any other estimator will generally result with a vector of residuals which won't be orthogonal to $\hat{y}$ (or to $x$) and therefore @eq-variance_decomposition won't apply.
+This equation indicates that the total sum of squares (TSS) of the response equals the sum of the explained sum of squares (ESS) and of the residual sum of squares (RSS). This latter term is also called the **deviance**, and it is the objective function for the OLS estimator. Dividing by $N$, we also have on the left-hand size the variance of $y$ and on the right-hand side the sum of the variances of $\hat{y}$ and $\hat{\epsilon}$. This is the formula of the **variance decomposition** of the response. It can be easily understood using @fig-smplregmodel. It is clear from this figure that $y = \hat{y} + \hat{\epsilon}$ and that $\hat{y}$ and $\hat{\epsilon}$ are orthogonal. Therefore, applying the Pythagorean theorem, we have $\|y\|^2 = \|\hat{y}\|^2 + \|\hat{\epsilon}\|^2$. Up to the $1/N$ factor, if the response is measured in deviation from its sample mean, we have on the left the total variance of $y$ and on the right the sum of the variances of $\hat{y}$ and $\hat{\epsilon}$. Note that it is a unique feature of the ordinary least squares estimator. Any other estimator will generally result with a vector of residuals which won't be orthogonal to $\hat{y}$ (or to $x$) and therefore @eq-variance_decomposition won't apply.
 
-The coefficient of determination, denoted $R^2$, measures the share of the variance of the response which is explained by the model, or one minus the share of the residual variation. We then have:
+The coefficient of determination, denoted by $R^2$, measures the share of the variance of the response which is explained by the model, or one minus the share of the residual variation. We then have:
 
 $$
 R^2=\frac{\hat{\beta}^2\sum_{n=1}^N(x_n-\bar{x})^2}{\sum_{n=1}^N (y_n-\bar{y})^2} = 1 - \frac{\sum_{n=1}^N\hat{\epsilon}_n^2}{\sum_{n=1}^N (y_n-\bar{y})^2}
@@ -807,9 +809,10 @@ $$
 $$
 
 $R^2$ is therefore simply the square of the coefficient of
-correlation between $x$ and $y$. We have seen previously that, denoting $\theta$ the angle formed by two vectors, $\cos \theta$ is the coefficient of correlation between the two underlying variables (if they are measured in deviations from their means). Therefore, on @fig-smplregmodel, $R^2$ is represented by the square of the cosine of the angle formed by the two vectors $\hat{y}$ and $y$. As this angle tends to 0 (the two vectors point almost on the same direction), $R^2$ tends to 1. On the contrary, if this angle tends to $\pi/2$, the two vectors become almost orthogonal and $R^2$ tends to 0.
+correlation between $x$ and $y$. We have seen previously that, denoting $\theta$ the angle formed by two vectors, $\cos \theta$ is the coefficient of correlation between the two underlying variables (if they are measured in deviations from their means). Therefore, in @fig-smplregmodel, $R^2$ is represented by the square of the cosine of the angle formed by the two vectors $\hat{y}$ and $y$. As this angle tends to 0 (the two vectors point almost in the same direction), $R^2$ tends to 1. On the contrary, if this angle tends to $\pi/2$, the two vectors become almost orthogonal, and $R^2$ tends to 0.
 \index[general]{coefficient of determination|)}
 
+\newpage
 ## Computation with R {#sec-comp_ols_simple_R}
 
 The slope of the regression line can easily be computed "by hand", using any of the
@@ -825,7 +828,7 @@ stats <- prtime %>%
               sxy = Sxy / N, rxy = sxy / (sx * sy))
 ```
 
-We can then compute the estimator of the slope using any of the three formula:
+We can then compute the estimator of the slope using any of the three formulas:
 
 ```{r }
 #| label: slope_computation
@@ -845,7 +848,7 @@ halpha <- stats$yb - hbeta * stats$xb
 halpha
 ```
 
-Much simply, the OLS estimator can be obtained using the `lm` function (for linear model). It is a very important function in **R**, not only because it implements efficiently the most important estimator used in econometrics, but also because **R** functions that implement other estimators often mimic the features of the `lm`\idxfun{lm}{stats} function. Therefore, once one is at ease with using the `lm` function, using other estimating function of **R** will be straightforward. `lm` is a function that has many arguments, but the first two of them are fundamental and almost mandatory:^[Actually, the second argument `data` is not mandatory because estimation can be performed without using a data frame.]
+Much more simply, the OLS estimator can be obtained using the `lm` function (for linear model). It is a very important function in **R**, not only because it implements efficiently the most important estimator used in econometrics, but also because **R** functions that implement other estimators often mimic the features of the `lm`\idxfun{lm}{stats} function. Therefore, once one is at ease with using the `lm` function, using other estimating function of **R** will be straightforward. `lm` is a function that has many arguments, but the first two are fundamental and almost mandatory:^[Actually, the second argument `data` is not mandatory because estimation can be performed without using a data frame.]
 
 - `formula` is a symbolic description of the model to be
   estimated,
@@ -863,7 +866,7 @@ pxt <- lm(sr ~ h, prtime)
 ```
 
 writing directly `pxt` is like writing `print(pxt)`, the side effect
-is to print a short description of the results, namely a reminding of
+is to print a short description of the results, namely a remind of
 the function call and the name and the values of the fitted
 coefficients.
 `lm` returns an object of class `lm` which is a list of 12 elements; their names can be retrieved using the `names` \idxfun{names}{base}function:
@@ -901,14 +904,14 @@ nobs(pxt)
 deviance(pxt)
 ```
 
-The results of the estimation are presented on @fig-reserror;
+The results of the estimation are presented in @fig-reserror;
 we've added to the scatterplot:
 
 - the sample mean, indicated by a large circle,
 - the regression line,
-- the residuals, represented by arrows: upwards arrows represent
-  positive residuals (eg Brest and Toulon) as downwards arrows
-  represent negative residuals (eg Strasbourg and Nice).
+- the residuals, represented by arrows: upward arrows represent
+  positive residuals (e.g., Brest and Toulon), and downward arrows
+  represent negative residuals (e.g., Strasbourg and Nice).
 
 ```{r }
 #| label: fig-reserror
@@ -938,7 +941,7 @@ c(int, slope)
 ```
 
 Note that we use the `unname`\idxfun{unname}{base} function in order to remove the name of the extracted coefficient. Once the intercept (`int`) and the slope (`slope`) are extracted, the
-structural parameters can be retrieved as the intercept is $\alpha =
+structural parameters can be retrieved, as the intercept is $\alpha =
 -\frac{a}{b-a}$ and the slope $\beta =\frac{1}{b-a}$. 
 Therefore, $a = -\frac{\alpha}{\beta}$ and $b =
 \frac{1}{\beta} + a$. We finally get:
@@ -957,14 +960,14 @@ which is `r round( (ahat + bhat) / 2, 2)` euros per hour.
 
 ## Data generator process and simulations {#sec-dgp_simulations}
 
-Inferential statistics rely on the notions of population and sample. The population is a large and exhaustive set of observations and a sample is a small subset of observations drawn in this population. These notions are relevant in medical sciences and often for economic studies. For example, the first data set we used concerned smoking habits and birth weight. The population of interest is all American pregnant women in 1988 and a sample of 1388 of them was drawn from this population. The second data set concerned the relation between education and wage. The population was American labor force in 1992 and a sample of 16481 workers was drawn from this population. On the contrary, our third data set doesn't fit with this notions of population and sample. The sample consists of major towns in France that are connected on regular basis by rail and air to Paris. It contains 13 observations, which are not 13 observations randomly drawn from a large set of cities, but which are more or less all the relevant cities. 
+Inferential statistics rely on the notions of population and sample. The population is a large and exhaustive set of observations, and a sample is a small subset of observations drawn in this population. These notions are relevant in medical sciences and often in economic studies. For example, the first data set we used concerned smoking habits and birth weight. The population of interest is all American pregnant women in 1988, and a sample of 1388 of them was drawn from this population. The second data set concerned the relation between education and wage. The population was American labor force in 1992, and a sample of 16,481 workers was drawn from this population. On the contrary, our third data set doesn't fit with these notions of population and sample. The sample consists of major towns in France that are connected on a regular basis by rail and air to Paris. It contains 13 observations, which are not 13 observations randomly drawn from a large set of cities, but which are more or less all the relevant cities. 
 
 ### Data generator process
 \index[general]{data generator process|(}
 
-An interesting alternative is the notion of **data generator process** or **DGP** in short. It describes how the data are assumed to have been generated. We assume in the linear regression model that: 
+An interesting alternative is the notion of **data generator process**  (**DGP**). It describes how the data are assumed to have been generated. We assume in the linear regression model that: 
 
-- $\mbox{E}(y|x = x_n) = \alpha + \beta x_n$: the expected value of $y$ for $x = x_n$ is a linear function of $x$,
+- $\mbox{E}(y|x = x_n) = \alpha + \beta x_n$: the expected value of $y$ for a given value of $x$ is a linear function of $x$,
 - $y_n = \mbox{E}(y|x = x_n) + \epsilon_n$: the observed value of $y_n$ is obtained by adding to the conditional expectation of $y$ for $x = x_n$ a random variable $\epsilon$ called the error.
 
 From @eq-slrbeta, we can write the estimator of the slope as:
@@ -978,7 +981,7 @@ $$
 $$ {#eq-linear_estimator}
 
 with $c_{n} = \frac{x_{n} - \bar{x}}{\sum_{n = 1} ^ N (x_{n} -
-\bar{x}) ^ 2}$. The OLS estimator is therefore a linear estimator, ie a
+\bar{x}) ^ 2}$. The OLS estimator is therefore a linear estimator, i.e., a
 linear combination of the values of $y$. The coefficients of this
 linear combination $c_n$ are such that $\sum_{n = 1} ^ N  c_{n} = 0$ and that:
 
@@ -1008,6 +1011,9 @@ $$
 \hat{\beta} = \beta + \sum_{n = 1} ^ N c_{n} \epsilon_{n} 
 $$ {#eq-ols_lin_comb_errors}
 
+\newpage
+<!-- new page -->
+
 The deviation of the estimator of the slope of the OLS regression line
 $\hat{\beta}$ from the true value $\beta$ is therefore a linear
 combination of the $N$ errors.
@@ -1021,7 +1027,7 @@ y <- prtime %>% pull(sr)
 x <- prtime %>% pull(h)
 eps = y - alpha - beta * x
 ```
-We then compute the OLS estimator and we retrieve $\hat{\epsilon}$ and $\hat{y}$.\idxfun{lm}{stats}
+We then compute the OLS estimator, and we retrieve $\hat{\epsilon}$ and $\hat{y}$.\idxfun{lm}{stats}
 
 ```{r}
 #| label: resid_fitted_extraction
@@ -1030,11 +1036,11 @@ hat_eps <- z %>% residuals
 hat_y <- z %>% fitted
 ```
 
-The observed data set, in the DGP perspective, is represented on @fig-dgp.
+The observed data set, in the DGP perspective, is represented in @fig-dgp.
 
 ```{r }
 #| label: fig-dgp
-#| fig-cap: "The Data Generating Process"
+#| fig-cap: "Data generating process"
 #| echo: false
 alpha <- - 0.2
 beta <- 0.032
@@ -1068,7 +1074,7 @@ arrow. For our specific sample, we have a specific vector of
 $\epsilon_n$, which means a specific set of points and a specific
 regression line, the dashed line on the figure. Each value of $y_n$ is then also the sum of the fitted value (the one returned by the regression line for $x=x_n$) and the residual, represented by a dashed arrow. 
 
-We can check that the residuals sums to 0 and are uncorrelated with the covariate and the fitted values:
+We can check that the residuals sum to 0 and are uncorrelated with the covariate and the fitted values:
 
 ```{r}
 #| collapse: true
@@ -1099,7 +1105,7 @@ sd(hat_eps)
 ### Random numbers and simulations {#sec-random_numbers_simulations}
 \index[general]{simulations!simple linear regression model|(}
 
-Now consider an other fictive sample for the same values of $x$, ie consider that the values of the threshold values of time are the same, but that the other factors that influence rail's shares (the $\epsilon$) are different. To generate such a fictive sample, we need to generate the $\epsilon$ vector, using a function that generates random numbers.^[More precisely, a function that generates a sequence of numbers that looks like random numbers.] With **R**, these functions have a name composed of the letter `r` (for random) and the abbreviated name of the statistical distribution: for example `runif`\idxfun{runif}{stats} draws numbers in a uniform distribution (by default with a 0-1 range) and `rnorm`\idxfun{rnorm}{stats} draws numbers in a normal distribution (by default with zero expectation and unit standard deviation). These functions have a mandatory argument which is the number of draws. For example, to get 5 numbers drawn from a standard normal distribution:
+Now consider an other fictive sample for the same values of $x$, i.e., consider that the values of the threshold values of time are the same, but that the other factors that influence rail's shares (the $\epsilon$) are different. To generate such a fictive sample, we need to generate the $\epsilon$ vector, using a function that generates random numbers.^[More precisely, a function that generates a sequence of numbers that looks like random numbers.] With **R**, these functions have a name composed of the letter `r` (for random) and the abbreviated name of the statistical distribution: for example `runif`\idxfun{runif}{stats} draws numbers in a uniform distribution (by default within a $0-1$ range) and `rnorm`\idxfun{rnorm}{stats} draws numbers in a normal distribution (by default with zero expectation and unit standard deviation). These functions have a mandatory argument which is the number of draws. For example, to get five numbers drawn from a standard normal distribution:
 \index[general]{normal distribution}\index[general]{uniform distribution}
 
 ```{r}
@@ -1114,7 +1120,7 @@ set.seed(10L)
 rnorm(5)
 ```
 
-Using the same command once more, we get a completly different sequence:
+Using the same command once more, we get a completely different sequence:
 ```{r}
 #| label: second_draw_norm
 #| collapse: true
@@ -1122,7 +1128,7 @@ rnorm(5)
 ```
 
 
-As stated previously, the `rnorm`\idxfun{rnorm}{stats} function doesn't draw random numbers but computes a sequence of numbers that looks like a random sequence. Imagine that `rnorm` actually computes a sequence of thousands of numbers, what is obtained using `rnorm(5)` is 5 consecutive numbers in this sequence, for example from the 5107^th^ to the 5111^th^ number. The position of the first element is called the **seed** and it can be set as an integer using the `set.seed`\idxfun{set.seed}{base} function. Using the same seed while starting a simulation, we would then get exactly the same pseudo-random numbers each time and therefore the same results:
+As stated previously, the `rnorm`\idxfun{rnorm}{stats} function doesn't draw random numbers but computes a sequence of numbers that looks like a random sequence. Imagine that `rnorm` actually computes a sequence of thousands of numbers, what is obtained using `rnorm(5)` is 5 consecutive numbers in this sequence, for example from the 5107th to the 5111th number. The position of the first element is called the **seed**, and it can be set to an integer using the `set.seed`\idxfun{set.seed}{base} function. Using the same seed while starting a simulation, we would then get exactly the same pseudo-random numbers each time and therefore the same results:
 
 ```{r}
 #| label: setting_seed
@@ -1157,17 +1163,17 @@ which gives the following OLS estimates:\idxfun{lm}{stats}\idxfun{coef}{stats}
 lm(y ~ x, asmpl) %>% coef
 ```
 
-The notion of DGP enables to perform simulations, which have two
+The notion of DGP enables to perform simulations, that have two
 purposes:
 
-- the first one (and the most important in practice) is that, in some
+- the first (and the most important in practice) is that, in some
   situations, it is impossible to get analytical results for the
-  properties of an estimator and those properties can in this case be
+  properties of an estimator, and those properties can in this case be
   obtained using simulations,
-- the second one is pedagogical, as theoretical results can be confirmed and illustrated using simulations.
+- the second is pedagogical, as theoretical results can be confirmed and illustrated using simulations.
 
-A simulation consists on creating a large number of samples, on computing some interesting numbers for every sample and on calculating some relevant statistics for these numbers. For example, we'll compute the slope of the OLS estimate for every sample and we'll calculate the mean and the standard deviation for this slope. 
-A minimal simulation is presented on @fig-foursmpls, where we present 4 different samples obtained for 4 different sets of errors.
+A simulation consists of creating a large number of samples, computing some interesting numbers for every sample and calculating some relevant statistics for these numbers. For example, we'll compute the slope of the OLS estimate for every sample, and we'll calculate the mean and the standard deviation for this slope. 
+A minimal simulation is presented in @fig-foursmpls, where we present four different samples obtained for four different sets of errors.
 
 ```{r }
 #| label: fig-foursmpls
@@ -1202,20 +1208,20 @@ smpls %>% ggplot(aes(h, sr)) + geom_point() +
                  arrow = myarrow) +
     facet_wrap(~ coefs)
 ```
-For every sample, there is a specific set of errors (the arrows)
+For every sample, there is a specific set of errors (arrows)
 and therefore specific data points and regression lines. The estimated
 intercepts range from
-`r round(Msmpls %>% top_n(-1, alpha) %>% pull(alpha), 3)` to
-`r round(Msmpls %>% top_n(1, alpha) %>% pull(alpha), 3)` 
+$`r round(Msmpls %>% top_n(-1, alpha) %>% pull(alpha), 3)`$ to
+$`r round(Msmpls %>% top_n(1, alpha) %>% pull(alpha), 3)`$ 
 and the slopes from
-`r round(Msmpls %>% top_n(-1, beta) %>% pull(beta), 3)` to
-`r round(Msmpls %>% top_n(1, beta) %>% pull(beta), 3)`.
+$`r round(Msmpls %>% top_n(-1, beta) %>% pull(beta), 3)`$ to
+$`r round(Msmpls %>% top_n(1, beta) %>% pull(beta), 3)`$.
 The important point is that $\beta$ is, in practice, an unknown
 fixed parameter. $\hat{\beta}$ depends on the $N$ observations of the sample and therefore the $N$ values of the errors. Each sample is characterized by a specific
 vector of errors and therefore by a different value of the estimator.
 \index[general]{data generator process|(}
 
-More generally, we denote $R$ the number of replications and we construct a data frame with $R \times N$ lines. The columns are the 13 values of $x$ (fixed in this simulation), the vector $\epsilon$ drawn in a normal distribution with a standard deviation equal to 0.08 and $y = \alpha + \beta x + \epsilon$, with $\alpha = 0.2$ and $\beta = 0.032$ as previously. Finally we add a variable `smpls` that is a vector containing integers from 1 to $R$ repeated 13 times that will be used to identify the sample:\idxfun{tibble}{tibble}
+More generally, we denote $R$ the number of replications and we construct a data frame with $R \times N$ lines. The columns are the 13 values of $x$ (fixed in this simulation), the vector $\epsilon$ drawn in a normal distribution with a standard deviation equal to 0.08 and $y = \alpha + \beta x + \epsilon$, with $\alpha = 0.2$ and $\beta = 0.032$ as previously. Finally we add a variable `id` that is a vector containing integers from 1 to $R$ repeated 13 times that will be used to identify the sample:\idxfun{tibble}{tibble}
 
 ```{r }
 #| label: experience_setting
@@ -1228,7 +1234,7 @@ datas <- tibble(id = rep(1:R, each = N),
 ```
 
 Running regressions on every sample requires to use `lm(y ~ x)` not on the whole data set, but on every subset defined by a value of
-`id`. The `lm` function\idxfun{lm}{stats} has a `subset` argument that must be a logical expression used to select only a subset of the data frame. For example, to get the fitted model for the 1^st^ sample, the logical expression is `id == 1`  and one can use:
+`id`. The `lm` function\idxfun{lm}{stats} has a `subset` argument that must be a logical expression used to select only a subset of the data frame. For example, to get the fitted model for the first sample, the logical expression is `id == 1`  and one can use:
 
 ```{r }
 #| eval: false
@@ -1258,7 +1264,7 @@ results
 ```
 
 The result is now a tibble with `R` lines, as the computation of the
-OLS estimator is performed for every sample. As we now have a large number of values of $\hat{\beta}$, we can analyse its statistical properties, for example its mean and its standard deviation for the 1000 random samples:
+OLS estimator is performed for every sample. As we now have a large number of values of $\hat{\beta}$, we can analyze its statistical properties, for example its mean and its standard deviation for the 1000 random samples:
 \idxfun{summarise}{dplyr}\idxfun{sd}{stats}
 ```{r}
 #| label: simulations_results
@@ -1266,7 +1272,7 @@ OLS estimator is performed for every sample. As we now have a large number of va
 results %>% summarise(mean = mean(slope), sd = sd(slope))
 ```
 
-We'll see in @sec-stat_prop_slm that the expected value of $\hat{\beta}$ is $\beta=0.032$ (we'll say that the OLS estimator is unbiased) and that its standard deviation is $\sigma_\epsilon / \sigma_x / \sqrt{N} = 0.0041$. The mean and standard deviations for our 1000 values of $\hat{\beta}$ are estimates of this two theoretical values. We can see that the mean of $\hat{\beta}$ is actually equal to 0.032 and that the standard deviation equals 0.00437, which is close to the theoretical value.
+We'll see in @sec-stat_prop_slm that the expected value of $\hat{\beta}$ is $\beta=0.032$ (we'll say that the OLS estimator is unbiased) and that its standard deviation is $\sigma_\epsilon / \sigma_x / \sqrt{N} = 0.0041$. The mean and standard deviations for our 1000 values of $\hat{\beta}$ are estimates of these two theoretical values. We can see that the mean of $\hat{\beta}$ is actually equal to 0.032 and that the standard deviation equals 0.00437, which is close to the theoretical value.
 
 A more general method to perform simulation is to use list-columns of data frames. To conduct such an analysis step by step, we start with a very small example, with $R = 2$ and $N = 3$.\idxfun{tibble}{tibble}\idxfun{rnorm}{stats}\idxfun{rep}{base}
 
@@ -1274,18 +1280,18 @@ A more general method to perform simulation is to use list-columns of data frame
 #| label: creating_small_data
 R <- 2
 N <- 3
-small_datas <- tibble(id = rep(1:R, each = N),
-                      x = rep(x[1:N], R), 
-                      eps = rnorm(R * N, sd = seps),
-                       y = alpha + beta * x + eps)
-small_datas
+small_data <- tibble(id = rep(1:R, each = N),
+                     x = rep(x[1:N], R), 
+                     eps = rnorm(R * N, sd = seps),
+                     y = alpha + beta * x + eps)
+small_data
 ```
 
- Starting with `small_datas`, we use `tidy::nest`\idxfun{nest}{tidyr} to nest the data frame using the `id` variable (`.by = id`); the name of the results is by default `data`, but it can be customized using the `.key` argument:
+ Starting with `small_data`, we use `tidy::nest`\idxfun{nest}{tidyr} to nest the data frame using the `id` variable (`.by = id`); the name of the results is by default `data`, but it can be customized using the `.key` argument:
 
 ```{r}
 #| label: nesting_small_data
-datalst <- small_datas %>% nest(.by = id, .key = "smpl")
+datalst <- small_data %>% nest(.by = id, .key = "smpl")
 datalst
 ```
 
@@ -1296,7 +1302,7 @@ Each line now corresponds to a value of `id` and `smpl` is a list column that co
 datalst %>% pull(smpl)
 ```
 
-We now write a function that takes as argument a data frame containing the $x$ and the $y$ columns and returns a one-line tibble that contains the fitted intercept and slope:
+We now write a function that takes as argument a data frame containing the $x$ and $y$ columns and returns a one-line tibble that contains the fitted intercept and slope:
 \idxfun{tibble}{tibble}\idxfun{function}{base}
 ```{r}
 #| label: ols_function
@@ -1311,7 +1317,7 @@ This function can be applied for a given sample:
 
 ```{r}
 #| label: ols_on_one_tibble
-ols(small_datas[1:N, ])
+ols(small_data[1:N, ])
 ```
 
 But, as the `smpl` column of `datalst` is a list, the `ols` function can be applied to all the elements of the list, which can be done using the `purrr::map` function which takes as argument a list and a function:
@@ -1337,7 +1343,7 @@ results %>% unnest(cols = smpl)
 ```
 
 which returns a standard tibble with one row for each draw and one column for each computed statistic. Going back to the full example with $R = 1000$, we get:
-\idxfun{nest}{tidyr}\idxfun{transmute}{dplyr}\idxfun{map}{purrr}\idxfun{summarise}{dplyr}\idxfun{sd}{statss
+\idxfun{nest}{tidyr}\idxfun{transmute}{dplyr}\idxfun{map}{purrr}\idxfun{summarise}{dplyr}\idxfun{sd}{stats}
 
 ```{r}
 #| label: nest_full_example

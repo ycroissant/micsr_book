@@ -1,0 +1,25 @@
+# Beyond the OLS estimator
+
+In the first part of the book, we've conducted regression analysis of the following form:
+
+$$
+y_n = \alpha + \beta_1 x_{n1} + \beta_2 x_{n2} + \ldots + \beta_K x_{nK} + \epsilon_n
+= \alpha + \beta ^ \top x_n + \epsilon_n
+$$
+The conditional expectation of $y$ was then:
+
+$$
+\mbox{E}(y_n \mid x_n) = \alpha + \beta ^ \top x_n + \mbox{E}(\epsilon_n \mid x_n)
+$$
+The fundamental hypothesis is that $\mbox{E}(y_n \mid x_n) = \alpha + \beta ^ \top x_n$ or equivalently that $\mbox{E}(\epsilon_n \mid x_n) = 0$, which means that the population covariance between the covariates and the errors of the model is 0. We then supposed that the errors were spherical, which means that they are homoskedastic $\mbox{V}(\epsilon_n \mid x_n) = \sigma_\epsilon ^ 2$ and uncorrelated $\mbox{cov}(\epsilon_n\epsilon_m\mid x_n, x_m)=0\;\forall n \neq m$.
+Finally, we supposed that the conditional expectation of the response is a linear function of the covariate.
+
+The first three chapters of this part present estimators that enables to get rid of these three hypotheses. 
+@sec-maximum_likelihood presents the maximum likelihood estimator. This estimator is particularly useful when the desired conditional expectation function is non-linear, for example: 
+$\mbox{E}(y_n \mid x_n) = e^{\alpha + \beta ^ \top x_n}$. General results about this estimator will be presented in this chapter, and this estimator will be very intensively used in all the chapters of the last part of the book. 
+@sec-non_spherical presents relevant tools to detect and deal with the common case where the errors are not spherical. This includes tests to detect heteroskedasticity and correlated errors, a more efficient estimator than OLS (the generalized least squares estimator) and robust estimates of the variance of the OLS estimators.
+@sec-endogeneity tackles the problem of endogeneity, i.e., situations where the errors are correlated with some covariates or, equivalently, where $\alpha + \beta ^ \top x_n$ is not the conditional expectation of $y$. Tests of endogeneity are presented, along with relevant estimators, namely the instrumental variable and the fixed effects estimators.
+
+The last two chapters present two very dynamic fields in which the problems treated in these three chapters are particularly important. @sec-treatment_effect presents relevant tools to analyze the effects of a treatment on an outcome of interest, dealing with the fundamental problem of the endogeneity of the treatment. @sec-spatial_econometrics is devoted to spatial econometrics. These models consider samples with geolocalized units and neighbor units may be linked via the values of their response or of their errors. The first situation leads to a problem of endogeneity and the second one to a problem of non-spherical errors.
+
+

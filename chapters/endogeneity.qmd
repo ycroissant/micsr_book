@@ -1,12 +1,12 @@
+# Endogeneity {#sec-endogeneity}
+
 ```{r }
 #| label: setup_endogeneity
 #| include: false
 source("../_commonR.R")
 ```
 
-# Endogeneity {#sec-endogeneity}
-
-The unbiasedness and the consistency of the OLS estimator rests on the
+The unbiasedness and the consistency of the OLS estimator rest on the
 hypothesis that the conditional expectation of the error is constant
 (and can safely be set to zero if the model contains an
 intercept). Namely, starting with the simple linear model: $y_n = \alpha + \beta x_n + \epsilon_n$, $\mbox{E}(\epsilon \mid x) = 0$, or equivalently $\mbox{E}(y \mid x) = \alpha + \beta x_n$. The same property can also be described using the covariance between the covariate and the error that can be written, using the rule of repeated expectation:
@@ -20,12 +20,12 @@ x\right)\right]
 $$
 
 If the conditional expectation of $\epsilon$ is a constant
-$\mbox{E}_\epsilon(\epsilon\mid x) = \mu_\epsilon$ (not necessary 0),
+$\mbox{E}_\epsilon(\epsilon\mid x) = \mu_\epsilon$ (not necessarily 0),
 the covariance is $\mbox{cov}(x, \epsilon) = \mu_\epsilon \mbox{E}_x(x -
 \mu_x) = 0$. Stated differently, $x$ is supposed to be exogenous, or $x$ is
 assumed to be uncorrelated with $\epsilon$. This is a reasonable
 assumption in an experimental setting, when the values of $x$ in the
-sample are set by the researcher. Unfortunately, most of the data used in microeconometrics are not experimental, so that the problem of endogeneity is severe.^[The terminology used to distinguish variables that are uncorrelated (exogenous) or correlated (endogenous) with the error of the model comes from the literature on system of equations estimation where variables determined within and outside the model are respectively called endogenous and exogenous variables [see @STOC:WATS:15, page 423].]
+sample are set by the researcher. Unfortunately, most of the data used in microeconometrics are not experimental, so the problem of endogeneity is severe.^[The terminology used to distinguish variables that are uncorrelated (exogenous) or correlated (endogenous) with the error of the model comes from the literature on system of equations estimation where variables determined within and outside the model are respectively called endogenous and exogenous variables [see @STOC:WATS:15, p. 423].]
 
 @sec-source_endog presents the circumstances where some covariates are endogenous. @sec-simple_iv presents the simple instrumental variable estimator (one endogenous covariate and one instrument), @sec-general_iv extends this model to the case where there may be more than one endogenous covariate and several instruments and @sec-three_sls to the estimation of systems of equations. @sec-fixed_effects presents the fixed effects model. Finally, several testing procedures are presented in @sec-tests_endog.
 
@@ -36,7 +36,7 @@ In economics, the problem of endogenous covariates happens mainly in three circu
 ### Errors in variables
 \index[general]{errors in variables|(}
 
-Data used in economics, especially micro-data are prone to errors
+Data used in economics, especially micro-data, are prone to errors
 of measurement. This problem can affect either the response or some of
 the covariates. Suppose that the model that we seek to estimate is:
 $y^*_n = \alpha + \beta x^*_n + \epsilon^*_n$, where the covariate is exogenous, which implies that $\mbox{cov}(x^*,
@@ -88,7 +88,7 @@ $$
 = \beta\left(1 - \frac{\sigma_\nu ^ 2}{\hat{\sigma}_x ^ 2}\right)
 $$
 
-Therefore, the OLS estimator is biased and the term in bracket is the minus the share of the variance of $x$ that is due to measurement error.Therefore
+Therefore, the OLS estimator is biased and the term in brackets is the minus the share of the variance of $x$ that is due to measurement errors.Therefore
 $\mid\hat{\beta}\mid < \beta$. This kind of bias is called an
 **attenuation bias** (the absolute value of the estimator is lower
 than the true value), which can be either a lower or an upper bias
@@ -99,9 +99,9 @@ the estimator therefore converges to: $\mbox{plim} \;\hat{\beta} = \beta \left(1
 variance of $x$, $\hat{\beta}$ converges to 80% of the true parameter.
 \index[general]{errors in variables|)}
 
-### Ommited variable bias
-\index[general]{ommited variable bias|(}
-\index[general]{bias!ommited variable|(}
+### Omitted variable bias
+\index[general]{omitted variable bias|(}
+\index[general]{bias!omitted variable|(}
 
 Suppose that the true model is: $y_n = \alpha + \beta_x x_n + \beta_z
 z_n + \epsilon_n$, where the conditional expectation of $\epsilon$
@@ -124,7 +124,7 @@ As the variance of the OLS estimator is proportional to the variance of
 the errors, omission of a relevant covariate will always induce a less
 precise estimation of the slopes and a lower R^2^. Moreover, if the omitted covariate is correlated with the covariate used in the
 regression, the estimation will be biased and inconsistent. This
-**omitted variable bias** can be computed as follow:
+**omitted variable bias** can be computed as follows:
 
 $$
 \hat{\beta}_x = \beta_x + \frac{\sum_n (x_n - \bar{x})(\beta_z z_n +
@@ -182,9 +182,9 @@ sibling_educ <- sibling_educ %>%
 lm(log(wage) ~ educ + poly(experience, 2), sibling_educ) %>% gaze
 ```
 
-Results indicate that one more year of education increases in average
+Results indicate that one more year of education increases on average
 the wage by 10%. One concern about this kind of estimation is that
-individuals have different abilities ($a$), and that more ability have a
+individuals have different abilities ($a$), and that more abilities have a
 positive effect on wage, but may also have a positive effect on
 education. If this is the case, $\beta_{a} > 0$, $\beta_{a/e} > 0$ and
 therefore $\mbox{plim} \;\hat{\beta}_e = \beta_e + \beta_{a} \beta_{a/e} >
@@ -193,9 +193,9 @@ because more education:
 
 - increases, for a given level of ability, the expected wage by
   $\beta_e$,
-- means than, in average, the level of ability is higher, this effect
+- means that, on average, the level of ability is higher, this effect
   being $\beta_{a/e}$ (which in this case doesn't imply a causality
-  of $e$ on $a$, but simply a correlation), so that the wage will also be
+  of $e$ on $a$, but simply a correlation), so the wage will also be
   higher ($\beta_a > 0$).
   
 Numerous studies of the Mincer function deal with this problem of
@@ -226,15 +226,15 @@ lm(log(wage) ~ educ + poly(experience, 2) + ability, sibling_educ) %>%
 
 The effect of one more year of education is now an increase of 8.7% of the wage (compared to 10% previously).
 \idxdata[)]{sibling\_educ}{micsr.data}
-\index[general]{ommited variable bias|)}
-\index[general]{bias!ommited variable|)}
+\index[general]{omitted variable bias|)}
+\index[general]{bias!omitted variable|)}
 
 ### Simultaneity bias
 \index[general]{simultaneity bias|(}
 \index[general]{bias!simultaneity|(}
 \index[general]{system estimation!simultaneity bias|(}
 
-Often in economics, the phenomena of interest is not described by a
+Often in economics, the phenomenon of interest is not described by a
 single equation, but by a system of equations. Consider for example a
 market equilibrium. The two equations relate the quantity demanded /
 supplied ($q ^ d$ and $q ^ o$) to the unit price and to some specific
@@ -242,15 +242,15 @@ covariates to the demand and to the supply side of the market. @MADD:LAHI:09\ind
 376-377 studied the market for commercial loans using monthly US data
 for 1979-1984. The data set is available as
 `loan_market`. Total commercial loans (`loans`) are in billions
-of dollars, the price is the average prime rate charged by banks
+of dollars; the price is the average prime rate charged by banks
 (`prime_rate`). `aaa_rate` is the AAA corporate bond rate, which is
 the price of an alternative financing to firms. Therefore, it enters
 only the demand equation, with an expected positive sign. `treas_rate`
-is the treasure bill rate. As it is a substitute to commercial loans for
+is the treasure bill rate. As it is a substitute to commercial loans from a
 bank, it should enter only the supply equation, with an expected
-negative sign. For the sake of simplicity, we denote $q$ and $p$ the quantity (in logarithm) and
-the price for this loan market model and, respectively, $d$ and $s$
-the two rates that enter only, respectively the demand and the supply
+negative sign. For the sake of simplicity, we denote $q$ and $p$ as the quantity (in logarithm) and
+the price for this loan market model and, $d$ and $s$ as
+the two rates that enter only, respectively, the demand and the supply
 equation:
 \idxdata[(]{loan\_market}{micsr.data}\idxfun{transmute}{dplyr}
 
@@ -274,10 +274,9 @@ three equations:
 \right.
   $$
 
-
 The last equation is non-stochastic and states that the market should
-be at the equilibrium. The demand curve should be decreasing ($\beta_d
-< 0$) and the supply curve increasing ($\beta_s > 0$). The equilibrium is depicted on @fig-market_equilibrium.
+be in equilibrium. The demand curve should be decreasing ($\beta_d
+< 0$) and the supply curve increasing ($\beta_s > 0$). The equilibrium is depicted in @fig-market_equilibrium.
 
 ```{r }
 #| fig-cap: "Market equilibrium"
@@ -286,7 +285,7 @@ be at the equilibrium. The demand curve should be decreasing ($\beta_d
 knitr::include_graphics("./tikz/fig/equilibre.png", auto_pdf = TRUE)
 ```
 
-The OLS estimation of the demand and the supply equations are given below:
+The OLS estimation of the demand and the supply equations is given below:
 \idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r }
@@ -299,20 +298,20 @@ ols_s %>% gaze
 ```
 
 The two coefficients of the demand equation have the predicted sign and are
-highly significant: a one point of percentage increase of the prime
-rate decreases loans by 4.3% and an increase of a one point of
-percentage of the corporate bond rate increases loans by 10.3%. The
+highly significant: a 1 point of percentage increase of the prime
+rate decreases loans by 4.3%, and a one point of
+percentage increase of the corporate bond rate increases loans by 10.3%. The
 fit of the supply equation is very bad and, even if the two coefficients
 have the predicted sign, the values are very low and insignificant. 
 
 What is actually observed for each observation in the sample is a
 price-quantity combination at an equilibrium. A positive shock on the
-demand equation will move upward the demand curve and will leads
+demand equation will move upward the demand curve and will lead
 to a new equilibrium with a higher equilibrium quantity $q'$ and also a
 higher equilibrium price $p'$ (except in the special case where the supply
 curve is vertical, which means that the price elasticity of supply is infinite). This means that $p$ is correlated with $\epsilon_ d$,
 which leads to a bias in the estimation of $\beta_d$ by OLS. The same
-reasoning apply of course to the supply curve.
+reasoning applies of course to the supply curve.
 
 One solution would be to use the equilibrium condition and then to solve for $p$, and then for $q$. This **reduced-form** system of two equations:
 
@@ -333,13 +332,13 @@ q &=& \displaystyle \frac{\alpha_d \beta_s - \beta_d \alpha_s}{\beta_s - \beta_d
 \end{array}
 \right.
 $$
-makes clear that both $p$ and $q$ depends on $\epsilon_s$ and
+makes clear that both $p$ and $q$ depend on $\epsilon_s$ and
 $\epsilon_d$. More precisely, as $\beta_s - \beta_d > 0$, $\epsilon_d$
 and $\epsilon_s$ are respectively positively and negatively correlated
 with the price. $\Delta \epsilon_d > 0$ will shift the demand curve
 upward and therefore will increase the equilibrium price. Therefore,
 the OLS estimator of the slope of the demand curve is biased upward which means, as it is
-negative, that it biased downward in absolute value. A positive shock on the supply side
+negative, that it is biased downward in absolute value. A positive shock on the supply side
 ($\Delta \epsilon_s > 0$) will move the supply curve upward and therefore
 will decrease the equilibrium price. The OLS estimator of the
 slope of the supply curve is then downward biased.
@@ -373,9 +372,9 @@ price_coefs
 The price coefficients are as expected higher in absolute values than
 those obtained using OLS on the demand and on the supply
 equation. It is particularly the case for $\beta_s$ 
-(`r round(price_coefs[1], 3)` vs `r round(coef(ols_s)["p"], 3)`) 
+(`r round(price_coefs[1], 3)` vs. `r round(coef(ols_s)["p"], 3)`).
 On the contrary, the absolute value of $\beta_d$ increases very slightly 
-(`r round(price_coefs[2], 3)` vs `r round(coef(ols_d)["p"], 3)`).
+($`r round(price_coefs[2], 3)`$ vs. $`r round(coef(ols_d)["p"], 3)`$).
 \idxdata[)]{loan\_market}{micsr.data}
 
 Actually, the case we have considered is special because there is one
@@ -413,7 +412,7 @@ q &=& \displaystyle \frac{\beta_s \alpha_d - \beta_d \alpha_s}{\beta_s - \beta_d
 \right.
 $$
 
-we no have $\frac{\delta_1}{\pi_1} = \frac{\delta_2}{\pi_2} =
+we now have $\frac{\delta_1}{\pi_1} = \frac{\delta_2}{\pi_2} =
 \beta_s$; there are two ratios of the reduced parameters that give the
 value of the slope of the supply curve, but it is very implausible that these two values will be equal. On the contrary, there is no way to
 retrieve the slope of the demand curve from the reduced form
@@ -429,23 +428,23 @@ and some other like $\beta_d$ are **under-identified**.\index[general]{identific
 
 \index[general]{instrumental variable estimator|(}
 
-## The simple instrumental variable estimator {#sec-simple_iv}
+## Simple instrumental variable estimator {#sec-simple_iv}
 
-The general idea of the **instrumental variable** estimator (**IV** in short) is to find
+The general idea of the **instrumental variable** (**IV**) estimator is to find
 variables which are correlated with the endogenous covariates and
 uncorrelated with the error of the structural equation. This
 means that the instruments don't have a direct effect on the response,
 but only an indirect effect because of their correlation with the
 endogenous covariates. These instruments allow to get an exogenous
-source of variation of the covariate, ie a source of variation that
+source of variation of the covariate, i.e., a source of variation that
 has nothing to do with the process of interest. 
 We'll start with the simple case where the number of
-instruments equals the number of endogenous covariates, ie the **just-identified** case.
+instruments equals the number of endogenous covariates, i.e., the **just-identified** case.
 
 ### Computation of the simple instrumental variable estimator
 
 \index[general]{instrumental variable estimator!just identified|(}
-Consider a simple linear regression: $y_n = \alpha + \beta  x_n + \epsilon_n$, with $\mbox{E}(\epsilon \mid x) \neq 0$. From @eq-normal_equation, the first order conditions for the minimization of the sum of square residuals can be written as:
+Consider a simple linear regression: $y_n = \alpha + \beta  x_n + \epsilon_n$, with $\mbox{E}(\epsilon \mid x) \neq 0$. From @eq-normal_equation, the first-order conditions for the minimization of the sum of square residuals can be written as:
 
 $$
 \frac{1}{N} \sum_n \left[ (y_n - \bar{y}) - \hat{\beta} (x_n - \bar{x})\right]
@@ -455,16 +454,16 @@ $$ {\#eq-normal_eq2}
 
 @eq-normal_eq2 states that the OLS estimator is obtained by imposing
 the sample equivalent to the moment condition $\mbox{E}(\epsilon \mid
-x) = 0$, ie that the covariance between the residuals and the
+x) = 0$, i.e., that the covariance between the residuals and the
 covariate is exactly 0 in the sample. This of course leads to a biased
 and inconsistent estimator if $\mbox{E}(\epsilon \mid x)\neq 0$. Now
 suppose that a variable $w$ exists, which is correlated with the
-covariate, but not with the error of the model (this latter hypothesis is called the **exclusion restriction**\index[general]{exclusion restriction}. Such a variable has 
+covariate, but not with the error of the model (this latter hypothesis is called the **exclusion restriction**)\index[general]{exclusion restriction}. Such a variable has 
 no direct effect on the response, but only an indirect effect due to
 its correlation with the covariate. As by
 hypothesis, $\mbox{E}(\epsilon \mid w) = 0$, a consistent estimator
 can be obtained by imposing the sample equivalent to this moment
-condition, ie by setting the estimator to a value such that the
+condition, i.e., by setting the estimator to a value such that the
 covariance between the residuals and the instrument is 0:
 
 $$
@@ -520,7 +519,7 @@ $$
 $$
 
 The last expression, which introduces the coefficient of correlation
-between $x$ and $z$ is particularly appealing as it shows that,
+between $x$ and $z$, is particularly appealing as it shows that,
 compared to the standard error of the OLS estimator, the standard error of the IV estimator is inflated by $1 / \mid \hat{\rho}_{wx}\mid$. This term
 is close to 1 if the correlation between $x$ and $w$ is high and, in this
 case, the loss of precision implied by the use of the IV estimator
@@ -551,7 +550,7 @@ which is the OLS estimator of $y$ on $\hat{x}$, $\hat{x}$ being
 the fitted values of the regression of $x$ on $w$. Therefore, the
 IV estimator can be obtained by running two OLS regressions
 and is for this reason also called the **two-stage least square**
-estimator (or **2SLS** in short). As $x$ is correlated with $\epsilon$,
+(**2SLS**) estimator. As $x$ is correlated with $\epsilon$,
 but $w$ is not, the idea of the 2SLS estimator is to replace $x$
 by a linear transformation of $w$ which is as close as possible to
 $x$, and this is simply the fitted values of the regression of $x$ on
@@ -563,14 +562,14 @@ $w$.
 The extension of the case when there are $K > 1$ covariates and $K$
 instruments is straightforward. The two sets of variables $x$ and $w$
 can overlap because, if some of the covariates are exogenous, they
-should also be used as instruments. Denoting $w$ the vector of instruments, the moment conditions are
+should also be used as instruments. Denoting $w$ as the vector of instruments, the moment conditions are
 $\mbox{E}(\epsilon \mid w) = 0$ and the sample equivalent is:
 
 $$
 \frac{1}{N} W ^ \top (y - Z \gamma) = 0
 $$
 
-with $Z$ and $W$ are $N\times (K+1)$ matrix containing respectively the covariates and the instruments (with a vector of 1). Solving for $\gamma$, we get the instrumental variable estimator:
+where $Z$ and $W$ are $N\times (K+1)$ matrix containing respectively the covariates and the instruments (with a vector of 1). Solving for $\gamma$, we get the instrumental variable estimator:
 
 $$
 \hat{\gamma} = (W^\top X) ^ {-1} W^\top y
@@ -581,8 +580,7 @@ $$
 \index[general]{small sample properties!instrumental variable estimator|(}
 \index[general]{bias!instrumental variable estimator|(}
 Although it is consistent, the instrumental variable estimator isn't
-unbiased. Actually, it doesn't even have an expected value in the just
-identified case. This result can be easily shown starting with the
+unbiased. Actually, it doesn't even have an expected value in the just-identified case. This result can be easily shown starting with the
 following system of equations:^[See @DAVI:MACK:04\index[author]{Davidson}\index[author]{McKinnon}, pages 326-327.]
 
 $$
@@ -596,7 +594,7 @@ $$
 
 where, for convenience, the two error terms are written as standard
 normal deviates. Moreover, we can write $\epsilon = \rho \nu + \iota$,
-so that $\rho$ is the coefficient of correlation between the two error
+so $\rho$ is the coefficient of correlation between the two error
 terms and $\iota$ is by construction uncorrelated with $\nu$. The IV
 estimator is then:
 
@@ -700,7 +698,7 @@ and `beta` and these two values are set by default to 1. First, a
 matrix of normal standard deviates `XEW` is constructed. This matrix
 is post-multiplied by the Cholesky decomposition of the matrix of
 correlation, which introduces the desired correlation between $x$,
-$\epsilon$ and $w$. $x$, $\epsilon$ and $w$ are then adjusted for
+$\epsilon$ and $w$, which are then adjusted for
 non-zero means and non-unity standard deviations if necessary. Finally the vector
 of response is computed, along with the conditional expectation of $x$: $\mbox{E}(x\mid w) = \gamma + \delta w$. The `iv_coefs` function computes the IV estimator using the
 2SLS approach.
@@ -717,7 +715,7 @@ iv_coefs <- function(i){
 }
 ```
 
-It uses `lm.fit` to regress $x$ on $w$.^[`lm.fit` is used internally by `lm` and its two first arguments are a matrix of covariates and the response.] We compute `xh` which is
+It uses `lm.fit` to regress $x$ on $w$.^[`lm.fit` is used internally by `lm`, and its two first arguments are a matrix of covariates and the response.] We compute `xh` which is
 $\hat{x} = \hat{\gamma} + \hat{\delta}  w_n$, the fitted values
 of the regression of $x$ on $w$. `iv_coefs` computes three estimators:
 
@@ -785,16 +783,15 @@ dsties <- d %>% as_tibble %>% pivot_longer(1:3) %>% ggplot(aes(value)) +
 dsties
 ```
 
-The OLS estimator is severely biased as the central value of its
-distribution is about 1.5 and it has a small variance. The "pseudo"
-IV estimator seems unbiased as its mean (and median) is very close
-to one. The standard deviation is about 10 times larger than the one
-of the OLS estimator, so that the density curve is extremely flat.  The
+The OLS estimator is severely biased, as the central value of its
+distribution is about 1.5 and it has a small variance. The "pseudo-IV" estimator seems unbiased, as its mean (and median) is very close
+to one. The standard deviation is about 10 times larger than that
+of the OLS estimator, so the density curve is extremely flat.  The
 mode of the density curve of the IV estimator is slightly larger
-than one. Moreover, it has extremely fat tails (much more than the
-ones of the pseudo IV estimator), which explains why the expected
+than 1. Moreover, it has extremely fat tails (much more than the
+ones of the pseudo-IV estimator), which explains why the expected
 value and the variance don't exist. This feature becomes obvious if we
-zoom on extreme values of the estimator, for example on the $(-4,-3)$
+zoom in extreme values of the estimator, for example on the $(-4,-3)$
 range (see @fig-dist_iv_zoom).
 \idxfun{coord\_cartesian}{ggplot2}
 
@@ -808,7 +805,7 @@ dsties + coord_cartesian(xlim = c(-4, -3), ylim = c(0, 0.015))
 \index[general]{small sample properties!instrumental variable estimator|(}
 \index[general]{bias!instrumental variable estimator|(}
 
-### An example
+### An example: Segregation effects on urban poverty and inequality
 
 \idxdata[(]{tracks\_side}{micsr.data}
 @ANAN:11\index[author]{Ananat} investigates the causal effect of segregation on urban poverty
@@ -821,9 +818,9 @@ $$
 \frac{1}{2}\sum_{n=1} ^ N \left| b_n - w_n \right|
 $$
 
-where $b_n$ and $w_n$ are respectively the share of the black and of the white
+where $b_n$ and $w_n$ are respectively the share of the black and white
 population of the whole city that lives in census track $n$ of the
-city. This index range from 0 (no segregation) to 1 (perfect
+city. This index ranges from 0 (no segregation) to 1 (perfect
 segregation). In the sample of 121 cities used, the segregation index ranges
 from `r round(min(tracks_side$segregation), 2)` to 
 `r round(max(tracks_side$segregation), 2)`, 
@@ -840,27 +837,26 @@ lm_yx %>% gaze
 ```
 
 The coefficient of segregation is positive and highly significant. It
-indicates that a one point increase of the segregation index rises the
+indicates that a 1 point increase of the segregation index raises the
 poverty rate of black people by about `r round(coef(lm_yx)[2], 2)` point. 
 The correlation between segregation and bad economic outcome for black people is well
 established but, according to the author, the OLS estimator cannot easily be
 considered as a measure of the causal relationship of segregation on
-income as there are some other variables that both influence
-segregation and outcome for the black people. As an example, she
-describes the situation of Detroit, which is a highly segregated city
+income, as there are some other variables that both influence
+segregation and outcome for black people. As an example, the situation of Detroit is described, which is a highly segregated city
 with poor economic outcomes, but other characteristics of the city
 (political corruption, legacy of a manufacturing economy) can be the
 cause of these two phenomena [@ANAN:11 p. 35]\index[author]{Ananat}.
 Therefore, the OLS estimator is suspected to be biased and
 inconsistent because of the omitted variable bias. The instrumental
 variable estimator can be used in this context, but it requires the
-use of a good instrumental variable, ie a variable which is correlated
+use of a good instrumental variable, i.e., a variable which is correlated
 with the endogenous covariate (segregation), but not directly with the
 response (the poverty rate). The author suggests that the way cities
 were subdivided by railroads into a large number of neighborhoods can
 be used as an instrument. Moreover, the tracks were mostly built
-during the nineteenth century, prior the great migration (between 1915
-to 1950) of Afro-Americans from the south. More
+during the nineteenth century, prior to the great migration (between 1915
+to 1950) of African Americans from the south. More
 precisely, the index is defined as follow:
 
 $$
@@ -885,8 +881,7 @@ lm_xw %>% gaze
 ```
 
 In the 2SLS interpretation of the IV estimator, this is the
-**first stage regression**\index[general]{first stage regression}. The coefficient of `raildiv` is as expected
-positive and is highly significant. It is important to check that the
+**first stage regression**\index[general]{first stage regression}. The coefficient of `raildiv` is, as expected, positive and highly significant. It is important to check that the
 correlation between the covariate and the instrument is strong enough
 to get a precise IV estimator. This can be performed by computing
 their coefficient of correlation, or using the R^2^ or the $F$
@@ -911,7 +906,7 @@ fitted values of the first stage regression:
 lm_yhx <- lm(povb ~ fitted(lm_xw), tracks_side)
 lm_yhx %>% gaze
 ```
-As expected, the IV estimator is larger than the OLS estimator (`r round(coef(lm_yhx)[2], 2)` vs `r round(coef(lm_yx)[2], 2)`).
+As expected, the IV estimator is larger than the OLS estimator (`r round(coef(lm_yhx)[2], 2)` vs. `r round(coef(lm_yx)[2], 2)`).
 It can also be obtained by dividing the
 OLS coefficients of the regressions of $y$ on $w$ and of $x$ on
 $w$. The latter has already been computed, the former is:
@@ -925,7 +920,7 @@ coef(lm_yw)[2]
 coef(lm_yw)[2] / coef(lm_xw)[2]
 ```
 
-A one point increase of `raildiv` is associated with a
+A 1 point increase of `raildiv` is associated with a
 `r round(coef(lm_xw)[2], 2)` point increase of the discrimination index and
 with a `r round(coef(lm_yw)[2], 2)` point of the poverty
 rate. Therefore, the 
@@ -957,28 +952,28 @@ $$
 $$
 
 As $(\bar{x}_1 - \bar{x}_0)$ converges to a constant, the asymptotic
-standard deviation of $\hat{\beta}$ is:^[see @ANGR:90\index[author]{Angrist}, note 7, p. 321-322.]
+standard deviation of $\hat{\beta}$ is:^[See @ANGR:90\index[author]{Angrist}, note 7, pp. 321-322.]
 
 $$
 \hat{\sigma}_{\hat{\beta}} = \frac{\hat{\sigma}_{\bar{y}_1 - \bar{y}_0}}{\bar{x}_1 - \bar{x}_0}
 $$ {\#eq-std_wald}
 
-@ANGR:90\index[author]{Angrist} studied whether veterans (in his article of the Vietnam war)
+@ANGR:90\index[author]{Angrist} studied whether veterans (in his article the Vietnam war)
 experience a long-term loss of income, and therefore should legitimately
 receive a benefit to compensate this loss. An obvious way to detect a
 loss would be to consider a sample with two groups (veterans and
 non-veterans) and to compare the mean income in these two
-groups. However, enrollment in the army is not random and therefore, it
+groups. However, enrollment in the army is not random, and therefore it
 is probable that "certain types of men are more likely to serve in the
-armed force than others".^[@ANGR:90\index[author]{Angrist}, p. 313.] In this situation,
+armed forces than others".^[@ANGR:90\index[author]{Angrist}, p. 313.] In this situation,
 income difference is likely to be a biased estimator of the effect of military
 enrollment. To overcome this difficulty, @ANGR:90\index[author]{Angrist} used the fact that a
 draft lottery was used during the Vietnam war to select the young men
 who were enrolled in the army. More precisely, the 365 possible days
-of birth were randomly drawn and ordered and, latter on, the army
+of birth were randomly drawn and ordered and, later on, the army
 announced the number of days of birth that would lead to an
 enrollment (depending on the year, this number was between 95 and
-195). All the lottery eligible men didn't go to the war and some that
+195). All the lottery-eligible men didn't go to the war and some that
 were not eligible fought, but the lottery produces an exogenous
 variation of the probability to be enrolled.
 <!-- - the 1970 lottery concerns men borned from 1944 to 1950 and the -->
@@ -1041,7 +1036,7 @@ dinc_elig  %>% ggplot(aes(year, dmean)) +
     facet_grid(birth ~ race)        
 ```
 
-The results match table 1 of @ANGR:90\index[author]{Angrist} page 318 (except that, in his
+The results match table 1 of @ANGR:90\index[author]{Angrist} page 318 (except that, in the
 table, the income is not divided by the cpi).
 The mean income difference is the numerator of the Wald
 estimator. The denominator is the difference of enrollment probability
@@ -1062,7 +1057,7 @@ veterans <- vietnam %>%
 veterans %>% print(n = 3)
 ```
 
-We then create one column for eligible and non-eligible young men and
+We then create one column for eligible and non-eligible young men, and
 we compute the difference of shares of enrollment and its standard
 deviation:
 \idxfun{pivot\_wider}{tidyr}\idxfun{mutate}{dplyr}\idxfun{select}{dplyr}
@@ -1077,9 +1072,9 @@ dshare_elig <- veterans %>%
 dshare_elig %>% print(n = 2)
 ```
 
-Finally, we join the two tables by race and year of birth, we
+Finally, we join the two tables by race and year of birth; we
 compute the Wald estimator of the income difference, its standard
-deviation (using @eq-std_wald) and the student statistic, which is
+deviation (using @eq-std_wald) and the Student statistic, which is
 their ratio:
 \idxfun{left\_join}{dplyr}\idxfun{mutate}{dplyr}\idxfun{select}{dplyr}
 
@@ -1111,16 +1106,16 @@ wald %>%
     facet_grid(~ birth)
 ```
 
-The income differential between veterans and non-veterans is substantial and persistent (about one thousand US $ of 1984) and is most of the time significant at the 5% level (except for men born in 1951).\idxdata[)]{vietnam}{micsr.data}
+The income differential between veterans and non-veterans is substantial and persistent (about $1000 of 1984) and is most of the time significant at the 5% level (except for men born in 1951).\idxdata[)]{vietnam}{micsr.data}
 \index[general]{instrumental variable estimator!Wald estimator|)}
 \index[general]{Wald estimator|)}
 
 
-## The general IV estimator {#sec-general_iv}
+## General IV estimator {#sec-general_iv}
 
 \index[general]{instrumental variable estimator!general|(}
 Consider now the general case. Among the covariates, some of them are
-endogenous and other not and should be included in the instrument
+endogenous and other are not and should be included in the instrument
 list. Moreover, there may be more instruments than endogenous covariates.
 
 ### Computation of the estimator
@@ -1130,7 +1125,7 @@ We denote $Z$ and $W$ the matrix of covariates and instruments. The
 number of columns of these two matrices are respectively $K + 1$ and
 $G + K - J + 1$. For the model to be identified, we must have $G + K -
 J + 1 \geq K + 1$ or $G \geq J$. Therefore, there must be at least as
-many external instruments than there are endogenous covariates. We'll now
+many external instruments as there are endogenous covariates. We'll now
 denote $L + 1= G + K - J + 1$ the number of columns of $W$. The $L+1$ moment
 conditions are $\mbox{E}(\epsilon | w) = 0$ which implies
 $\mbox{E}(\epsilon w) = 0$. The sample
@@ -1162,7 +1157,7 @@ $$
 =\frac{1}{\sigma_\epsilon ^ 2} \epsilon^\top P_W \epsilon
 $$
 
-where $P_W$ is the projection matrix of $W$, ie $P_Wz$
+where $P_W$ is the projection matrix of $W$, i.e., $P_Wz$
 is the vector of fitted values of $z$ obtained by regressing $z$ on
 $W$. Therefore, the IV estimator minimizes:
 
@@ -1177,11 +1172,9 @@ $$
 \hat{\gamma} = (Z^\top P_W Z) ^ {-1} (Z^\top P_W y)
 $$ {\#eq-overidentified_iv}
 
-The 2SLS interpretation of the IV estimator is clear as it is
+The 2SLS interpretation of the IV estimator is clear, as it is
 the OLS estimator of a model with $y$ or ($P_W y$) as the response and
-$P_W Z$ the covariate. Therefore, it can be obtained by regressing in
-a first step all the covariates on the instruments and in a second
-steps by regressing the response on the fitted values of all the
+$P_W Z$ the covariate. Therefore, it can be obtained in a first step by regressing all the covariates on the instruments and in a second steps by regressing the response on the fitted values of all the
 covariates obtained in the first step.
 Replacing $y$ by $Z\gamma + \epsilon$ in @eq-overidentified_iv, we get:
 
@@ -1205,7 +1198,7 @@ $$
 If the errors are heteroskedastic (or correlated), @eq-var_homosc is a
 biased estimator of the variance of the moments, as
 $\mbox{E}(\epsilon\epsilon^\top) \neq \sigma_\epsilon ^ 2 I$. In
-case of heteroscedasticity, $\mbox{E}(W^\top\epsilon\epsilon^\top W)$ can be consistently
+case of heteroskedasticity, $\mbox{E}(W^\top\epsilon\epsilon^\top W)$ can be consistently
 estimated by $\hat{S} = \sum_n \hat{\epsilon}_n ^ 2 w_n w_n^\top$
 where $\hat{\epsilon}$ are the residuals of a consistent estimation,
 for example the residuals of the IV estimator previously
@@ -1233,7 +1226,7 @@ $$
 \hat{\mbox{V}}(\hat{\gamma}) = \left(Z^\top W \hat{S}^{-1} W ^ \top Z\right)^{-1}
 $$
 
-To estimate this covariance matrix, on can use an estimation of $S$
+To estimate this covariance matrix, one can use an estimation of $S$
 based on the residuals of the regression of the second step.
 
 \index[general]{general method of moments estimator|)}
@@ -1241,51 +1234,51 @@ based on the residuals of the regression of the second step.
 \index[general]{instrumental variable estimator!two stage|)}
 \index[general]{instrumental variable estimator!general|)}
 
-### An example: long term effects of slave trades
+### An example: long-term effects of slave trade
 
-\idxdata[(]{slave\_trade}{countries}
+\idxdata[(]{slave\_trade}{necountries}
 Africa experienced poor economic performances during the second half of
 the twentieth century, which can be explained by its experience of
-slave trades and colonialism. In particular, slave trades may induce
+slave trade and colonialism. In particular, slave trade may induce
 long-term negative effects on the economic development of African
 countries because of induced corruption, ethnic fragmentation and
 weakening of established states. Africa experienced, between 1400
-and 1900 four slave trades: the trans-Atlantic slaves trade (the most
+and 1900 four slave trades: the trans-Atlantic slave trade (the most
 important), but also the trans-Saharan, the Red Sea and the Indian Ocean slave
 trades. Not including those who died during the slave trade process,
 about 18 millions slaves were exported from Africa. @NUNN:08\index[author]{Nunn} conducted
-a quantitative analysis of the effects of slave trades on economic
+a quantitative analysis of the effects of slave trade on economic
 performances, by regressing the 2000 GDP per capita of 52 African
-countries on a measure of the level of slaves extraction. The
-`slave_trade` data set is provided by the **countries** package:
+countries on a measure of the level of slave extraction. The
+`slave_trade` data set is provided by the **necountries** package:
 
 ```{r }
 #| label: slave_trades
-sltd <- countries::slave_trade
+sltd <- necountries::slave_trade
 ```
 
 The response is `gdp` and the main covariate is a measure of the level of
-slaves extraction, which is the number of slaves normalized by the
+slave extraction, which is the number of slaves normalized by the
 area of the country. In @fig-gdp_slaves, we first use a scatterplot,
 using log scales for both variables, which clearly indicates a
 negative relationship between slaves extraction and per capita GDP in
-2000. Note the use of `ggrepel::geom_label_repel`: **ggplot2** provides two geoms to draw labels (`geom_text` and `geom_label`) but the labels may overlap. `geom_label_repel` compute a position for the labels that prevent this overlapping.
+2000. Note the use of `ggrepel::geom_label_repel`: **ggplot2** provides two geoms to draw labels (`geom_text` and `geom_label`), but the labels may overlap. `geom_label_repel` computes a position for the labels that prevent this overlapping.
 \idxfun{ggplot}{ggplot2}\idxfun{aes}{ggplot2}\idxfun{scale\_x\_log10}{ggplot2}\idxfun{scale\_y\_log10}{ggplot2}\idxfun{geom\_smooth}{ggplot2}\idxfun{geom\_label\_repel}{ggrepel}
 
 ```{r }
 #| message: false
 #| label: fig-gdp_slaves
-#| fig-cap: "Per capita gdp and slaves extraction"
+#| fig-cap: "Per capita GDP and slave extraction"
 sltd %>% ggplot(aes(slavesarea, gdp)) + geom_point() +
-    scale_x_log10() + scale_y_log10() +
-    geom_smooth(method = "lm", se = FALSE, color = "black") + 
-    ggrepel::geom_label_repel(aes(label = country),
-                              size = 2, max.overlaps = Inf)
+  scale_x_continuous(trans = "log10", expand = expansion(mult = c(.1))) + 
+  scale_y_log10() + geom_smooth(method = "lm", se = FALSE, color = "black") + 
+  ggrepel::geom_label_repel(aes(label = country),
+                            size = 2, max.overlaps = Inf) 
 ```
 
 @NUNN:08\index[author]{Nunn} in table 2 presents a series of linear regressions, with
-different sets of controls. We just consider his first specification,
-which includes only dummies for the colonizer as supplementary covariates. `colony` is a factor with 8 levels: we use `forcats::fct_lump_min` to merge the most infrequent levels: `"none"` (2 countries), `"spain"`, `"germany"` and `"italy"` (1 country).
+different sets of controls. We just consider Nunn's first specification,
+which includes only dummies for the colonizer as supplementary covariates. `colony` is a factor with eight levels: we use `forcats::fct_lump_min` to merge the most infrequent levels: `"none"` (2 countries), `"spain"`, `"germany"` and `"italy"` (1 country).
 \idxfun{lm}{stats}\idxfun{gaze}{micsr}\idxfun{fct\_lump\_min}{forcats}
 
 ```{r }
@@ -1296,21 +1289,18 @@ slaves_ols <- lm(log(gdp) ~ log(slavesarea) + colony, sltd)
 slaves_ols %>% gaze(coef = "log(slavesarea)")
 ```
 
-The coefficient is negative and highly significant, it implies that a
-10% increase of slaves extraction induce a reduction of 1% of GDP per
-capita. 
-As noticed by @NUNN:08\index[author]{Nunn}, the estimation of the effect of slaves trade
+The coefficient is negative and highly significant; it implies that a 10% increase of slave extraction induces a reduction of 1% of GDP per capita. 
+As noticed by @NUNN:08\index[author]{Nunn}, the estimation of the effect of slave trade
 on GDP can be inconsistent for two reasons:
 
-- the level of slaves extraction, which is based on information of the
-  ethnicity of individual slaves and then aggregated at the current countries
-  level can be prone to error of measurement; moreover, for countries
+- the level of slave extraction, which is based on information of the
+  ethnicity of individual slaves and then aggregated at the current countries' level can be prone to error of measurement; moreover, for countries
   inside the continent (compared to coastal countries), a lot of
   slaves died during the journey to the coastal port of export, so
-  that the level of extraction may be underestimated for these
+  the level of extraction may be underestimated for these
   countries,
-- the average economic conditions may be different for countries who
-  suffered a large extraction, compared to the other; in particular,
+- the average economic conditions may be different for countries that
+  suffered a large extraction, compared to the others; in particular,
   if countries where the trade was particularly important were poor,
   their current poor economic conditions
   can be explained by their poor economic conditions 600 years ago and
@@ -1318,22 +1308,21 @@ on GDP can be inconsistent for two reasons:
   
 Measurement error induces an attenuation bias, which means that without
 measurement error, the negative effect of slave trades on GDP per
-capita would be stronger. The second effect would induce an upward bias
+capita would be stronger. The second effect would induce an upward-bias
 (in absolute value) of the coefficient on slave trades. But, actually,
-@NUNN:08\index[author]{Nunn} showed that areas of Africa that suffered the most of slave trades
-were in general not the poorest areas, but the most developed ones. In
-this case, the OLS estimator would under-estimate the effect of
+@NUNN:08\index[author]{Nunn} showed that areas of Africa that suffered the most slave trade were in general not the poorest areas, but the most developed ones. In
+this case, the OLS estimator would underestimate the effect of
 slave trades on GDP per capita. 
 @NUNN:08\index[author]{Nunn} then performs instrumental variable regressions, using as
 instruments the distance between the centroid of the countries and the
-closest major market for the 4 slave trades (for example Mauritius and
+closest major market for the four slave trades (for example Mauritius and
 Oman for the Indian Ocean slave trade and Massawa, Suakin and
 Djibouti for the Red Sea slave trade).
 The IV regression can be performed by first regressing the
 endogenous covariate on the external instruments (`atlantic`,
 `indian`, `redsea` and `sahara`) and on the exogenous covariates (here
 `colony`, the factor indicating the previous colonizer). This is the
-so-called **first stage regression**:
+so-called **first-stage regression**:
 \idxfun{lm}{stats}\idxfun{gaze}{micsr}\idxfun{rsq}{micsr}
 
 ```{r }
@@ -1346,10 +1335,8 @@ slaves_first %>% rsq
 ```
 
 Except for the `redsea` variable, the coefficients are highly
-significant and the 4 instruments and the exogenous covariate explain more than one fourth of the
-variance of slave extraction. The second stage is obtained by
-regressing the response on the fitted values of the first step
-estimation:
+significant, and the four instruments and the exogenous covariate explain more than one-fourth of the variance of slave extraction. The second stage is obtained by
+regressing the response on the fitted values of the first-step estimation:
 \idxfun{add\_column}{tibble}\idxfun{fitted}{stats}\idxfun{lm}{stats}\idxfun{gaze}{micsr}
 
 ```{r }
@@ -1362,7 +1349,7 @@ slaves_second %>% gaze
 
 The coefficient has almost doubled, compared to the OLS estimator,
 which confirms that this latter estimator is biased, with an
-attenuation bias due to measurement error and a downward bias caused by the fact that the most developed African regions were more affected by slave trades. 
+attenuation bias due to measurement error and a downward-bias caused by the fact that the most developed African regions were more affected by slave trade. 
 The two-stage IV estimator is then computed. We use the **Formula** package
 which enables to write complex formulas with multiple set of
 variables, separated by the `|` operator:^[We've already presented briefly this package in @sec-sys_eq_ols.]
@@ -1375,7 +1362,7 @@ form <- Formula(log(gdp) ~ log(slavesarea) + colony| colony +
                    redsea + atlantic + sahara + indian)
 ```
 
-The first part contains the covariates, the second part the
+The first part contains the covariates and the second part the
 instruments. We then compute the model frame and we extract the covariates, the instruments and the response:
 \idxfun{model.frame}{stats}\idxfun{model.matrix}{stats}\idxfun{model.part}{Formula}\idxfun{pull}{dplyr}
 
@@ -1420,25 +1407,25 @@ ivreg::ivreg(log(gdp) ~ log(slavesarea) + colony| colony +
 ```
 
 The output of the `ivreg` function will be presented in @sec-test_sltr.
-\idxdata[)]{slave\_trade}{countries}
+\idxdata[)]{slave\_trade}{necountries}
 
 \index[general]{instrumental variable estimator|)}
 
-## Three stage least squares {#sec-three_sls}
-\index[general]{three stage least squares|(}
-\index[general]{instrumental variable estimator!three stage least squares|(}
-\index[general]{system estimation!three stage least squares|(}
+## Three-stage least squares {#sec-three_sls}
+\index[general]{three-stage least squares|(}
+\index[general]{instrumental variable estimator!three-stage least squares|(}
+\index[general]{system estimation!three-stage least squares|(}
 
 Consider now the case where the model is defined by a system of
 equations, some of the covariates entering these equations being
 endogenous.
-We consider therefore a system of $L$ equations denoted
+We consider therefore a system of $L$ equations denoted by
 $y_l=Z_l\gamma_l+\epsilon_l$, with $l=1\ldots L$. This situation has already
-be encountered in @sec-sys_eq_ols, @sec-bptest_system and @sec-sur. In this latter section, we
+encountered in @sec-sys_eq_ols, @sec-bptest_system and @sec-sur. In this latter section, we
 considered that all the covariates were exogenous and we presented the
 seemingly unrelated regression estimator, which is a GLS estimator
 that takes into account the correlation between the errors of the
-different equations. Remind that, in matrix form, the system can be written as
+different equations. Remember that, in matrix form, the system can be written as
 follows:
 
 $$
@@ -1491,7 +1478,7 @@ matrix of dimensions $L$ for which the diagonal elements are the
 variance of the errors for a given equation and the off-diagonal
 elements the covariances between the pairs of errors of two different equations. 
 
-### Computation of the 3SLS estimator
+### Computation of the three-stage least square estimator
 
 If some covariates are endogenous, we should consider, for each
 equation, a matrix of instruments:
@@ -1531,7 +1518,7 @@ $$
 \frac{1}{N ^ 2}W ^ \top \Omega W = \frac{1}{N ^ 2}W ^ \top (\Sigma \otimes I) W
 $$
 
-The **three stage least squares** estimator^[@ZELL:THEI:62.\index[author]{Zellner}\index[author]{Theil}] (**3SLS** in short) minimizes the quadratic form
+The **three-stage least squares** (**3SLS**) estimator^[@ZELL:THEI:62.\index[author]{Zellner}\index[author]{Theil}]  minimizes the quadratic form
 of the moments with the inverse of this variance matrix:
 
 $$
@@ -1550,7 +1537,7 @@ $$ {#eq-threesls}
 This estimator can actually be computed using least squares on
 transformed data. Denote $\Psi = \Sigma ^ {- 0.5} \otimes I$ the
 matrix such that $\Psi ^ \top \Psi = \Sigma ^ {-1} \otimes I = \Omega
-^ {-1}$. Then, pre-multiply the covariates and the response by $\Psi$
+^ {-1}$. Then, premultiply the covariates and the response by $\Psi$
 and the instruments by $(\Psi^{-1}) ^ \top$. Then the projection
 matrix of $\tilde{W} = {\Psi^{-1}} ^ \top W$ is:
 
@@ -1584,7 +1571,7 @@ W\right) ^ {-1} W ^ \top \Psi^{-1} \Psi y\right) \\
 $$
 
 which is @eq-threesls. Therefore, the 3SLS estimator can be
-computed the following way:
+computed in the following way:
 
 1. First compute the 2SLS estimator and retrieve the vectors of
    residuals ($\hat{\Xi} = (\hat{\epsilon}_1, \ldots, \hat{\epsilon}_L)$).
@@ -1600,18 +1587,16 @@ computed the following way:
 1. Regress the transformed response on the fitted values of the
    previous regression.
 
-\index[general]{three stage least squares|)}
-\index[general]{instrumental variable estimator!three stage least squares|)}
-\index[general]{system estimation!three stage least squares|)}
+\index[general]{three-stage least squares|)}
+\index[general]{instrumental variable estimator!three-stage least squares|)}
+\index[general]{system estimation!three-stage least squares|)}
 
 ### An example: the watermelon market
 
 \idxdata[(]{watermelon}{micsr.data}
-@SUIT:55\index[author]{Suit} built an econometric model of the watermelon market, using a
-time-series for the United-States and his study was complemented by
-@WOLD:58\index[author]{Wold} who rebuilt the data set. This data set (called `watermelon`) is a good example of
-the use of system estimation with endogeneity and its use for teaching
-purposes is advocated by @STEW:19\index[author]{Stewart}:
+@SUIT:55\index[author]{Suit} built an econometric model of the watermelon market using a
+time series for the United States, and his study was complemented by
+@WOLD:58\index[author]{Wold} who rebuilt the data set. This data set (called `watermelon`) is a good example of the use of system estimation with endogeneity, and its use for teaching purposes is advocated by @STEW:19\index[author]{Stewart}:
 
 ```{r }
 #| label: watermelon
@@ -1620,7 +1605,7 @@ watermelon %>% print(n = 2)
 
 On the supply side, two quantities of watermelons are distinguished: `q` are crop of watermelons available for harvest (millions) and `h` are watermelons actually harvested (millions). 
 `q` depends on planting decisions made on information of the previous
-season; more specifically, `q` depends on lag values of the average farm price of watermelon `p` (in  dollars per thousand), the average annual net farm price per pound of cottons `pc` (in dollars), the average farm price of vegetables `pv` (an index) and on two dummy variables for government cotton acreage allotment program `d1` (1 for the 1934-1951 period) and for world war 2 `d2` (1 for 1943-1946).
+season; more specifically, `q` depends on lag values of the average farm price of watermelon `p` (in  dollars per thousand), the average annual net farm price per pound of cottons `pc` (in dollars), the average farm price of vegetables `pv` (an index) and on two dummy variables for government cotton acreage allotment program `d1` (one for the 1934-1951 period) and for World War 2 `d2` (one for 1943-1946 period).
 
 The amount of watermelons actually harvested `h` depends on current
 price farm of watermelons `p`, wages `w` (the major cost of
@@ -1639,7 +1624,7 @@ and, all the variables being in logarithm, the price and income elasticities are
 watermelons in terms of wage (`pw`), the income per capita (`yn`) and
 harvest (`hn`) and the first lags for `p`, `pc` and `pv`. We also
 remove the first and the last observation (because of the lag for the
-first one and because of missing value for `pv` and `w` for the last
+first one and because of the missing value for `pv` and `w` for the last
 one).
 \idxfun{mutate}{dplyr}\idxfun{lag}{dplyr}\idxfun{filter}{dplyr}
 
@@ -1663,7 +1648,7 @@ eq_d <- p ~ hn + yn + pf
 
 The exogenous variables are `w`, `n`, `yn`, `pf`, `d1`, `d2` and the
 lagged values of the price of watermelons (`lp`), cotton (`lpc`) and
-vegetables (`lpv`). We form a one side formula for this set of
+vegetables (`lpv`). We form a one-sided formula for this set of
 instruments:
 
 ```{r }
@@ -1787,7 +1772,7 @@ are $1 / `r round(d_q, 2)` = `r round(1 / d_q, 2)`$ and $- `r round(d_y, 2)` / `
 \index[general]{fixed effects model|(}
 \index[general]{panel data!fixed effects model|(}
 
-In @sec-error_component, we developed the error component model for panel or pseudo-panel data sets. Remind that when we have several observations ($t$) for the same entities ($n$), the simple linear model can be written as:
+In @sec-error_component, we developed the error component model for panel or pseudo-panel data sets. Remember that when we have several observations ($t$) for the same entities ($n$), the simple linear model can be written as:
 
 $$
 y_{nt} = \alpha + \beta x_{nt} + \epsilon_{nt} = \alpha + \beta x_{nt} + \eta_n + \nu_{nt}
@@ -1797,9 +1782,9 @@ the error term being the sum of two components: an entity / individual effect $\
 $\mbox{E}(\eta \mid x) \neq 0$ but not with $\nu$: $\mbox{E}(\nu \mid x) = 0$, unbiased and consistent OLS estimators can be obtained when the individual effect $\eta$ is either estimated or if the
 estimation is performed on a transformation of the covariate and the
 response that removes the individual effect. This is called the **fixed
-effect** estimator. 
+effects** estimator. 
 
-### Computation of the fixed effect estimator
+### Computation of the fixed effects estimator
 
 The linear model: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$ can be written in matrix form as:
 
@@ -1889,10 +1874,10 @@ $$
 y = X \beta + D \eta + \nu
 $$
 Note that this model doesn't contain an intercept: as $\eta$ are considered as parameters to be estimated, with an intercept $\alpha$, only $N$ parameters like $\alpha + \eta_n$ can be estimated and therefore, $\alpha$ can safely be set to 0.
-$D = j_T \otimes I_N$ is a $NT\times N$ matrix where each column contains a dummy variable for one individual. The **least squares dummy variable** estimator (**LSDV** in short) 
+$D = j_T \otimes I_N$ is a $NT\times N$ matrix where each column contains a dummy variable for one individual. The **least squares dummy variable** (**LSDV**) estimator 
 \index[general]{panel data!least squares dummy variable}
 \index[general]{least squares dummy variable estimator}
-consists on estimating by least squares $\beta$ and $\eta$. Instead of estimating the $N$ $\eta$ parameters, it is simpler and more efficient to use the Frisch-Waugh theorem\index[general]{Frisch-Waugh theorem}: first $X$ and $y$ are regressed on $D$, then the residuals of the first regression of $y$ are regressed on those of $X$.
+consists of estimating by least squares $\beta$ and $\eta$. Instead of estimating the $N$ $\eta$ parameters, it is simpler and more efficient to use the Frisch-Waugh theorem\index[general]{Frisch-Waugh theorem}: first $X$ and $y$ are regressed on $D$, then the residuals of the first regression of $y$ are regressed on those of $X$.
 
 The OLS estimate of a variable $z$ on $D$ is: $\hat{\delta} = (D ^ \top D) ^ {-1} D^\top z$. But $D^\top D =  T I$, so that $(D ^ \top D) ^ {-1} = I / T$. Moreover:
 
@@ -1906,7 +1891,7 @@ D^\top z = \left(
 \end{array}
 \right)
 $$
-and therefore $\hat{\delta}$ is a vector of individual mean of $z$, with typical element $\hat{\delta}_n = \bar{z}_{n.} = \sum_t z_{nt} / T$. Therefore, applying the Frisch-Waugh theorem implies that regressing $y$ on $X$ and $D$ is equivalent to regress $y$ on $X$ with both the response and the covariates measured in deviations from their individual means. For one observation, we have: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$. Taking the individual mean of this equation, we get: $\bar{y}_{n.} = \beta^\top \bar{x}_{n.} + \eta_n + \bar{\nu}_{n.}$. Taking deviations from the individual means, the model to estimate is then:
+and therefore $\hat{\delta}$ is a vector of individual mean of $z$, with typical element $\hat{\delta}_n = \bar{z}_{n.} = \sum_t z_{nt} / T$. Therefore, applying the Frisch-Waugh theorem implies that regressing $y$ on $X$ and $D$ is equivalent to regressing $y$ on $X$ with both the response and the covariates measured in deviations from their individual means. For one observation, we have: $y_{nt} = \beta^\top x_{nt} + \eta_n + \nu_{nt}$. Taking the individual mean of this equation, we get: $\bar{y}_{n.} = \beta^\top \bar{x}_{n.} + \eta_n + \bar{\nu}_{n.}$. Taking deviations from the individual means, the model to estimate is then:
 
 $$
 y_{nt} - \bar{y}_{n.} = \beta ^ \top (x_{nt} - \bar{x}_{n.}) + (\nu_{nt} - \bar{\nu}_{n.})
@@ -1936,7 +1921,7 @@ $$
 y_{n1} - y_{n2} = \beta(x_{n1} -x_{n2}) + \nu_{n1} - \nu_{n2}
 $$
 
-The least square estimator of the slope is the following **first-difference** estimator:
+The least squares estimator of the slope is the following **first-difference** estimator:
 \index[general]{first-difference estimator}
 \index[general]{panel data!first-difference estimator}
 
@@ -1948,10 +1933,10 @@ which is in this case identical to the within estimator. This result can be esta
 $$
 (y_{n1} - \bar{y}_{n.})(x_{n1} - \bar{x}_{n.})+(y_{n2} - \bar{y}_{n.})(x_{n2} - \bar{x}_{n.})
 $$
-But $z_{n1} - \bar{z}_{n.} = z_{n1} - \frac{1}{2}(z_{n1} + z_{n2}) = \frac{1}{2}(z_{n1} - z_{n2})$. Similarly, $z_{n2} - \bar{z}_{n.} = -\frac{1}{2}(z_{n1} - z_{n2})$. Therefore, each term of the numerator of @eq-within_est reduces to $\frac{1}{2} (y_{n1} - y_{n2})(x_{n1} - x_{n2})$ and similarly, each term of the denominator reduces to $\frac{1}{2}(x_{n1} - x_{n2}) ^ 2$ which proves the equivalence between the first-difference and the within estimator. When $T > 2$ the within and the first-difference estimators differ:
+But $z_{n1} - \bar{z}_{n.} = z_{n1} - \frac{1}{2}(z_{n1} + z_{n2}) = \frac{1}{2}(z_{n1} - z_{n2})$. Similarly, $z_{n2} - \bar{z}_{n.} = -\frac{1}{2}(z_{n1} - z_{n2})$. Therefore, each term of the numerator of @eq-within_est reduces to $\frac{1}{2} (y_{n1} - y_{n2})(x_{n1} - x_{n2})$ and similarly, each term of the denominator reduces to $\frac{1}{2}(x_{n1} - x_{n2}) ^ 2$ which proves the equivalence between the first-difference and the within estimators. When $T > 2$ the within and the first-difference estimators differ:
 
 - the within estimator is more efficient, as it uses all the observations; on the contrary, while performing the first difference, the first observation for every individual is lost,
-- the error of the within estimator is $\nu_{nt} - \bar{\nu}_{n.}$ and therefore contains the whole series of $\nu_n$; on the contrary, the error of the first-difference is $\nu_{nt} - \nu_{n(t-1)}$ and therefore contains the values of $\nu_n$ only for the current and the for previous period.
+- the error of the within estimator is $\nu_{nt} - \bar{\nu}_{n.}$ and therefore contains the whole series of $\nu_n$; on the contrary, the error of the first difference is $\nu_{nt} - \nu_{n(t-1)}$ and therefore contains the values of $\nu_n$ only for the current and the previous period.
 
 \index[general]{fixed effects model|)}
 \index[general]{panel data!fixed effects model|)}
@@ -1968,16 +1953,16 @@ twins <- twins %>% mutate(age2 = age ^ 2 / 100)
 lm(log(earning) ~ educ + age + age2, twins) %>% gaze
 ```
 
-The estimated return of education is about 7.7%, but may be biased if
+The estimated return of education is about 7.7%, but it may be biased if
 the error is correlated with education. In particular, "abilities" are
 unobserved and may be correlated with education. If this correlation
-is positive, then the OLS estimator is upward biased. The solution
-here is to consider that abilities should be similar for the two twins,
+is positive, then the OLS estimator is upward-biased. The solution
+here is to consider that abilities should be similar for the pair of twins,
 as they are genetically identical and had the same familial
-environment. In this case, the fixed effect model can be performed. It
+environment. In this case, the fixed effects model can be performed. It
 can be obtained either by: estimating coefficients for all family dummies, using OLS on the within transformed variables or using OLS on the differences.
-Note that identical twins have obviously the same age, so that this
-covariate disappears in the fixed effect model. Let's start with the
+Note that identical twins have obviously the same age, so this
+covariate disappears in the fixed effects model. Let's start with the
 LSDV estimator:
 \idxfun{lm}{stats}\idxfun{coef}{stats}\idxfun{head}{utils}\idxfun{factor}{base}
 
@@ -1990,10 +1975,10 @@ lsdv %>% coef %>% length
 ```
 
 The estimated return of education is much lower (3.9%) than the
-OLS estimator. Note that numerous parameters are estimated (215)
+OLS estimator. Note that numerous parameters are estimated (215),
 and the computation can be unfeasible if the number of entities is very
 large. Whatever the size of the sample, it is simpler and more efficient to use OLS on the
-transformed data, either using the within or the first difference
+transformed data, either using the within or the first-difference
 estimator. This can easily be done using:
 \idxfun{group\_by}{dplyr}\idxfun{mutate}{dplyr}\idxfun{lm}{stats}
 
@@ -2018,17 +2003,17 @@ twins %>% group_by(family) %>%
     lm(formula = learning ~ educ - 1) %>% coef
 ```
 
-In both cases, we grouped the rows by family, ie there are 214 groups
+In both cases, we grouped the rows by family, i.e., there are 214 groups
 of two lines, one for each pair of twins. In the first case, we use
 `mutate` to remove the individual mean; for example, `mean(educ)` is
 the mean of education computed for every family and is repeated two
 times, and we therefore have 428 observations (one for each
-individual). In the second case, we use `sumarise` and we therefore
+individual). In the second case, we use `summarise` and we therefore
 get 214 observations (one for each family), the response and the
 covariate being the twin difference of earning and education.
 \idxdata[)]{twins}{micsr.data}
 
-### Application: Testing the Tobin's Q theory of investment using panel data
+### Application: Testing Tobin's Q theory of investment using panel data
 
 @SCHA:90\index[author]{Schaller} tested the relevance of Tobin's Q theory of investment by
 regressing the investment rate (the ratio of the investment and the
@@ -2049,7 +2034,7 @@ qw %>% summary
 ```
 
 The individual effects are not estimated because the estimator
-use the within transformation and then performs OLS on transformed
+uses the within transformation and then performs OLS on transformed
 data. However, the individual effects can be computed easily because:
 $\hat{\eta}_n = \bar{y}_{n.} - \hat{\beta} ^ \top \bar{x}_{n.}$. The
 `fixef` method for `plm` objects retrieves the fixed effects and a
@@ -2091,9 +2076,9 @@ qw %>% fixef(type = "dmean") %>% summary %>% head(3)
 Models estimated in this chapter, either using the IV or the fixed effects
 estimator, treat the endogeneity of some covariates, either by using
 instruments or by removing individual effects. These estimates are
-consistent if some covariates are actually endogenous although other
+consistent if some covariates are actually endogenous, although other
 estimators like OLS or GLS are not. However, if endogeneity is
-actually not a problem, this latter estimators are also consistent and
+actually not a problem, these later estimators are also consistent and
 are moreover more efficient. The Hausman test is based on the
 comparison of these two estimators and on the null hypothesis of the absence of endogeneity:
 
@@ -2102,7 +2087,7 @@ true and is in this case efficient,
 - $\hat{\beta}_1$, with variance $\hat{V}_1$ is always consistent, but
   is less efficient than $\hat{\beta}_0$ if the hypothesis is true.
 
-@HAUS:78's\index[author]{Hausman} test is based on $\hat{q} = \hat{\beta}_1 - \hat{\beta}_0$,
+Hausman's test [@HAUS:78]\index[author]{Hausman} test is based on $\hat{q} = \hat{\beta}_1 - \hat{\beta}_0$,
 for which the variance is: 
 $$
 \mbox{V}(\hat{q}) =
@@ -2110,7 +2095,7 @@ $$
 \mbox{cov}(\hat{\beta}_1, \hat{\beta}_0)
 $$ {#eq-var_difference}
 
-He showed that the covariance between $\hat{q}$ and
+Hausman showed that the covariance between $\hat{q}$ and
 $\hat{\beta}_0$ is 0. Therefore:
 
 $$ 
@@ -2151,14 +2136,14 @@ that the bias of the IV estimator is approximately inversely
 proportional to the F statistic of the regression of the endogenous
 variable on the instruments.^[See @BOUN:JAEG:BAKE:95\index[author]{Bound}\index[author]{Jaeger}\index[author]{Baker} and @CAME:TRIV:05\index[author]{Cameron}\index[author]{Trivedi} pages 108-109 for a
 discussion and further references.] Therefore, if the correlation between the
-endogenous variable and the instruments is weak, ie if the IV is
+endogenous variable and the instruments is weak, i.e., if the IV is
 performed using **weak instruments**, the estimator will not only be
 highly imprecise, but it will also be seriously biased, in
 the direction of the OLS estimator. While performing IV
 estimation it is therefore important to check that the instruments are
 sufficiently correlated with the endogenous covariate. This can be
 performed using an F test for the first stage regression, comparing
-the fit for the regression of the endogenous covariates on the set of the exogenous covariates and on the set of the exogenous covariates and on the external instruments.
+the fit for the regression of the endogenous covariates on the set of the exogenous covariates, on the set of the exogenous covariates, and on the external instruments.
 A rule of thumb often used is that the F statistic should be at least
 equal to 10 (a less strict rule is $F > 5$).
 <!-- to unsure that the maximal bias of the IV estimator is no -->
@@ -2193,10 +2178,10 @@ $$
 1} \sim F_{N-1, N (T - 1) - K}
 $$
 
-### Panel application: Testing the Tobin's Q theory of investment
+### Panel application: Testing Tobin's Q theory of investment
  
 The presence of individual effects was already tested using a score
-test based on the OLS residuals. We compute here a F test, using `plm::pFtest`:
+test based on the OLS residuals. We compute here an F test, using `plm::pFtest`:
 \idxdata[(]{tobinq}{micsr.data}
 \idxfun{pFtest}{plm}\idxfun{gaze}{micsr}
 
@@ -2209,7 +2194,7 @@ pFtest(ikn ~ qn, tobinq) %>% gaze
 and the hypothesis is strongly rejected. Once we have concluded that there are individual effects, the question is whether these effects
 are correlated with the covariates or not. If this is the case, the fixed
 effects model should be used because the GLS model is
-inconsistent. On the contrary, both models are consistent and the
+inconsistent. On the contrary, both models are consistent, and the
 GLS estimator, which is more efficient, should be used.
 \idxfun{phtest}{plm}\idxfun{gaze}{micsr}
 
@@ -2224,7 +2209,7 @@ the 5%, which leads to the choice of the GLS estimator.
 
 ### Instrumental variable application: slave trade {#sec-test_sltr}
 
-\idxdata[(]{slave\_trade}{countries}
+\idxdata[(]{slave\_trade}{necountries}
 The IV estimator for the `slave_trade` data set was presented in @sec-test_sltr. We use
 this time the `ivreg::ivreg` functions, which computes all the
 relevant specification tests.
@@ -2249,4 +2234,4 @@ are 4 instruments, the Sargan statistic, which is the quadratic form
 of the 4 moment conditions with the inverse of its variance is $3.63$
 and is a $\chi ^ 2$ with 3 degrees of freedom if the instruments are
 valid. This hypothesis is not rejected, even at the 10% level.
-\idxdata[)]{slave\_trade}{countries}
+\idxdata[)]{slave\_trade}{necountries}

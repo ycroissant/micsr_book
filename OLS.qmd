@@ -1,0 +1,38 @@
+# Ordinary least squares estimator
+
+The ordinary least squares (**OLS**) estimator is the most widely used estimator in econometrics and is often at least the good starting point before exploring more complex tools to perform **regression analysis**.
+
+In a regression analysis, we consider a variable $y$, called the **response**
+or the endogenous or the explained variable and the model seeks to
+explain the variations of this variable from one observation to
+another. To achieve this goal, a set of other variables $x$ called the
+**covariates** or explanatory or exogenous variables are
+introduced. These covariates are not only correlated to the response,
+but they are assumed to have a causal effect on the response. This
+means that a variation of $x$ causes a change on the value of $y$, as
+the opposite is not true. For example, wages are correlated with
+education levels. More precisely, a variation of education has a
+causal effect on wage, which means that wage is the response and
+education is a covariate.
+
+The dictionary definition of regression is "backward movement, a retreat, a return to an earlier state of development".^[This paragraph is based on @MADD:LAHI:09, pages 59-60 and 102-105.] Regression analysis has nothing to do with this definition. The term was first used in the statistical literature by Francis Galton who studied the relationship between the height of children and the height of parents. His result is that tall parents have tall children, but that "there was a tendency  for children's heights to converge toward the average". Galton called this a "regression of children's heights toward the average". Actually, this result is a statistical artifact, called a **regression fallacy**.
+
+@sec-simple_ols is devoted to the derivation of the simple linear model, which means that we'll consider a unique covariate. Then, @sec-stat_prop_slm will investigate the statistical properties of the simple linear model. @sec-mult_reg_chapter describes the multiple linear model, used when there is more than one covariate. Finally, @sec-interpretation_chapter is devoted to the interpretation of the estimators.
+
+Throughout this part, we'll present a real econometric analysis, which has three components:
+
+- a **structural** model, which means that we are going to
+start from the rational behavior of an individual or of a set of
+individuals (for example a household that maximizes its utility given
+its budget constraint), and we'll deduce from this behavior a linear
+relationship between the response and the
+covariates, the parameters of this linear relationship being
+directly linked to the parameters of the structural model. 
+- a **data set** which is typically presented as a
+rectangular table for which every line is an observation
+and every column is a variable. We'll consider tables with one column that contains the response $y$ and a set of $K$ columns that contain the covariates $x$. We'll denote $n$ the index of the observations, so that $n=1$ for the first line of the table, $n=2$ for
+the second one and $n=N$ for the last one. $N$ is therefore also the
+number of observations.
+- an **estimation method** that is required to compute the estimated values of the unknown parameters as a function of the
+values of the response and of the covariates on the sample and 
+**tests** that are useful to answer questions like: is the true value of a parameter is equal to 0 or 1?
