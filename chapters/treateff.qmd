@@ -178,9 +178,9 @@ afghan_girls %>%
                 type = list(age ~ "continuous"),
                 digits = all_continuous() ~ 2) %>%
     add_p(all_continuous() ~ "t.test",
-          pvalue_fun = ~ style_pvalue(., digits = 2)) %>%
-    as_kable_extra(booktabs = TRUE) %>% kable_styling() %>% 
-    column_spec(1, width = "15em")
+          pvalue_fun = ~ style_pvalue(., digits = 2))# %>%
+#    as_kable_extra(booktabs = TRUE) %>% kable_styling() %>% 
+#    column_spec(1, width = "15em")
 ```
 
 The set of tests doesn't detect any significant differences between the

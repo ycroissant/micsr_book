@@ -2112,7 +2112,9 @@ $$
 \sigma_{y_n} = \sqrt{\sigma_{\hat{y}_n} ^ 2 + \sigma_{\epsilon} ^ 2}=
 \frac{\sigma_{\epsilon}}{\sqrt{N}}
 \sqrt{1 + \frac{(x_n - \bar{x}) ^ 2}{\hat{\sigma}_x ^ 2} + N}
-$$ Note that when $N \rightarrow \infty$, $\sigma_{y_n}$, contrary
+$$
+
+Note that when $N \rightarrow \infty$, $\sigma_{y_n}$, contrary
 Note that $\sigma_{\hat{y}_n}$ tends to $\sigma_\epsilon$ and not to 0.
 
 \index[general]{confidence interval}\index[general]{prediction interval}
